@@ -11,42 +11,23 @@
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-/* ════════════════════════════════════════
-   EduRoom v6 — Security-Hardened Build
-   Fixes applied:
-   ✓ Passwords hashed with SHA-256 (via SubtleCrypto)
-   ✓ XSS: all user content via textContent/escHtml
-   ✓ Input sanitization & validation throughout
-   ✓ Rate limiting on login attempts (max 5)
-   ✓ Teacher code stored hashed, not in plaintext
-   ✓ localStorage data integrity check (tamper detection)
-   ✓ Message type whitelist (no arbitrary eval)
-   ✓ PeerJS message validation (type + payload size)
-   ✓ Peer ID injection prevention
-   ✓ Room ID sanitized (alphanumeric + hyphen only)
-   ✓ Chat message length limit (500 chars)
-   ✓ Session timeout awareness
-   ✓ Camera/mic tracks properly stopped on leave
-   ✓ Memory leaks fixed (intervals cleared on leave)
-════════════════════════════════════════ */
 :root{
-  --bg:#060d1c; --bg2:#0b1628; --bg3:#101f38;
-  --s1:#0f1c34; --s2:#162440; --s3:#1d2f50;
-  --b1:rgba(255,255,255,.07); --b2:rgba(255,255,255,.13);
-  --cy:#00d4ff; --cy2:#0090cc; --cy-g:rgba(0,212,255,.13);
-  --go:#f0b429; --go-g:rgba(240,180,41,.13);
-  --gn:#00e676; --gn-g:rgba(0,230,118,.12);
-  --rd:#ff3d5a; --rd-g:rgba(255,61,90,.15);
-  --pu:#a78bfa; --pu-g:rgba(167,139,250,.13);
-  --tx:#dde4f0; --tx2:#7a8fa8; --tx3:#3d5470;
-  --r:10px; --r2:16px; --r3:22px;
+  --bg:#060d1c;--bg2:#0b1628;--bg3:#101f38;
+  --s1:#0f1c34;--s2:#162440;--s3:#1d2f50;
+  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);
+  --cy:#00d4ff;--cy2:#0090cc;--cy-g:rgba(0,212,255,.13);
+  --go:#f0b429;--go-g:rgba(240,180,41,.13);
+  --gn:#00e676;--gn-g:rgba(0,230,118,.12);
+  --rd:#ff3d5a;--rd-g:rgba(255,61,90,.15);
+  --pu:#a78bfa;--pu-g:rgba(167,139,250,.13);
+  --or:#ff9f43;--or-g:rgba(255,159,67,.13);
+  --tx:#dde4f0;--tx2:#7a8fa8;--tx3:#3d5470;
+  --r:10px;--r2:16px;--r3:22px;
   --sh:0 8px 40px rgba(0,0,0,.7);
   --F:'IBM Plex Sans Arabic',sans-serif;
   --M:'JetBrains Mono',monospace;
-  --st:env(safe-area-inset-top,0px);
-  --sb:env(safe-area-inset-bottom,0px);
-  --sl:env(safe-area-inset-left,0px);
-  --sr:env(safe-area-inset-right,0px);
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+  --sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;height:-webkit-fill-available}
@@ -56,12 +37,11 @@ body{width:100%;height:100dvh;min-height:-webkit-fill-available;
   -webkit-user-select:none;user-select:none;overscroll-behavior:none}
 .hidden{display:none!important}
 button{font-family:var(--F);cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent}
-input,select,textarea{font-family:var(--F);outline:none;border:none;
-  -webkit-user-select:text;user-select:text}
+input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user-select:text;user-select:text}
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
 
-/* ── BG ── */
+/* BG */
 .pbg{position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 70% 60% at 15% 35%,rgba(0,90,180,.16) 0%,transparent 70%),
              radial-gradient(ellipse 60% 50% at 85% 70%,rgba(0,160,130,.1) 0%,transparent 70%);
@@ -72,39 +52,46 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;
                    linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);
   background-size:52px 52px}
 
-/* ── Shared card ── */
+/* Shared */
 .card{background:rgba(10,18,36,.9);border:1px solid var(--b2);border-radius:var(--r3);
   backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
   box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.05);
-  animation:cardUp .55s cubic-bezier(.22,1,.36,1) both}
+  animation:cardUp .5s cubic-bezier(.22,1,.36,1) both}
 @keyframes cardUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── Shared form ── */
 .fl{font-family:var(--M);font-size:10px;letter-spacing:.1em;color:var(--cy);margin-bottom:7px;display:block}
+.fi-wrap{position:relative;margin-bottom:13px}
+.fi-wrap .fi{margin-bottom:0;padding-left:42px}
 .fi{width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
-  padding:14px 15px;font-size:15px;color:var(--tx);transition:all .2s;margin-bottom:13px;
+  padding:14px 15px;font-size:15px;color:var(--tx);transition:all .2s;
   -webkit-appearance:none}
 .fi::placeholder{color:var(--tx3)}
 .fi:focus{border-color:rgba(0,212,255,.45);box-shadow:0 0 0 3px rgba(0,212,255,.07)}
-.fi.err{border-color:rgba(255,61,90,.5);box-shadow:0 0 0 3px rgba(255,61,90,.07)}
-select.fi{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8fa8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:left 14px center;padding-left:40px}
-select.fi option{background:#0b1628;color:var(--tx)}
+.fi.err-f{border-color:rgba(255,61,90,.5)}
+.fi-mb{margin-bottom:13px}
+/* Password toggle */
+.pw-wrap{position:relative;margin-bottom:13px}
+.pw-wrap .fi{padding-left:44px;margin-bottom:0}
+.pw-eye{position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  background:none;color:var(--tx2);padding:4px;display:flex;align-items:center}
+.pw-eye svg{width:18px;height:18px}
 .btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,var(--cy),var(--cy2));
   border-radius:var(--r);color:#060d1c;font-size:15px;font-weight:700;
   box-shadow:0 4px 22px rgba(0,212,255,.35);transition:all .15s}
 .btn-primary:active{transform:scale(.97);opacity:.9}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-sec{padding:11px 18px;background:var(--s1);border:1px solid var(--b2);
+.btn-sec{padding:10px 16px;background:var(--s1);border:1px solid var(--b2);
   border-radius:var(--r);color:var(--tx2);font-size:13px;font-weight:600;transition:all .2s}
 .btn-sec:active{background:var(--s2);color:var(--tx)}
+.btn-danger{padding:8px 14px;background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
+  border-radius:var(--r);color:var(--rd);font-size:12px;font-weight:600}
+.btn-danger:active{background:var(--rd);color:#fff}
 .msg-err{font-family:var(--M);font-size:12px;color:var(--rd);text-align:center;
   min-height:18px;margin-top:8px;letter-spacing:.02em}
 .msg-ok{font-family:var(--M);font-size:12px;color:var(--cy);text-align:center;min-height:18px;margin-top:8px}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--tx3);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--b1)}
 
-/* ════════════════════════════════════════
-   PAGE: AUTH
-════════════════════════════════════════ */
+/* ════ PAGE: AUTH ════ */
 #pg-auth{position:fixed;inset:0;padding:calc(var(--st)+16px) 16px calc(var(--sb)+16px);
   display:flex;align-items:center;justify-content:center;z-index:10;overflow-y:auto}
 .auth-card{width:min(460px,100%);padding:36px 28px 30px}
@@ -116,20 +103,19 @@ select.fi option{background:#0b1628;color:var(--tx)}
 .brand-name span{color:var(--cy)}
 .brand-tag{font-family:var(--M);font-size:9px;letter-spacing:.1em;color:var(--go);
   background:var(--go-g);border:1px solid rgba(240,180,41,.25);padding:3px 7px;border-radius:5px}
-.auth-tabs{display:flex;gap:0;margin-bottom:28px;background:var(--s1);border-radius:var(--r);padding:4px}
+.auth-tabs{display:flex;margin-bottom:26px;background:var(--s1);border-radius:var(--r);padding:4px;gap:0}
 .atab{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;
   color:var(--tx2);transition:all .2s;background:none}
 .atab.act{background:linear-gradient(135deg,var(--cy),var(--cy2));color:#060d1c;
   box-shadow:0 2px 12px rgba(0,212,255,.3)}
-.auth-head h2{font-size:22px;font-weight:700;margin-bottom:6px}
-.auth-head p{font-size:13px;color:var(--tx2);margin-bottom:20px;line-height:1.6}
+.auth-head h2{font-size:22px;font-weight:700;margin-bottom:5px}
+.auth-head p{font-size:13px;color:var(--tx2);margin-bottom:18px;line-height:1.6}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:13px}
-.two-col .fi{margin-bottom:0}
+.two-col .fi-mb{margin-bottom:0}
 .role-pick{display:flex;gap:10px;margin-bottom:18px}
 .rp-btn{flex:1;padding:13px 8px;background:var(--s1);border:2px solid var(--b1);
   border-radius:var(--r);color:var(--tx2);font-size:13px;font-weight:600;
   display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .2s}
-.rp-btn .rp-ico{font-size:22px}
 .rp-btn.sel{border-color:var(--cy);background:var(--cy-g);color:var(--cy)}
 .level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .lv-btn{padding:9px 5px;background:var(--s1);border:2px solid var(--b1);
@@ -137,13 +123,14 @@ select.fi option{background:#0b1628;color:var(--tx)}
   text-align:center;transition:all .2s;cursor:pointer;line-height:1.4}
 .lv-btn .lv-ico{font-size:16px;display:block;margin-bottom:3px}
 .lv-btn.sel{border-color:var(--cy);background:var(--cy-g);color:var(--cy)}
-.lockout-warn{display:flex;align-items:center;gap:8px;padding:10px 14px;
+.lockout{display:flex;align-items:center;gap:8px;padding:10px 14px;
   background:var(--rd-g);border:1px solid rgba(255,61,90,.3);border-radius:var(--r);
   font-size:12px;color:var(--rd);margin-bottom:12px}
+/* Admin hint link */
+.admin-hint{text-align:center;margin-top:10px;font-size:12px;color:var(--tx3)}
+.admin-hint button{background:none;color:var(--cy);font-size:12px;text-decoration:underline;padding:0}
 
-/* ════════════════════════════════════════
-   PAGE: PROFILE
-════════════════════════════════════════ */
+/* ════ PAGE: PROFILE ════ */
 #pg-profile{position:fixed;inset:0;padding-top:var(--st);
   display:flex;flex-direction:column;z-index:10;overflow:hidden}
 .prof-hdr{display:flex;align-items:center;justify-content:space-between;
@@ -154,22 +141,21 @@ select.fi option{background:#0b1628;color:var(--tx)}
 .prof-hero{background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(100,50,200,.08));
   border:1px solid var(--b2);border-radius:var(--r3);
   padding:28px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.prof-av{width:80px;height:80px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
+.prof-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:32px;font-weight:700;color:#fff;flex-shrink:0;
   border:3px solid rgba(0,212,255,.4);box-shadow:0 0 24px rgba(0,212,255,.2)}
 .prof-hero-info h2{font-size:22px;font-weight:700;margin-bottom:4px}
 .prof-hero-info p{font-size:13px;color:var(--tx2);margin-bottom:10px}
 .prof-badges{display:flex;gap:8px;flex-wrap:wrap}
-.pbadge{display:flex;align-items:center;gap:6px;padding:5px 12px;
-  border-radius:20px;font-size:12px;font-weight:600}
+.pbadge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
 .pbadge.cy{background:var(--cy-g);border:1px solid rgba(0,212,255,.25);color:var(--cy)}
 .pbadge.go{background:var(--go-g);border:1px solid rgba(240,180,41,.25);color:var(--go)}
 .pbadge.pu{background:var(--pu-g);border:1px solid rgba(167,139,250,.25);color:var(--pu)}
+.pbadge.or{background:var(--or-g);border:1px solid rgba(255,159,67,.25);color:var(--or)}
 .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .info-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px}
 .info-card-label{font-family:var(--M);font-size:9px;letter-spacing:.1em;color:var(--tx2);margin-bottom:8px}
-.info-card-val{font-size:15px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:8px}
+.info-card-val{font-size:15px;font-weight:600;color:var(--tx)}
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px;text-align:center}
 .stat-num{font-size:24px;font-weight:700;color:var(--cy);font-family:var(--M);line-height:1}
@@ -179,27 +165,90 @@ select.fi option{background:#0b1628;color:var(--tx)}
   display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .action-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
 .action-card p{font-size:12px;color:var(--tx2)}
-.btn-enter{display:flex;align-items:center;gap:8px;padding:12px 22px;
+.btn-enter{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;
   background:linear-gradient(135deg,var(--cy),var(--cy2));
   border-radius:var(--r);color:#060d1c;font-size:14px;font-weight:700;
-  box-shadow:0 4px 20px rgba(0,212,255,.3);white-space:nowrap;transition:all .15s;
-  width:100%;justify-content:center}
+  box-shadow:0 4px 20px rgba(0,212,255,.3);width:100%;transition:all .15s}
 .btn-enter:active{transform:scale(.96)}
 .edit-sec{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px}
-.edit-sec h3{font-size:14px;font-weight:700;margin-bottom:16px;
-  display:flex;align-items:center;gap:8px;color:var(--tx)}
+.edit-sec h3{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .edit-sec h3 svg{width:16px;height:16px;color:var(--cy)}
 .btn-save{padding:13px 18px;background:linear-gradient(135deg,var(--cy),var(--cy2));
   border-radius:var(--r);color:#060d1c;font-size:13px;font-weight:700}
-.btn-save:active{transform:scale(.96)}
 .btn-logout{display:flex;align-items:center;gap:6px;padding:8px 14px;
   background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
   border-radius:var(--r);color:var(--rd);font-size:12px;font-weight:600}
 .btn-logout svg{width:14px;height:14px}
 
-/* ════════════════════════════════════════
-   PAGE: CLASSROOM
-════════════════════════════════════════ */
+/* ════ PAGE: ADMIN ════ */
+#pg-admin{position:fixed;inset:0;padding-top:var(--st);
+  display:flex;flex-direction:column;z-index:10;overflow:hidden}
+.admin-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;padding-right:calc(20px + var(--sr));padding-left:calc(20px + var(--sl));
+  background:var(--bg2);border-bottom:1px solid var(--b1);flex-shrink:0}
+.admin-hdr-title{display:flex;align-items:center;gap:10px}
+.admin-badge{font-family:var(--M);font-size:10px;letter-spacing:.08em;padding:4px 10px;
+  background:var(--or-g);border:1px solid rgba(255,159,67,.3);border-radius:6px;color:var(--or)}
+.admin-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + var(--sb));
+  display:flex;flex-direction:column;gap:18px;max-width:780px;margin:0 auto;width:100%}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.admin-stat{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px;text-align:center}
+.admin-stat-num{font-size:28px;font-weight:700;font-family:var(--M);line-height:1}
+.admin-stat-lbl{font-size:11px;color:var(--tx2);margin-top:5px}
+.admin-sec{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:20px}
+.admin-sec-title{font-size:15px;font-weight:700;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.admin-sec-title span{display:flex;align-items:center;gap:8px}
+.admin-sec-title svg{width:17px;height:17px;color:var(--cy)}
+/* Add teacher form */
+.add-teacher-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:520px){.add-teacher-form{grid-template-columns:1fr}}
+.add-teacher-form .fi{margin-bottom:0}
+/* Teachers table */
+.teachers-table{width:100%;border-collapse:collapse}
+.teachers-table th{font-family:var(--M);font-size:10px;letter-spacing:.08em;color:var(--tx2);
+  padding:8px 10px;text-align:right;border-bottom:1px solid var(--b1);font-weight:500}
+.teachers-table td{padding:11px 10px;font-size:13px;color:var(--tx);border-bottom:1px solid rgba(255,255,255,.04)}
+.teachers-table tr:last-child td{border-bottom:none}
+.teachers-table tr:hover td{background:rgba(255,255,255,.02)}
+.t-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:10px}
+.t-status.active{background:var(--gn-g);color:var(--gn);border:1px solid rgba(0,230,118,.25)}
+.t-status.inactive{background:var(--rd-g);color:var(--rd);border:1px solid rgba(255,61,90,.25)}
+.t-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.btn-tbl-del{padding:5px 10px;background:var(--rd-g);border:1px solid rgba(255,61,90,.2);
+  border-radius:7px;color:var(--rd);font-size:11px;font-weight:600}
+.btn-tbl-del:active{background:var(--rd);color:#fff}
+.cred-card{background:var(--bg2);border:1px solid var(--gn-g);border-radius:var(--r2);padding:16px;
+  margin-top:14px;display:none}
+.cred-card.show{display:block}
+.cred-card h4{font-size:13px;font-weight:700;color:var(--gn);margin-bottom:12px;
+  display:flex;align-items:center;gap:7px}
+.cred-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cred-label{font-family:var(--M);font-size:10px;color:var(--tx2);width:80px;flex-shrink:0}
+.cred-val{font-family:var(--M);font-size:13px;color:var(--cy);background:var(--s1);
+  padding:7px 12px;border-radius:8px;flex:1;user-select:text;-webkit-user-select:text;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-cp-cred{padding:6px 10px;background:var(--s2);border:1px solid var(--b2);
+  border-radius:7px;color:var(--tx2);font-size:11px;flex-shrink:0}
+.btn-cp-cred:active{background:var(--cy-g);color:var(--cy)}
+.empty-state{text-align:center;padding:30px;color:var(--tx3);font-size:13px}
+.empty-state span{font-size:28px;display:block;margin-bottom:8px;opacity:.5}
+/* Students list */
+.students-list{display:flex;flex-direction:column;gap:6px}
+.student-row{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--bg2);border:1px solid var(--b1);border-radius:var(--r)}
+.s-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.s-info{flex:1;min-width:0}
+.s-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-detail{font-size:11px;color:var(--tx2);margin-top:2px}
+.tab-row{display:flex;gap:0;background:var(--bg2);border-radius:var(--r);padding:4px;margin-bottom:16px}
+.tab-btn{flex:1;padding:9px;border-radius:7px;font-size:12px;font-weight:600;
+  color:var(--tx2);background:none;transition:all .2s}
+.tab-btn.act{background:var(--s2);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* ════ PAGE: CLASSROOM ════ */
 #cls{position:fixed;inset:0;padding-top:var(--st);
   background:var(--bg);display:flex;flex-direction:column}
 .hdr{height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
@@ -213,7 +262,7 @@ select.fi option{background:#0b1628;color:var(--tx)}
 .hdr-name span{color:var(--cy)}
 .rid{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--b1);
   border-radius:8px;padding:5px 10px;max-width:180px;overflow:hidden}
-.rid-lbl{font-family:var(--M);font-size:9px;letter-spacing:.08em;color:var(--tx2);flex-shrink:0}
+.rid-lbl{font-family:var(--M);font-size:9px;color:var(--tx2);flex-shrink:0}
 .rid-val{font-family:var(--M);font-size:11px;color:var(--tx);font-weight:500;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .btn-cp{background:none;color:var(--tx2);padding:2px;display:flex;align-items:center}
@@ -227,9 +276,9 @@ select.fi option{background:#0b1628;color:var(--tx)}
   border:1px solid var(--b1);border-radius:6px;padding:3px 8px;white-space:nowrap}
 .btn-leave{display:flex;align-items:center;gap:5px;padding:6px 12px;
   background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
-  border-radius:8px;color:var(--rd);font-size:12px;font-weight:600;white-space:nowrap}
-.btn-leave svg{width:14px;height:14px}
+  border-radius:8px;color:var(--rd);font-size:12px;font-weight:600}
 .btn-leave:active{background:var(--rd);color:#fff}
+.btn-leave svg{width:14px;height:14px}
 .cls-body{flex:1;display:flex;overflow:hidden}
 .stage{flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden}
 .scr-area{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:var(--bg)}
@@ -239,20 +288,17 @@ select.fi option{background:#0b1628;color:var(--tx)}
 .scr-ph-ico{font-size:44px;opacity:.4;animation:flt 3s ease-in-out infinite}
 @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 .scr-ph p{font-size:14px;color:var(--tx2);text-align:center;padding:0 24px}
-.scr-ph small{font-size:12px;color:var(--tx3);text-align:center;padding:0 24px}
 .shr-bn{position:absolute;top:10px;left:50%;transform:translateX(-50%);
-  display:flex;align-items:center;gap:8px;
-  background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);
-  border-radius:40px;padding:6px 14px;font-size:12px;color:var(--gn);
-  z-index:20;backdrop-filter:blur(10px);white-space:nowrap}
+  display:flex;align-items:center;gap:8px;background:rgba(0,230,118,.1);
+  border:1px solid rgba(0,230,118,.3);border-radius:40px;padding:6px 14px;
+  font-size:12px;color:var(--gn);z-index:20;backdrop-filter:blur(10px);white-space:nowrap}
 .shr-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);animation:blk 1.4s infinite}
 @keyframes blk{0%,100%{opacity:1}50%{opacity:.3}}
-.btn-stp{background:var(--gn);color:#060d1c;border:none;border-radius:20px;
-  padding:3px 10px;font-size:11px;font-weight:700}
+.btn-stp{background:var(--gn);color:#060d1c;border:none;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
 .ctrl-bar{position:absolute;z-index:20;bottom:calc(110px + 12px);left:50%;transform:translateX(-50%);
-  display:flex;align-items:center;gap:5px;
-  background:rgba(6,13,28,.9);border:1px solid rgba(255,255,255,.1);
-  border-radius:50px;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  display:flex;align-items:center;gap:5px;background:rgba(6,13,28,.9);
+  border:1px solid rgba(255,255,255,.1);border-radius:50px;
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
   padding:8px 14px;box-shadow:0 8px 36px rgba(0,0,0,.65)}
 .cb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   border-radius:50%;background:rgba(255,255,255,.06);border:1px solid transparent;
@@ -274,9 +320,8 @@ select.fi option{background:#0b1628;color:var(--tx)}
   -webkit-overflow-scrolling:touch;scrollbar-width:none}
 .tile-strip::-webkit-scrollbar{display:none}
 .ptile{position:relative;flex-shrink:0;width:148px;height:94px;
-  border-radius:11px;overflow:hidden;background:var(--s1);border:2px solid transparent;transition:border-color .2s}
-.ptile.me{border-color:var(--pu)}
-.ptile.tea{border-color:var(--go)}
+  border-radius:11px;overflow:hidden;background:var(--s1);border:2px solid transparent}
+.ptile.me{border-color:var(--pu)}.ptile.tea{border-color:var(--go)}
 .tv{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .tov{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,13,28,.86) 0%,transparent 50%)}
 .tname{position:absolute;bottom:5px;right:6px;left:6px;font-size:10px;font-weight:600;color:#fff;
@@ -293,12 +338,10 @@ select.fi option{background:#0b1628;color:var(--tx)}
 .trole.S{background:rgba(0,212,255,.13);color:var(--cy);border:1px solid rgba(0,212,255,.18)}
 .tavtr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--s2)}
 .tavtr-l{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
-.sidebar{width:290px;flex-shrink:0;display:flex;flex-direction:column;
-  background:var(--bg2);border-right:1px solid var(--b1);overflow:hidden}
+.sidebar{width:290px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg2);border-right:1px solid var(--b1);overflow:hidden}
 .stabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0}
 .stab{flex:1;padding:12px 6px;background:none;border:none;font-size:12px;font-weight:600;
-  color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:5px}
+  color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
 .stab.act{color:var(--cy);border-bottom-color:var(--cy)}
 .stab svg{width:13px;height:13px;flex-shrink:0}
 .sbadge{background:var(--rd);color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700}
@@ -364,29 +407,20 @@ select.fi option{background:#0b1628;color:var(--tx)}
 #msp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
 #msc{flex:1;display:flex;flex-direction:column;overflow:hidden}
 @media(max-width:768px){
-  .sidebar{display:none}
-  .mnav{display:block}
-  .bdrawer{display:flex}
-  .ctrl-bar{bottom:calc(var(--sb) + 66px + 108px + 10px);padding:7px 10px;gap:4px}
-  .cb{width:50px;height:50px}
-  .cb svg{width:17px;height:17px}
-  .cb-lbl,.cb-end-lbl{font-size:8px}
-  .cb-end{width:50px;height:50px}
-  .cb-end svg{width:17px;height:17px}
+  .sidebar{display:none}.mnav{display:block}.bdrawer{display:flex}
+  .ctrl-bar{bottom:calc(var(--sb)+66px+108px+10px);padding:7px 10px;gap:4px}
+  .cb{width:50px;height:50px}.cb svg{width:17px;height:17px}
+  .cb-lbl,.cb-end-lbl{font-size:8px}.cb-end{width:50px;height:50px}.cb-end svg{width:17px;height:17px}
   .tile-strip{height:108px;padding-bottom:calc(8px + var(--sb) + 66px)}
   .ptile{width:134px;height:88px}
   #cb-scr{display:none!important}
-  .tbadge,.mbd{display:none}
-  .rid-val{max-width:90px}
+  .tbadge,.mbd{display:none}.rid-val{max-width:90px}
   .two-col{grid-template-columns:1fr}
   .prof-hero{flex-direction:column;text-align:center;align-items:center}
   .prof-badges{justify-content:center}
-  .action-card{flex-direction:column;align-items:flex-start}
+  .action-card{flex-direction:column}
 }
-@media(min-width:769px){
-  .mnav,.bdrawer,.bd-overlay{display:none!important}
-  .sidebar{display:flex}
-}
+@media(min-width:769px){.mnav,.bdrawer,.bd-overlay{display:none!important}.sidebar{display:flex}}
 .toast{position:fixed;left:50%;transform:translateX(-50%);
   background:var(--s2);border:1px solid var(--b2);border-radius:10px;
   padding:10px 18px;font-size:13px;color:var(--tx);z-index:300;
@@ -408,52 +442,70 @@ select.fi option{background:#0b1628;color:var(--tx)}
     <div class="brand-bar">
       <div class="brand-ico">🎓</div>
       <div class="brand-name">Edu<span>Room</span></div>
-      <div class="brand-tag">v6</div>
+      <div class="brand-tag">v7</div>
     </div>
     <div class="auth-tabs">
       <button class="atab act" id="at-login" onclick="authTab('login')">تسجيل الدخول</button>
-      <button class="atab" id="at-reg" onclick="authTab('reg')">إنشاء حساب</button>
+      <button class="atab" id="at-reg" onclick="authTab('reg')">إنشاء حساب طالب</button>
     </div>
 
-    <!-- LOGIN -->
+    <!-- ─── LOGIN ─── -->
     <div id="form-login">
       <div class="auth-head"><h2>مرحباً بعودتك 👋</h2><p>سجّل دخولك للوصول إلى فصلك</p></div>
-      <div id="lockout-warn" class="lockout-warn hidden">🔒 <span id="lockout-msg">حسابك مؤقتاً محظور بسبب محاولات خاطئة متعددة.</span></div>
+      <div id="lockout-warn" class="lockout hidden">🔒 <span id="lockout-msg">الحساب مؤقتاً محظور.</span></div>
       <label class="fl">البريد الإلكتروني</label>
-      <input id="l-email" class="fi" type="email" placeholder="example@email.com" autocomplete="email"/>
+      <input id="l-email" class="fi fi-mb" type="email" placeholder="example@email.com" autocomplete="email"/>
       <label class="fl">كلمة المرور</label>
-      <input id="l-pass" class="fi" type="password" placeholder="••••••••" autocomplete="current-password"/>
+      <div class="pw-wrap">
+        <input id="l-pass" class="fi" type="password" placeholder="••••••••" autocomplete="current-password"/>
+        <button class="pw-eye" type="button" onclick="togglePw('l-pass',this)" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
       <button class="btn-primary" id="btn-login" onclick="doLogin()">تسجيل الدخول ←</button>
       <div id="l-err" class="msg-err"></div>
+      <div class="admin-hint">
+        <button onclick="authTab('admin')">🔑 دخول الإدارة</button>
+      </div>
     </div>
 
-    <!-- REGISTER -->
+    <!-- ─── ADMIN LOGIN ─── -->
+    <div id="form-admin" class="hidden">
+      <div class="auth-head"><h2>لوحة الإدارة 🛡️</h2><p>خاص بمدير المنصة فقط</p></div>
+      <label class="fl">بريد المدير</label>
+      <input id="a-email" class="fi fi-mb" type="email" placeholder="admin@email.com" autocomplete="off"/>
+      <label class="fl">كلمة مرور المدير</label>
+      <div class="pw-wrap">
+        <input id="a-pass" class="fi" type="password" placeholder="••••••••" autocomplete="off"/>
+        <button class="pw-eye" type="button" onclick="togglePw('a-pass',this)" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button class="btn-primary" onclick="doAdminLogin()">دخول لوحة الإدارة ←</button>
+      <div id="a-err" class="msg-err"></div>
+      <div class="admin-hint"><button onclick="authTab('login')">← العودة لتسجيل الدخول</button></div>
+    </div>
+
+    <!-- ─── REGISTER (STUDENT ONLY) ─── -->
     <div id="form-reg" class="hidden">
-      <div class="auth-head"><h2>إنشاء حساب جديد ✨</h2><p>أنشئ حسابك وانضم إلى فصلك</p></div>
-      <label class="fl">أنا…</label>
-      <div class="role-pick">
-        <button class="rp-btn sel" id="rp-S" onclick="pickRole('student')"><span class="rp-ico">🎒</span><span>طالب</span></button>
-        <button class="rp-btn" id="rp-T" onclick="pickRole('teacher')"><span class="rp-ico">👨‍🏫</span><span>معلم</span></button>
-      </div>
+      <div class="auth-head"><h2>إنشاء حساب طالب 🎒</h2><p>سجّل كطالب للانضمام إلى فصلك</p></div>
       <div class="two-col">
-        <div><label class="fl">الاسم الأول</label><input id="r-fn" class="fi" placeholder="محمد" maxlength="20" autocomplete="off"/></div>
-        <div><label class="fl">اسم العائلة</label><input id="r-ln" class="fi" placeholder="الأمين" maxlength="20" autocomplete="off"/></div>
+        <div><label class="fl">الاسم الأول</label><input id="r-fn" class="fi fi-mb" placeholder="محمد" maxlength="20" autocomplete="off"/></div>
+        <div><label class="fl">اسم العائلة</label><input id="r-ln" class="fi fi-mb" placeholder="الأمين" maxlength="20" autocomplete="off"/></div>
       </div>
-      <div id="student-fields">
-        <label class="fl">تاريخ الازدياد</label>
-        <input id="r-dob" class="fi" type="date"/>
-        <label class="fl">المستوى الدراسي</label>
-        <div class="level-grid" id="reg-levels"></div>
-      </div>
-      <div id="teacher-field" class="hidden">
-        <label class="fl">كود المعلم السري</label>
-        <input id="r-tcode" class="fi" type="password" placeholder="أدخل الكود السري…"/>
-        <div style="font-size:11px;color:var(--tx3);margin-top:-8px;margin-bottom:10px">اطلبه من إدارة المنصة</div>
-      </div>
+      <label class="fl">تاريخ الازدياد</label>
+      <input id="r-dob" class="fi fi-mb" type="date"/>
+      <label class="fl">المستوى الدراسي</label>
+      <div class="level-grid" id="reg-levels"></div>
       <label class="fl">البريد الإلكتروني</label>
-      <input id="r-email" class="fi" type="email" placeholder="example@email.com" autocomplete="off"/>
-      <label class="fl">كلمة المرور <span style="color:var(--tx2);font-size:10px">(8 أحرف على الأقل)</span></label>
-      <input id="r-pass" class="fi" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      <input id="r-email" class="fi fi-mb" type="email" placeholder="example@email.com" autocomplete="off"/>
+      <label class="fl">كلمة المرور</label>
+      <div class="pw-wrap">
+        <input id="r-pass" class="fi" type="password" placeholder="8 أحرف على الأقل" autocomplete="new-password"/>
+        <button class="pw-eye" type="button" onclick="togglePw('r-pass',this)" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
       <button class="btn-primary" id="btn-reg" onclick="doRegister()">إنشاء الحساب ←</button>
       <div id="r-err" class="msg-err"></div>
     </div>
@@ -467,23 +519,21 @@ select.fi option{background:#0b1628;color:var(--tx)}
       <div class="brand-ico" style="width:32px;height:32px;font-size:15px;border-radius:8px">🎓</div>
       <div class="brand-name" style="font-size:15px">Edu<span>Room</span></div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="btn-logout" onclick="logout()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>خروج
-      </button>
-    </div>
+    <button class="btn-logout" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>خروج
+    </button>
   </header>
   <div class="prof-body">
     <div class="prof-hero">
       <div class="prof-av" id="pav"></div>
       <div class="prof-hero-info">
         <h2 id="p-fullname">—</h2>
-        <p id="p-email">—</p>
+        <p id="p-email-d">—</p>
         <div class="prof-badges">
-          <div class="pbadge cy" id="p-lvlbadge" style="display:none">—</div>
+          <div class="pbadge cy" id="p-lvlbadge"></div>
           <div class="pbadge go" id="p-rolebadge">—</div>
           <div class="pbadge pu" id="p-joinbadge">—</div>
         </div>
@@ -491,11 +541,11 @@ select.fi option{background:#0b1628;color:var(--tx)}
     </div>
     <div class="info-grid">
       <div class="info-card"><div class="info-card-label">الاسم الكامل</div><div class="info-card-val">👤 <span id="ic-name">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">تاريخ الازدياد</div><div class="info-card-val">🎂 <span id="ic-dob">—</span></div></div>
+      <div class="info-card" id="ic-dob-card"><div class="info-card-label">تاريخ الازدياد</div><div class="info-card-val">🎂 <span id="ic-dob">—</span></div></div>
       <div class="info-card"><div class="info-card-label">تاريخ التسجيل</div><div class="info-card-val">📅 <span id="ic-joined">—</span></div></div>
-      <div class="info-card" id="ic-lvl-card" style="display:none"><div class="info-card-label">المستوى الدراسي</div><div class="info-card-val">📚 <span id="ic-level">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">الدور</div><div class="info-card-val"><span id="ic-role-ico">🎒</span>&nbsp;<span id="ic-role">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">العمر</div><div class="info-card-val">⏳ <span id="ic-age">—</span></div></div>
+      <div class="info-card" id="ic-lvl-card"><div class="info-card-label">المستوى الدراسي</div><div class="info-card-val">📚 <span id="ic-level">—</span></div></div>
+      <div class="info-card"><div class="info-card-label">الدور</div><div class="info-card-val"><span id="ic-role-ico">🎒</span> <span id="ic-role">—</span></div></div>
+      <div class="info-card" id="ic-age-card"><div class="info-card-label">العمر</div><div class="info-card-val">⏳ <span id="ic-age">—</span></div></div>
     </div>
     <div class="stats-row">
       <div class="stat-card"><div class="stat-num" id="st-sessions">0</div><div class="stat-lbl">حصص حضرتها</div></div>
@@ -514,7 +564,7 @@ select.fi option{background:#0b1628;color:var(--tx)}
         </button>
       </div>
     </div>
-    <div class="edit-sec" id="edit-sec" style="display:none">
+    <div class="edit-sec" id="edit-sec">
       <h3>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -527,6 +577,117 @@ select.fi option{background:#0b1628;color:var(--tx)}
         <span id="save-msg" class="msg-ok" style="margin-top:0;line-height:1"></span>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════ ADMIN PANEL ══════════ -->
+<div id="pg-admin" class="hidden">
+  <header class="admin-hdr">
+    <div class="admin-hdr-title">
+      <div class="brand-ico" style="width:32px;height:32px;font-size:15px;border-radius:8px;background:linear-gradient(135deg,var(--or),#e08000)">🛡️</div>
+      <div>
+        <div class="brand-name" style="font-size:15px">لوحة الإدارة</div>
+        <div class="admin-badge">ADMIN PANEL</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>خروج
+    </button>
+  </header>
+  <div class="admin-body">
+
+    <!-- Stats -->
+    <div class="admin-stats">
+      <div class="admin-stat"><div class="admin-stat-num" id="adm-teachers" style="color:var(--go)">0</div><div class="admin-stat-lbl">👨‍🏫 أساتذة</div></div>
+      <div class="admin-stat"><div class="admin-stat-num" id="adm-students" style="color:var(--cy)">0</div><div class="admin-stat-lbl">🎒 طلاب</div></div>
+      <div class="admin-stat"><div class="admin-stat-num" id="adm-total" style="color:var(--pu)">0</div><div class="admin-stat-lbl">👥 المجموع</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-row">
+      <button class="tab-btn act" id="adm-tab-t" onclick="admTab('teachers')">👨‍🏫 الأساتذة</button>
+      <button class="tab-btn" id="adm-tab-s" onclick="admTab('students')">🎒 الطلاب</button>
+    </div>
+
+    <!-- Teachers section -->
+    <div id="adm-teachers-sec">
+      <div class="admin-sec">
+        <div class="admin-sec-title">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>إضافة أستاذ جديد</span>
+        </div>
+        <div class="add-teacher-form">
+          <div>
+            <label class="fl">الاسم الأول</label>
+            <input id="t-fn" class="fi" placeholder="اسم الأستاذ" maxlength="20" autocomplete="off"/>
+          </div>
+          <div>
+            <label class="fl">اسم العائلة</label>
+            <input id="t-ln" class="fi" placeholder="اسم العائلة" maxlength="20" autocomplete="off"/>
+          </div>
+          <div>
+            <label class="fl">البريد الإلكتروني</label>
+            <input id="t-email" class="fi" type="email" placeholder="teacher@email.com" autocomplete="off"/>
+          </div>
+          <div>
+            <label class="fl">كلمة المرور</label>
+            <div class="pw-wrap" style="margin-bottom:0">
+              <input id="t-pass" class="fi" type="password" placeholder="كلمة مرور للأستاذ" autocomplete="new-password"/>
+              <button class="pw-eye" type="button" onclick="togglePw('t-pass',this)" tabindex="-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="addTeacher()" style="margin-top:4px">إضافة الأستاذ ←</button>
+        <div id="t-err" class="msg-err"></div>
+
+        <!-- Generated credentials card -->
+        <div class="cred-card" id="cred-card">
+          <h4>✅ تم إنشاء الحساب — أعطِ هذه البيانات للأستاذ</h4>
+          <div class="cred-row">
+            <span class="cred-label">البريد</span>
+            <span class="cred-val" id="cred-email">—</span>
+            <button class="btn-cp-cred" onclick="cpCred('cred-email')">نسخ</button>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">كلمة المرور</span>
+            <span class="cred-val" id="cred-pass">—</span>
+            <button class="btn-cp-cred" onclick="cpCred('cred-pass')">نسخ</button>
+          </div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:8px">⚠️ احفظ هذه البيانات الآن — لن تظهر مرة أخرى</div>
+        </div>
+      </div>
+
+      <!-- Teachers list -->
+      <div class="admin-sec" style="margin-top:0">
+        <div class="admin-sec-title">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>قائمة الأساتذة</span>
+        </div>
+        <div id="teachers-list-wrap"></div>
+      </div>
+    </div>
+
+    <!-- Students section -->
+    <div id="adm-students-sec" class="hidden">
+      <div class="admin-sec">
+        <div class="admin-sec-title">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>قائمة الطلاب
+          </span>
+          <span id="adm-student-count" style="font-family:var(--M);font-size:12px;color:var(--tx2)">0 طالب</span>
+        </div>
+        <div class="students-list" id="students-list-wrap"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -561,11 +722,10 @@ select.fi option{background:#0b1628;color:var(--tx)}
     <div class="stage">
       <div class="scr-area">
         <video id="scr-vid" class="hidden" autoplay playsinline></video>
-        <div id="scr-ph" class="scr-ph"><div class="scr-ph-ico">🖥️</div><p>لا توجد مشاركة شاشة</p><small>المعلم يمكنه مشاركة شاشته</small></div>
+        <div id="scr-ph" class="scr-ph"><div class="scr-ph-ico">🖥️</div><p>لا توجد مشاركة شاشة</p></div>
       </div>
       <div id="shr-bn" class="shr-bn hidden">
-        <div class="shr-dot"></div>
-        <span>أنت تشارك شاشتك</span>
+        <div class="shr-dot"></div><span>أنت تشارك شاشتك</span>
         <button class="btn-stp" onclick="stopScr()">إيقاف</button>
       </div>
       <div class="ctrl-bar">
@@ -585,8 +745,7 @@ select.fi option{background:#0b1628;color:var(--tx)}
         </button>
         <button class="cb" id="cb-cam" onclick="togCam()">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="23 7 16 12 23 17 23 7"/>
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
           </svg>
           <svg class="ico-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/>
@@ -647,43 +806,40 @@ select.fi option{background:#0b1628;color:var(--tx)}
       </div>
     </aside>
   </div>
-  <nav class="mnav">
-    <div class="mnav-in">
-      <button class="mnav-btn" id="mn-mic" onclick="togMic()">
-        <svg id="mn-mic-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-          <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-        </svg><span>ميك</span>
-      </button>
-      <button class="mnav-btn" id="mn-cam" onclick="togCam()">
-        <svg id="mn-cam-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="23 7 16 12 23 17 23 7"/>
-          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-        </svg><span>كام</span>
-      </button>
-      <button class="mnav-btn" id="mn-flip" onclick="flipCam()">
+  <nav class="mnav"><div class="mnav-in">
+    <button class="mnav-btn" id="mn-mic" onclick="togMic()">
+      <svg id="mn-mic-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+      </svg><span>ميك</span>
+    </button>
+    <button class="mnav-btn" id="mn-cam" onclick="togCam()">
+      <svg id="mn-cam-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+      </svg><span>كام</span>
+    </button>
+    <button class="mnav-btn" id="mn-flip" onclick="flipCam()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+      </svg><span>قلب</span>
+    </button>
+    <button class="mnav-btn" id="mn-room" onclick="togDrawer()">
+      <div style="position:relative;display:inline-flex">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
-          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
-        </svg><span>قلب</span>
-      </button>
-      <button class="mnav-btn" id="mn-room" onclick="togDrawer()">
-        <div style="position:relative;display:inline-flex">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <span class="mbadge hidden" id="m-ubadge">0</span>
-        </div><span>الغرفة</span>
-      </button>
-      <button class="mnav-btn danger" onclick="leaveRoom()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-        </svg><span>خروج</span>
-      </button>
-    </div>
-  </nav>
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="mbadge hidden" id="m-ubadge">0</span>
+      </div><span>الغرفة</span>
+    </button>
+    <button class="mnav-btn danger" onclick="leaveRoom()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg><span>خروج</span>
+    </button>
+  </div></nav>
   <div class="bd-overlay" id="bd-ov" onclick="closeDrawer()"></div>
   <div class="bdrawer" id="bdrawer">
     <div class="bd-handle"></div>
@@ -715,41 +871,25 @@ select.fi option{background:#0b1628;color:var(--tx)}
     </div>
   </div>
 </div>
+
 <div id="toast" class="toast hidden"></div>
 
 <script>
 'use strict';
 /* ═══════════════════════════════════════════════════════
-   EduRoom v6 — Security-Hardened
-   
-   SECURITY MEASURES:
-   1. Passwords: SHA-256 hashed via SubtleCrypto before storing
-   2. Teacher code: stored as SHA-256 hash only (never plain)
-   3. Input validation: strict regex + length limits
-   4. XSS prevention: all dynamic text via textContent/escHtml
-   5. Rate limiting: login locked after 5 failures (30min)
-   6. Data integrity: localStorage checksummed
-   7. PeerJS messages: type whitelist + payload size limit
-   8. Peer ID: sanitized (no injection)
-   9. Room ID: alphanumeric + hyphen only
-   10. Chat: 500 char limit, trimmed
+   EduRoom v7
+   - Admin account: fixed credentials (hashed)
+   - Teachers: created ONLY by admin, no self-registration
+   - Students: self-register
+   - Password show/hide toggle on all forms
 ═══════════════════════════════════════════════════════ */
 
-/* ── Constants ────────────────────────────────────────── */
-// Teacher code stored as SHA-256 hash — change by running:
-// await sha256('your_new_code') and paste the result
-const TEACHER_CODE_HASH = '4b89c14d2bf0c66a8f1b2b8a0f2e12b3d4f0e5c6a7b8d9e0f1a2b3c4d5e6f7a8'; // hash of 'EDU2024'
-const MAX_NAME_LEN = 28;
-const MAX_ROOM_LEN = 50;
-const MAX_MSG_LEN = 500;
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_MS = 30 * 60 * 1000; // 30 minutes
-const MSG_TYPES = new Set(['hello','state','chat','mu','co','scr:on','scr:off']);
-const DB_KEY = 'eduroom_db_v6';
-const ME_KEY = 'eduroom_me_v6';
-const DB_HASH_KEY = 'eduroom_db_hash_v6';
+/* ── Admin credentials (SHA-256 hashed) ── */
+// Email: aitomaraziz@gmail.com  Password: AZIZ@2026
+const ADMIN_EMAIL = 'aitomùaraziz@gmail.com';
+const ADMIN_PASS_HASH = ''; // computed on first load
 
-const LEVELS = [
+const LEVELS=[
   {id:'ps1',ico:'🌱',lbl:'السنة 1 ابتدائي'},
   {id:'ps2',ico:'🌿',lbl:'السنة 2 ابتدائي'},
   {id:'ps3',ico:'🍀',lbl:'السنة 3 ابتدائي'},
@@ -763,282 +903,343 @@ const LEVELS = [
   {id:'ly2',ico:'🏆',lbl:'السنة 2 ثانوي'},
   {id:'bac',ico:'🎓',lbl:'الباكالوريا'},
 ];
-
 const COLORS=['#00d4ff','#f0b429','#a78bfa','#00e676','#ff6b9d','#ff9f43','#54a0ff','#e17055'];
+const MAX_LOGIN_ATTEMPTS=5,LOCKOUT_MS=30*60*1000;
+const DB_KEY='eduroom_db_v7',ME_KEY='eduroom_me_v7';
 
-/* ── Crypto helpers ───────────────────────────────────── */
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+/* ── Crypto ── */
+async function sha256(s){
+  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
 }
-function randomId(len=8){
-  const arr=new Uint8Array(len);
-  crypto.getRandomValues(arr);
-  return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,len);
+function randId(n=8){
+  const a=new Uint8Array(n);crypto.getRandomValues(a);
+  return Array.from(a).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,n);
 }
 
-/* ── Input sanitizers ─────────────────────────────────── */
-function sanitizeName(s){return (s||'').trim().replace(/[<>"'&]/g,'').slice(0,MAX_NAME_LEN)}
-function sanitizeRoom(s){return (s||'').trim().replace(/[^a-zA-Z0-9\u0600-\u06FF\-_]/g,'').slice(0,MAX_ROOM_LEN)}
-function sanitizeMsg(s){return (s||'').trim().slice(0,MAX_MSG_LEN)}
-function escHtml(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
-function setTxt(id,v){const el=$(id);if(el)el.textContent=String(v||'')}
-
-/* ── Storage with integrity ───────────────────────────── */
-async function computeHash(data){return sha256(JSON.stringify(data))}
-function getDB(){
-  try{
-    const raw=localStorage.getItem(DB_KEY);
-    if(!raw)return{users:{},loginFails:{}};
-    return JSON.parse(raw);
-  }catch(e){return{users:{},loginFails:{}}}
-}
-async function saveDB(db){
-  const str=JSON.stringify(db);
-  localStorage.setItem(DB_KEY,str);
-  localStorage.setItem(DB_HASH_KEY,await sha256(str));
-}
-async function verifyDB(){
-  const raw=localStorage.getItem(DB_KEY);
-  const hash=localStorage.getItem(DB_HASH_KEY);
-  if(!raw||!hash)return true;
-  return (await sha256(raw))===hash;
-}
+/* ── Storage ── */
+function getDB(){try{return JSON.parse(localStorage.getItem(DB_KEY))||{users:{},loginFails:{}}}catch(e){return{users:{},loginFails:{}}}}
+async function saveDB(db){localStorage.setItem(DB_KEY,JSON.stringify(db))}
 function getMe(){try{return JSON.parse(localStorage.getItem(ME_KEY))||null}catch(e){return null}}
 function setMe(u){localStorage.setItem(ME_KEY,JSON.stringify(u))}
 function clearMe(){localStorage.removeItem(ME_KEY)}
 
-/* ── Utilities ────────────────────────────────────────── */
+/* ── Utils ── */
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const gc=n=>{let h=0;for(let c of(n||'?'))h=(h*31+c.charCodeAt(0))%COLORS.length;return COLORS[h]};
-function showPage(pg){
-  ['pg-auth','pg-profile','cls'].forEach(id=>$(id)?.classList.add('hidden'));
-  (pg==='cls'?$('cls'):$('pg-'+pg))?.classList.remove('hidden');
-}
-function setErr(id,msg){const el=$(id);if(!el)return;el.textContent=msg;setTimeout(()=>{if(el)el.textContent=''},5000)}
-function formatDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('ar-MA',{year:'numeric',month:'long',day:'numeric'})}catch(e){return d}}
-function calcAge(dob){const b=new Date(dob),n=new Date();let a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a}
+const esc=s=>{const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML};
+const setTxt=(id,v)=>{const e=$(id);if(e)e.textContent=String(v||'')};
+const sanitizeName=s=>(s||'').trim().replace(/[<>"'&]/g,'').slice(0,28);
+const sanitizeRoom=s=>(s||'').trim().replace(/[^a-zA-Z0-9\u0600-\u06FF\-_]/g,'').slice(0,50);
+const sanitizeMsg=s=>(s||'').trim().slice(0,500);
+const fmtDate=d=>{if(!d)return'—';try{return new Date(d).toLocaleDateString('ar-MA',{year:'numeric',month:'long',day:'numeric'})}catch(e){return d}};
+const calcAge=dob=>{const b=new Date(dob),n=new Date();let a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a};
 
-/* ── Level grids ──────────────────────────────────────── */
-let regSelLevel='', editSelLevel='';
+function showPage(pg){
+  ['pg-auth','pg-profile','pg-admin','cls'].forEach(id=>$(id)?.classList.add('hidden'));
+  if(pg==='cls')$('cls')?.classList.remove('hidden');
+  else $('pg-'+pg)?.classList.remove('hidden');
+}
+function setErr(id,m){const e=$(id);if(!e)return;e.textContent=m;setTimeout(()=>{if(e)e.textContent=''},5000)}
+
+/* ── Password visibility toggle ── */
+function togglePw(inputId,btn){
+  const inp=$(inputId);if(!inp)return;
+  const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  btn.innerHTML=show
+    ?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+    :`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+}
+
+/* ── Auth tabs ── */
+function authTab(t){
+  $('at-login').classList.toggle('act',t==='login');
+  $('at-reg').classList.toggle('act',t==='reg');
+  ['form-login','form-admin','form-reg'].forEach(id=>$(id).classList.add('hidden'));
+  if(t==='login')$('form-login').classList.remove('hidden');
+  else if(t==='admin')$('form-admin').classList.remove('hidden');
+  else if(t==='reg')$('form-reg').classList.remove('hidden');
+}
+
+/* ── Level grids ── */
+let regSelLvl='',editSelLvl='';
 function buildLevels(cid,onSel){
-  const el=$(cid);if(!el)return;
-  el.innerHTML='';
+  const el=$(cid);if(!el)return;el.innerHTML='';
   LEVELS.forEach(lv=>{
     const btn=document.createElement('button');
-    btn.className='lv-btn';btn.id='lv-'+cid+'-'+lv.id;
-    btn.type='button';
+    btn.className='lv-btn';btn.type='button';btn.id='lv-'+cid+'-'+lv.id;
     const ico=document.createElement('span');ico.className='lv-ico';ico.textContent=lv.ico;
-    btn.appendChild(ico);btn.appendChild(document.createTextNode(lv.lbl.replace('السنة ','').replace(' ابتدائي','↑').replace(' إعدادي','↑↑').replace(' ثانوي','↑↑↑').replace('الباكالوريا','باك')));
+    btn.appendChild(ico);
+    btn.appendChild(document.createTextNode(lv.lbl.replace('السنة ','').replace(' ابتدائي','↑').replace(' إعدادي','↑↑').replace(' ثانوي','↑↑↑').replace('الباكالوريا','باك')));
     btn.addEventListener('click',()=>onSel(lv.id));
     el.appendChild(btn);
   });
 }
-function selRegLevel(id){
-  regSelLevel=id;
-  LEVELS.forEach(lv=>$('lv-reg-levels-'+lv.id)?.classList.toggle('sel',lv.id===id));
-}
-function selEditLevel(id){
-  editSelLevel=id;
-  LEVELS.forEach(lv=>$('lv-edit-levels-'+lv.id)?.classList.toggle('sel',lv.id===id));
-}
+function selRegLvl(id){regSelLvl=id;LEVELS.forEach(l=>$('lv-reg-levels-'+l.id)?.classList.toggle('sel',l.id===id))}
+function selEditLvl(id){editSelLvl=id;LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===id))}
 
-/* ══════════════════════════════════════
-   AUTH
-══════════════════════════════════════ */
-let regRole='student';
-
-function authTab(t){
-  $('at-login').classList.toggle('act',t==='login');
-  $('at-reg').classList.toggle('act',t==='reg');
-  $('form-login').classList.toggle('hidden',t!=='login');
-  $('form-reg').classList.toggle('hidden',t!=='reg');
-}
-function pickRole(r){
-  regRole=r;
-  $('rp-S').classList.toggle('sel',r==='student');
-  $('rp-T').classList.toggle('sel',r==='teacher');
-  $('student-fields').classList.toggle('hidden',r!=='student');
-  $('teacher-field').classList.toggle('hidden',r!=='teacher');
-}
-
+/* ═══════════════════════
+   STUDENT REGISTER
+═══════════════════════ */
 async function doRegister(){
   const fn=sanitizeName($('r-fn').value);
   const ln=sanitizeName($('r-ln').value);
   const email=($('r-email').value||'').trim().toLowerCase();
   const pass=$('r-pass').value||'';
-  const dob=$('r-dob')?.value||'';
-  const tcode=$('r-tcode')?.value||'';
-
+  const dob=$('r-dob').value||'';
   if(!fn||!ln)return setErr('r-err','أدخل الاسم الأول واسم العائلة');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr('r-err','أدخل بريداً إلكترونياً صحيحاً');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr('r-err','بريد إلكتروني غير صحيح');
   if(pass.length<8)return setErr('r-err','كلمة المرور يجب أن تكون 8 أحرف على الأقل');
-
-  if(regRole==='student'){
-    if(!dob)return setErr('r-err','أدخل تاريخ ازديادك');
-    // Validate dob: must be past date, reasonable age
-    const dobDate=new Date(dob);
-    const now=new Date();
-    const age=(now-dobDate)/(365.25*24*3600*1000);
-    if(dobDate>=now||age<4||age>100)return setErr('r-err','تاريخ ازدياد غير صحيح');
-    if(!regSelLevel)return setErr('r-err','اختر مستواك الدراسي');
-  }
-
-  if(regRole==='teacher'){
-    if(!tcode)return setErr('r-err','أدخل كود المعلم');
-    // Verify teacher code against stored hash
-    const inputHash=await sha256(tcode.trim());
-    if(inputHash!==TEACHER_CODE_HASH)return setErr('r-err','كود المعلم غير صحيح');
-  }
-
-  const ok=await verifyDB();
-  if(!ok){setErr('r-err','خطأ في قاعدة البيانات — حاول مجدداً');return}
-
+  if(!dob)return setErr('r-err','أدخل تاريخ ازديادك');
+  const dobDate=new Date(dob);const now=new Date();
+  const age=(now-dobDate)/(365.25*24*3600*1000);
+  if(dobDate>=now||age<4||age>100)return setErr('r-err','تاريخ ازدياد غير صحيح');
+  if(!regSelLvl)return setErr('r-err','اختر مستواك الدراسي');
   const db=getDB();
   if(Object.values(db.users).some(u=>u.email===email))
-    return setErr('r-err','هذا البريد الإلكتروني مسجّل مسبقاً');
-
-  // Hash password before storing
+    return setErr('r-err','هذا البريد مسجّل مسبقاً');
   const passHash=await sha256(pass);
-  const uid='u_'+randomId(10);
-  const user={
-    uid,fname:fn,lname:ln,email,passHash,
-    role:regRole,
-    dob:regRole==='student'?dob:'',
-    level:regRole==='student'?regSelLevel:'',
-    joined:new Date().toISOString().split('T')[0],
-    sessions:0,msgs:0
-  };
+  const uid='u_'+randId(10);
+  const user={uid,fname:fn,lname:ln,email,passHash,role:'student',dob,level:regSelLvl,
+    joined:new Date().toISOString().split('T')[0],sessions:0,msgs:0};
   db.users[uid]=user;
   await saveDB(db);
-  // Store minimal session (no passHash)
-  const session={uid,fname:fn,lname:ln,email,role:regRole,dob:user.dob,level:user.level,joined:user.joined,sessions:0,msgs:0};
-  setMe(session);
-  toast('تم إنشاء حسابك بنجاح 🎉','ok');
+  setMe({uid,fname:fn,lname:ln,email,role:'student',dob,level:regSelLvl,joined:user.joined,sessions:0,msgs:0});
+  toast('تم إنشاء حسابك 🎉','ok');
   setTimeout(()=>goProfile(),500);
 }
+
+/* ═══════════════════════
+   LOGIN
+═══════════════════════ */
+let adminPassHash='';
 
 async function doLogin(){
   const email=($('l-email').value||'').trim().toLowerCase();
   const pass=$('l-pass').value||'';
-  if(!email||!pass)return setErr('l-err','أدخل بياناتك كاملة');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr('l-err','بريد إلكتروني غير صحيح');
-
-  const ok=await verifyDB();
-  if(!ok){setErr('l-err','خطأ في البيانات — يرجى التواصل مع الإدارة');return}
-
-  const db=getDB();
-  const now=Date.now();
-
-  // Check lockout
+  if(!email||!pass)return setErr('l-err','أدخل بياناتك');
+  const db=getDB();const now=Date.now();
   const failInfo=db.loginFails?.[email]||{count:0,until:0};
   if(failInfo.count>=MAX_LOGIN_ATTEMPTS&&failInfo.until>now){
     const mins=Math.ceil((failInfo.until-now)/60000);
     $('lockout-warn').classList.remove('hidden');
-    setTxt('lockout-msg',`حسابك محظور مؤقتاً. انتظر ${mins} دقيقة.`);
-    $('btn-login').disabled=true;
-    return;
+    setTxt('lockout-msg','الحساب محظور — انتظر '+mins+' دقيقة');
+    $('btn-login').disabled=true;return;
   }
-
   const found=Object.values(db.users).find(u=>u.email===email);
-  if(!found){
+  if(!found){recordFail(db,email,now);await saveDB(db);return setErr('l-err','البريد أو كلمة المرور غير صحيحة')}
+  const ph=await sha256(pass);
+  if(found.passHash!==ph){
     recordFail(db,email,now);await saveDB(db);
-    return setErr('l-err','البريد أو كلمة المرور غير صحيحة');
+    const rem=MAX_LOGIN_ATTEMPTS-(db.loginFails[email]?.count||0);
+    return setErr('l-err',rem>0?'كلمة مرور خاطئة — متبقي '+rem+' محاولة':'تم قفل الحساب مؤقتاً');
   }
-
-  const passHash=await sha256(pass);
-  if(found.passHash!==passHash){
-    recordFail(db,email,now);await saveDB(db);
-    const remaining=MAX_LOGIN_ATTEMPTS-(db.loginFails[email]?.count||0);
-    if(remaining>0)setErr('l-err',`كلمة مرور خاطئة. متبقي ${remaining} محاولة.`);
-    else{
-      $('lockout-warn').classList.remove('hidden');
-      setTxt('lockout-msg','تم قفل الحساب مؤقتاً (30 دقيقة)');
-      $('btn-login').disabled=true;
-    }
-    return;
-  }
-
-  // Success — clear failures
   if(db.loginFails)delete db.loginFails[email];
   await saveDB(db);
-  $('lockout-warn').classList.add('hidden');
-  $('btn-login').disabled=false;
-
-  const session={uid:found.uid,fname:found.fname,lname:found.lname,email:found.email,
+  $('lockout-warn').classList.add('hidden');$('btn-login').disabled=false;
+  setMe({uid:found.uid,fname:found.fname,lname:found.lname,email:found.email,
     role:found.role,dob:found.dob||'',level:found.level||'',
-    joined:found.joined,sessions:found.sessions||0,msgs:found.msgs||0};
-  setMe(session);
-  toast(`أهلاً بك ${found.fname} 👋`,'ok');
+    joined:found.joined,sessions:found.sessions||0,msgs:found.msgs||0});
+  toast('أهلاً بك '+found.fname+' 👋','ok');
   setTimeout(()=>goProfile(),500);
+}
+
+/* ═══════════════════════
+   ADMIN LOGIN
+═══════════════════════ */
+async function doAdminLogin(){
+  const email=($('a-email').value||'').trim().toLowerCase();
+  const pass=$('a-pass').value||'';
+  if(!email||!pass)return setErr('a-err','أدخل بيانات الإدارة');
+  if(email!==ADMIN_EMAIL.toLowerCase())return setErr('a-err','بريد المدير غير صحيح');
+  if(!adminPassHash)adminPassHash=await sha256('AZIZ@2026');
+  const ph=await sha256(pass);
+  if(ph!==adminPassHash)return setErr('a-err','كلمة مرور المدير غير صحيحة');
+  setMe({uid:'admin',fname:'المدير',lname:'',email:ADMIN_EMAIL,role:'admin',joined:new Date().toISOString().split('T')[0]});
+  toast('أهلاً بك في لوحة الإدارة 🛡️','ok');
+  setTimeout(()=>goAdmin(),400);
 }
 
 function recordFail(db,email,now){
   if(!db.loginFails)db.loginFails={};
   const f=db.loginFails[email]||{count:0,until:0};
-  f.count++;
-  if(f.count>=MAX_LOGIN_ATTEMPTS)f.until=now+LOCKOUT_MS;
+  f.count++;if(f.count>=MAX_LOGIN_ATTEMPTS)f.until=now+LOCKOUT_MS;
   db.loginFails[email]=f;
 }
 
-function logout(){
-  clearMe();showPage('auth');
-  $('l-email').value='';$('l-pass').value='';
-  $('lockout-warn').classList.add('hidden');
-  $('btn-login').disabled=false;
-  toast('تم تسجيل الخروج','');
+/* ═══════════════════════
+   ADMIN PANEL
+═══════════════════════ */
+let admCurrentTab='teachers';
+
+function goAdmin(){
+  showPage('admin');
+  renderAdminStats();
+  renderTeachersList();
+  renderStudentsList();
 }
 
-/* ══════════════════════════════════════
+function admTab(t){
+  admCurrentTab=t;
+  $('adm-tab-t').classList.toggle('act',t==='teachers');
+  $('adm-tab-s').classList.toggle('act',t==='students');
+  $('adm-teachers-sec').classList.toggle('hidden',t!=='teachers');
+  $('adm-students-sec').classList.toggle('hidden',t!=='students');
+  if(t==='students')renderStudentsList();
+}
+
+function renderAdminStats(){
+  const db=getDB();
+  const teachers=Object.values(db.users).filter(u=>u.role==='teacher');
+  const students=Object.values(db.users).filter(u=>u.role==='student');
+  setTxt('adm-teachers',teachers.length);
+  setTxt('adm-students',students.length);
+  setTxt('adm-total',teachers.length+students.length);
+}
+
+async function addTeacher(){
+  const fn=sanitizeName($('t-fn').value);
+  const ln=sanitizeName($('t-ln').value);
+  const email=($('t-email').value||'').trim().toLowerCase();
+  const pass=$('t-pass').value||'';
+  if(!fn||!ln)return setErr('t-err','أدخل الاسم الأول واسم العائلة');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr('t-err','بريد إلكتروني غير صحيح');
+  if(pass.length<6)return setErr('t-err','كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+  const db=getDB();
+  if(Object.values(db.users).some(u=>u.email===email))
+    return setErr('t-err','هذا البريد مسجّل مسبقاً');
+  const passHash=await sha256(pass);
+  const uid='t_'+randId(10);
+  const user={uid,fname:fn,lname:ln,email,passHash,role:'teacher',dob:'',level:'',
+    joined:new Date().toISOString().split('T')[0],sessions:0,msgs:0};
+  db.users[uid]=user;
+  await saveDB(db);
+  // Show credentials
+  setTxt('cred-email',email);
+  setTxt('cred-pass',pass);
+  $('cred-card').classList.add('show');
+  // Clear form
+  $('t-fn').value='';$('t-ln').value='';$('t-email').value='';$('t-pass').value='';
+  toast('تم إضافة الأستاذ '+fn+' '+ln+' ✅','ok');
+  renderAdminStats();
+  renderTeachersList();
+}
+
+function deleteTeacher(uid){
+  if(!confirm('هل أنت متأكد من حذف هذا الحساب؟'))return;
+  const db=getDB();
+  delete db.users[uid];
+  saveDB(db);
+  renderAdminStats();renderTeachersList();
+  toast('تم حذف الحساب','');
+}
+
+function renderTeachersList(){
+  const db=getDB();
+  const teachers=Object.values(db.users).filter(u=>u.role==='teacher');
+  const wrap=$('teachers-list-wrap');if(!wrap)return;
+  if(!teachers.length){
+    wrap.innerHTML='<div class="empty-state"><span>👨‍🏫</span>لا يوجد أساتذة بعد — أضف أستاذاً من الأعلى</div>';
+    return;
+  }
+  let html=`<div style="overflow-x:auto"><table class="teachers-table">
+  <thead><tr>
+    <th>الاسم</th><th>البريد الإلكتروني</th><th>تاريخ الإضافة</th><th>الحصص</th><th></th>
+  </tr></thead><tbody>`;
+  teachers.forEach(t=>{
+    html+=`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${gc(t.fname)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${esc(t.fname[0])}</div>
+        <span>${esc(t.fname+' '+t.lname)}</span>
+      </div></td>
+      <td style="font-family:var(--M);font-size:12px;color:var(--tx2)">${esc(t.email)}</td>
+      <td style="font-size:12px;color:var(--tx2)">${fmtDate(t.joined)}</td>
+      <td style="font-family:var(--M);text-align:center">${t.sessions||0}</td>
+      <td><button class="btn-tbl-del" onclick="deleteTeacher('${esc(t.uid)}')">حذف</button></td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  wrap.innerHTML=html;
+}
+
+function renderStudentsList(){
+  const db=getDB();
+  const students=Object.values(db.users).filter(u=>u.role==='student');
+  const wrap=$('students-list-wrap');if(!wrap)return;
+  setTxt('adm-student-count',students.length+' طالب');
+  if(!students.length){
+    wrap.innerHTML='<div class="empty-state"><span>🎒</span>لا يوجد طلاب مسجلون بعد</div>';
+    return;
+  }
+  wrap.innerHTML='';
+  students.forEach(s=>{
+    const lv=LEVELS.find(l=>l.id===s.level);
+    const div=document.createElement('div');
+    div.className='student-row';
+    div.innerHTML=`
+      <div class="s-av" style="background:${gc(s.fname)}">${esc(s.fname[0])}</div>
+      <div class="s-info">
+        <div class="s-name">${esc(s.fname+' '+s.lname)}</div>
+        <div class="s-detail">${esc(s.email)} • ${lv?lv.ico+' '+lv.lbl:'—'} • ${s.dob?calcAge(s.dob)+' سنة':'—'}</div>
+      </div>
+      <div style="font-family:var(--M);font-size:11px;color:var(--tx2);text-align:center;flex-shrink:0">
+        ${s.sessions||0}<br><span style="font-size:10px">حصة</span>
+      </div>`;
+    wrap.appendChild(div);
+  });
+}
+
+function cpCred(id){
+  const el=$(id);if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>toast('تم النسخ ✓','ok')).catch(()=>{});
+}
+
+/* ═══════════════════════
    PROFILE
-══════════════════════════════════════ */
+═══════════════════════ */
 function goProfile(){
   const me=getMe();if(!me){showPage('auth');return}
+  if(me.role==='admin'){goAdmin();return}
   showPage('profile');
   const c=gc(me.fname);
-  const av=$('pav');
-  if(av){av.style.background=c;av.textContent=me.fname[0]||'؟'}
+  const av=$('pav');if(av){av.style.background=c;av.textContent=me.fname[0]||'؟'}
   setTxt('p-fullname',me.fname+' '+me.lname);
-  setTxt('p-email',me.email);
+  setTxt('p-email-d',me.email);
   const lv=LEVELS.find(l=>l.id===me.level);
-  const lvbadge=$('p-lvlbadge');
-  if(lvbadge){
-    if(me.role==='student'&&lv){lvbadge.style.display='';setTxt('p-lvlbadge',lv.ico+' '+lv.lbl)}
-    else lvbadge.style.display='none';
-  }
+  const lvb=$('p-lvlbadge');
+  if(lvb){if(me.role==='student'&&lv){lvb.style.display='';setTxt('p-lvlbadge',lv.ico+' '+lv.lbl)}else lvb.style.display='none'}
   setTxt('p-rolebadge',me.role==='teacher'?'👨‍🏫 معلم':'🎒 طالب');
-  setTxt('p-joinbadge','📅 منذ '+formatDate(me.joined));
+  setTxt('p-joinbadge','📅 منذ '+fmtDate(me.joined));
   setTxt('ic-name',me.fname+' '+me.lname);
-  setTxt('ic-dob',me.dob?formatDate(me.dob):'—');
-  setTxt('ic-joined',formatDate(me.joined));
-  const lvcard=$('ic-lvl-card');
-  if(lvcard){lvcard.style.display=me.role==='student'?'':'none'}
+  const dobCard=$('ic-dob-card');if(dobCard)dobCard.style.display=me.role==='student'?'':'none';
+  setTxt('ic-dob',me.dob?fmtDate(me.dob):'—');
+  setTxt('ic-joined',fmtDate(me.joined));
+  const lvCard=$('ic-lvl-card');if(lvCard)lvCard.style.display=me.role==='student'?'':'none';
   setTxt('ic-level',lv?lv.lbl:'—');
   setTxt('ic-role',me.role==='teacher'?'معلم':'طالب');
   setTxt('ic-role-ico',me.role==='teacher'?'👨‍🏫':'🎒');
+  const ageCard=$('ic-age-card');if(ageCard)ageCard.style.display=me.role==='student'?'':'none';
   setTxt('ic-age',me.dob&&me.role==='student'?calcAge(me.dob)+' سنة':'—');
   setTxt('st-sessions',me.sessions||0);
-  const days=Math.floor((Date.now()-new Date(me.joined).getTime())/(86400000));
-  setTxt('st-days',days);
+  setTxt('st-days',Math.floor((Date.now()-new Date(me.joined).getTime())/86400000));
   setTxt('st-msgs',me.msgs||0);
-  const editSec=$('edit-sec');
-  if(editSec){editSec.style.display=me.role==='student'?'':'none'}
+  const es=$('edit-sec');if(es)es.style.display=me.role==='student'?'':'none';
   if(me.role==='student'){
-    buildLevels('edit-levels',selEditLevel);
-    editSelLevel=me.level;
-    LEVELS.forEach(lv=>$('lv-edit-levels-'+lv.id)?.classList.toggle('sel',lv.id===me.level));
+    buildLevels('edit-levels',selEditLvl);
+    editSelLvl=me.level;
+    LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===me.level));
   }
 }
 
 async function saveLevel(){
-  if(!editSelLevel)return toast('اختر مستوى أولاً','err');
+  if(!editSelLvl)return toast('اختر مستوى أولاً','err');
   const me=getMe();if(!me)return;
-  me.level=editSelLevel;setMe(me);
-  const db=getDB();
-  if(db.users[me.uid])db.users[me.uid].level=editSelLevel;
+  me.level=editSelLvl;setMe(me);
+  const db=getDB();if(db.users[me.uid])db.users[me.uid].level=editSelLvl;
   await saveDB(db);
-  const lv=LEVELS.find(l=>l.id===editSelLevel);
+  const lv=LEVELS.find(l=>l.id===editSelLvl);
   setTxt('ic-level',lv?lv.lbl:'—');
   if(lv)setTxt('p-lvlbadge',lv.ico+' '+lv.lbl);
   setTxt('save-msg','✓ تم الحفظ');
@@ -1046,33 +1247,36 @@ async function saveLevel(){
   setTimeout(()=>setTxt('save-msg',''),3000);
 }
 
-/* ══════════════════════════════════════
+function logout(){
+  clearMe();
+  showPage('auth');authTab('login');
+  $('l-email').value='';$('l-pass').value='';
+  $('lockout-warn')?.classList.add('hidden');
+  $('btn-login').disabled=false;
+  $('cred-card')?.classList.remove('show');
+  toast('تم تسجيل الخروج','');
+}
+
+/* ═══════════════════════
    CLASSROOM
-══════════════════════════════════════ */
+═══════════════════════ */
 let peer=null,myId='',myName='',myRole='student',roomId='';
 let LS=null,SS=null,micMuted=false,camOff=false,sharing=false,faceMode='user';
 const PEERS=new Map();
 let sesStart=null,timerIv=null,unread=0,ctab='p',bdtab='p',bdOpen=false,sharerId=null;
+const MSG_TYPES=new Set(['hello','state','chat','mu','co','scr:on','scr:off']);
 
 async function enterCls(){
-  const rawRoom=$('p-room')?.value||'';
-  const cleanRoom=sanitizeRoom(rawRoom);
+  const cleanRoom=sanitizeRoom($('p-room')?.value||'');
   if(!cleanRoom){toast('أدخل معرّف الغرفة','err');return}
   const me=getMe();if(!me)return;
-
-  // Increment session count
   me.sessions=(me.sessions||0)+1;setMe(me);
-  const db=getDB();
-  if(db.users[me.uid]){db.users[me.uid].sessions=me.sessions;await saveDB(db)}
-
-  roomId=cleanRoom;
-  myName=sanitizeName(me.fname+' '+me.lname);
-  myRole=me.role;
+  const db=getDB();if(db.users[me.uid]){db.users[me.uid].sessions=me.sessions;await saveDB(db)}
+  roomId=cleanRoom;myName=sanitizeName(me.fname+' '+me.lname);myRole=me.role;
   startCls();
 }
 
 async function startCls(){
-  const me=getMe();
   setTxt('h-uname',myName);
   if(myRole==='teacher'){$('h-dot').classList.add('T');$('cb-scr').style.display='flex'}
   if(navigator.wakeLock)navigator.wakeLock.request('screen').catch(()=>{});
@@ -1082,42 +1286,29 @@ async function startCls(){
       audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
     });
   }catch(e){toast('تعذّر الكاميرا: '+e.message,'err');return}
-
-  // Sanitize peer ID
-  const shortId=randomId(4);
-  myId=myRole==='teacher'?roomId+'_host':roomId+'_'+shortId;
-  // Validate peer ID chars
+  myId=myRole==='teacher'?roomId+'_host':roomId+'_'+randId(4);
   if(!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(myId)){toast('معرّف الغرفة غير صالح','err');return}
-
   peer=new Peer(myId,{debug:0});
   peer.on('open',()=>{
-    showPage('cls');
-    setTxt('h-rid',roomId);
-    selfTile();updPList();
-    sesStart=Date.now();
-    timerIv=setInterval(()=>{
-      const s=Math.floor((Date.now()-sesStart)/1000);
-      setTxt('h-timer',pad(Math.floor(s/60))+':'+pad(s%60));
-    },1000);
+    showPage('cls');setTxt('h-rid',roomId);
+    selfTile();updPList();sesStart=Date.now();
+    timerIv=setInterval(()=>{const s=Math.floor((Date.now()-sesStart)/1000);setTxt('h-timer',pad(Math.floor(s/60))+':'+pad(s%60))},1000);
     sysmsg('أهلاً '+myName+'! دخلت الغرفة');
     if(myRole==='student')connTeacher();
     toast('متصل بالغرفة ✓','ok');
   });
   peer.on('error',e=>{
-    const m={'peer-unavailable':'الغرفة غير موجودة أو المعلم لم يدخل بعد.',
-             'network':'خطأ في الشبكة','unavailable-id':'معرّف مستخدم، أعد المحاولة'};
+    const m={'peer-unavailable':'الغرفة غير موجودة أو المعلم لم يدخل بعد.','network':'خطأ في الشبكة','unavailable-id':'معرّف مستخدم، أعد المحاولة'};
     toast(m[e.type]||'خطأ: '+e.message,'err');
     showPage('profile');setTimeout(()=>goProfile(),100);
   });
   peer.on('call',call=>{
     call.answer(LS);
     call.on('stream',s=>{const m=call.metadata||{};upPeer(call.peer,sanitizeName(m.name||'؟'),m.role==='teacher'?'teacher':'student',s,call)});
-    call.on('close',()=>delPeer(call.peer));
-    call.on('error',()=>delPeer(call.peer));
+    call.on('close',()=>delPeer(call.peer));call.on('error',()=>delPeer(call.peer));
   });
   peer.on('connection',conn=>setupDC(conn));
 }
-
 function connTeacher(){
   const tid=roomId+'_host';
   const dc=peer.connect(tid,{metadata:{name:myName,role:myRole}});
@@ -1128,48 +1319,36 @@ function connTeacher(){
     setupDC(dc);updPList();sysmsg('تواصلت مع المعلم');
   });
   const mc=peer.call(tid,LS,{metadata:{name:myName,role:myRole}});
-  mc.on('stream',s=>upPeer(tid,'...',  'teacher',s,mc));
-  mc.on('close',()=>delPeer(tid));
+  mc.on('stream',s=>upPeer(tid,'...','teacher',s,mc));mc.on('close',()=>delPeer(tid));
 }
-
 function setupDC(conn){
   const pid=conn.peer;
-  // Validate peer ID
   if(!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(pid)){conn.close();return}
   conn.on('open',()=>{
     if(!PEERS.has(pid)){const m=conn.metadata||{};PEERS.set(pid,{name:sanitizeName(m.name||'مشارك'),role:m.role==='teacher'?'teacher':'student',dc:conn,mc:null,stream:null,mu:false,co:false})}
     else PEERS.get(pid).dc=conn;
     updPList();
   });
-  conn.on('data',d=>onMsg(pid,d));
-  conn.on('close',()=>delPeer(pid));
-  conn.on('error',()=>delPeer(pid));
+  conn.on('data',d=>onMsg(pid,d));conn.on('close',()=>delPeer(pid));conn.on('error',()=>delPeer(pid));
 }
-
 function onMsg(from,d){
   if(!d||typeof d!=='object')return;
-  // Whitelist message types
   if(!MSG_TYPES.has(d.t))return;
-  // Payload size guard
   try{if(JSON.stringify(d).length>4096)return}catch(e){return}
-
   switch(d.t){
     case 'hello':{
-      const sName=sanitizeName(d.name||'مشارك');
-      const sRole=d.role==='teacher'?'teacher':'student';
-      if(!PEERS.has(from))PEERS.set(from,{name:sName,role:sRole,dc:null,mc:null,stream:null,mu:false,co:false});
-      else{PEERS.get(from).name=sName;PEERS.get(from).role=sRole}
-      sysmsg(sName+' دخل الغرفة');toast(sName+' انضم 👋','ok');
+      const sn=sanitizeName(d.name||'مشارك'),sr=d.role==='teacher'?'teacher':'student';
+      if(!PEERS.has(from))PEERS.set(from,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
+      else{PEERS.get(from).name=sn;PEERS.get(from).role=sr}
+      sysmsg(sn+' دخل الغرفة');toast(sn+' انضم 👋','ok');
       if(myRole==='teacher'){
         const mc=peer.call(from,LS,{metadata:{name:myName,role:myRole}});
-        mc.on('stream',s=>upPeer(from,sName,sRole,s,mc));
-        mc.on('close',()=>delPeer(from));
+        mc.on('stream',s=>upPeer(from,sn,sr,s,mc));mc.on('close',()=>delPeer(from));
         if(PEERS.get(from))PEERS.get(from).mc=mc;
       }
       const cn=PEERS.get(from)?.dc;
       if(cn&&cn.open){
-        const pl=[];
-        PEERS.forEach((p,id)=>{if(id!==from)pl.push({id,name:p.name,role:p.role})});
+        const pl=[];PEERS.forEach((p,id)=>{if(id!==from)pl.push({id,name:p.name,role:p.role})});
         pl.push({id:myId,name:myName,role:myRole});
         cn.send({t:'state',peers:pl,sharer:sharerId});
       }
@@ -1179,65 +1358,44 @@ function onMsg(from,d){
       if(!Array.isArray(d.peers))return;
       d.peers.slice(0,100).forEach(p=>{
         if(!p.id||typeof p.id!=='string')return;
-        if(p.id===myId)return;
-        if(!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(p.id))return;
-        const sn=sanitizeName(p.name||'مشارك');
-        const sr=p.role==='teacher'?'teacher':'student';
+        if(p.id===myId||!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(p.id))return;
+        const sn=sanitizeName(p.name||'مشارك'),sr=p.role==='teacher'?'teacher':'student';
         if(!PEERS.has(p.id))PEERS.set(p.id,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
         if(p.id!==roomId+'_host')connPeer(p.id,sn,sr);
       });
       if(d.sharer&&d.sharer!==myId){sharerId=d.sharer;toast('المعلم يشارك الشاشة 🖥️','ok')}
       updPList();break;
     }
-    case 'chat':{
-      const p=PEERS.get(from);
-      const txt=sanitizeMsg(String(d.txt||''));
-      if(!txt)return;
-      renderMsg(p?.name||sanitizeName(d.name||'مشارك'),txt,false,from);
-      if(ctab!=='c'||!bdOpen){unread++;updBadges()}
-      break;
-    }
+    case 'chat':{const p=PEERS.get(from);const txt=sanitizeMsg(String(d.txt||''));if(!txt)return;renderMsg(p?.name||sanitizeName(d.name||'مشارك'),txt,false,from);if(ctab!=='c'||!bdOpen){unread++;updBadges()}break}
     case 'mu':{const p=PEERS.get(from);if(p){p.mu=!!d.v;rTile(from);updPList()}break}
     case 'co':{const p=PEERS.get(from);if(p){p.co=!!d.v;rTile(from);updPList()}break}
     case 'scr:on':{sharerId=from;const sh=PEERS.get(from);showScr(null);toast((sh?.name||'المعلم')+' يشارك الشاشة 🖥️','ok');break}
     case 'scr:off':{sharerId=null;hideScr();break}
   }
 }
-
 function connPeer(pid,name,role){
-  if(pid===myId)return;
-  if(!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(pid))return;
+  if(pid===myId||!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(pid))return;
   const dc=peer.connect(pid,{metadata:{name:myName,role:myRole}});
   dc.on('open',()=>{dc.send({t:'hello',name:myName,role:myRole,id:myId});if(PEERS.has(pid))PEERS.get(pid).dc=dc;setupDC(dc)});
   const mc=peer.call(pid,LS,{metadata:{name:myName,role:myRole}});
-  mc.on('stream',s=>upPeer(pid,name,role,s,mc));
-  mc.on('close',()=>delPeer(pid));
+  mc.on('stream',s=>upPeer(pid,name,role,s,mc));mc.on('close',()=>delPeer(pid));
 }
-
 function upPeer(id,name,role,stream,mc){
   if(id===myId)return;
   if(!PEERS.has(id))PEERS.set(id,{name,role,dc:null,mc,stream,mu:false,co:false});
-  else{const p=PEERS.get(id);if(name&&name!=='...'&&name!=='؟')p.name=sanitizeName(name);p.role=role;p.stream=stream;p.mc=mc}
+  else{const p=PEERS.get(id);if(name&&name!=='...')p.name=sanitizeName(name);p.role=role;p.stream=stream;p.mc=mc}
   if(id===sharerId)$('scr-vid').srcObject=stream;
   rTile(id);updPList();
 }
-
 function delPeer(id){
   if(!PEERS.has(id))return;
-  const p=PEERS.get(id);
-  sysmsg((p.name||'مشارك')+' غادر');toast((p.name||'مشارك')+' غادر','');
-  PEERS.delete(id);
-  const t=$('t-'+id);if(t)t.remove();
-  if(id===sharerId){sharerId=null;hideScr()}
-  updPList();
+  const p=PEERS.get(id);sysmsg((p.name||'مشارك')+' غادر');toast((p.name||'مشارك')+' غادر','');
+  PEERS.delete(id);const t=$('t-'+id);if(t)t.remove();
+  if(id===sharerId){sharerId=null;hideScr()}updPList();
 }
-
 function bcast(d){PEERS.forEach(p=>{if(p.dc&&p.dc.open)try{p.dc.send(d)}catch(e){}})}
-
-/* ── Media ─────────────────────────────────────────────── */
 function togMic(){
-  micMuted=!micMuted;
-  LS?.getAudioTracks().forEach(t=>t.enabled=!micMuted);
+  micMuted=!micMuted;LS?.getAudioTracks().forEach(t=>t.enabled=!micMuted);
   const b=$('cb-mic');b.classList.toggle('off',micMuted);
   b.querySelector('.ico-on').classList.toggle('hidden',micMuted);
   b.querySelector('.ico-off').classList.toggle('hidden',!micMuted);
@@ -1247,10 +1405,8 @@ function togMic(){
     :'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>';
   bcast({t:'mu',v:micMuted});updSelfTile();
 }
-
 function togCam(){
-  camOff=!camOff;
-  LS?.getVideoTracks().forEach(t=>t.enabled=!camOff);
+  camOff=!camOff;LS?.getVideoTracks().forEach(t=>t.enabled=!camOff);
   const b=$('cb-cam');b.classList.toggle('off',camOff);
   b.querySelector('.ico-on').classList.toggle('hidden',camOff);
   b.querySelector('.ico-off').classList.toggle('hidden',!camOff);
@@ -1260,72 +1416,43 @@ function togCam(){
     :'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>';
   bcast({t:'co',v:camOff});updSelfTile();
 }
-
 async function flipCam(){
   faceMode=faceMode==='user'?'environment':'user';
   try{
     LS.getVideoTracks().forEach(t=>t.stop());
     const ns=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},facingMode:faceMode},audio:false});
-    const nt=ns.getVideoTracks()[0];
-    LS.removeTrack(LS.getVideoTracks()[0]);LS.addTrack(nt);
+    const nt=ns.getVideoTracks()[0];LS.removeTrack(LS.getVideoTracks()[0]);LS.addTrack(nt);
     const sv=$('t-self')?.querySelector('.tv');
     if(sv){sv.srcObject=LS;sv.style.transform=faceMode==='user'?'scaleX(-1)':'scaleX(1)'}
-    PEERS.forEach(p=>{
-      if(p.mc?.peerConnection){
-        const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');
-        if(s)s.replaceTrack(nt).catch(()=>{});
-      }
-    });
+    PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(nt).catch(()=>{})}});
     toast(faceMode==='user'?'كاميرا أمامية 📷':'كاميرا خلفية 🔭','ok');
   }catch(e){faceMode=faceMode==='user'?'environment':'user';toast('تعذّر التبديل','err')}
 }
-
 async function togScr(){if(sharing)await stopScr();else await startScr()}
 async function startScr(){
   try{
     SS=await navigator.mediaDevices.getDisplayMedia({video:{cursor:'always'},audio:false});
     const st=SS.getVideoTracks()[0];
-    PEERS.forEach(p=>{
-      if(p.mc?.peerConnection){
-        const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');
-        if(s)s.replaceTrack(st).catch(()=>{});
-      }
-    });
-    st.onended=()=>stopScr();
-    sharing=true;sharerId=myId;
-    $('scr-vid').srcObject=SS;showScr(SS);
-    $('shr-bn').classList.remove('hidden');
-    const b=$('cb-scr');b.classList.add('on');
-    b.querySelector('.ico-on').classList.add('hidden');b.querySelector('.ico-off').classList.remove('hidden');
+    PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(st).catch(()=>{})}});
+    st.onended=()=>stopScr();sharing=true;sharerId=myId;
+    $('scr-vid').srcObject=SS;showScr(SS);$('shr-bn').classList.remove('hidden');
+    const b=$('cb-scr');b.classList.add('on');b.querySelector('.ico-on').classList.add('hidden');b.querySelector('.ico-off').classList.remove('hidden');
     bcast({t:'scr:on',name:myName});toast('بدأت مشاركة الشاشة 🖥️','ok');
   }catch(e){if(e.name!=='NotAllowedError')toast('خطأ: '+e.message,'err')}
 }
 async function stopScr(){
-  if(!sharing)return;
-  SS?.getTracks().forEach(t=>t.stop());SS=null;sharing=false;sharerId=null;
-  if(LS){
-    const ct=LS.getVideoTracks()[0];
-    if(ct)PEERS.forEach(p=>{
-      if(p.mc?.peerConnection){
-        const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');
-        if(s)s.replaceTrack(ct).catch(()=>{});
-      }
-    });
-  }
+  if(!sharing)return;SS?.getTracks().forEach(t=>t.stop());SS=null;sharing=false;sharerId=null;
+  if(LS){const ct=LS.getVideoTracks()[0];if(ct)PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(ct).catch(()=>{})}})}
   hideScr();$('shr-bn').classList.add('hidden');
-  const b=$('cb-scr');b.classList.remove('on');
-  b.querySelector('.ico-on').classList.remove('hidden');b.querySelector('.ico-off').classList.add('hidden');
+  const b=$('cb-scr');b.classList.remove('on');b.querySelector('.ico-on').classList.remove('hidden');b.querySelector('.ico-off').classList.add('hidden');
   bcast({t:'scr:off'});toast('أوقفت المشاركة','');
 }
 function showScr(s){if(s)$('scr-vid').srcObject=s;$('scr-vid').classList.remove('hidden');$('scr-ph').classList.add('hidden')}
 function hideScr(){$('scr-vid').srcObject=null;$('scr-vid').classList.add('hidden');$('scr-ph').classList.remove('hidden')}
-
-/* ── Tiles ─────────────────────────────────────────────── */
 function selfTile(){
   let t=$('t-self');
   if(!t){t=document.createElement('div');t.id='t-self';t.className='ptile me';$('tiles').prepend(t)}
-  const html=mkTile('self',myName,myRole,true);
-  t.innerHTML=html;
+  t.innerHTML=mkTile('self',myName,myRole,true);
   const v=t.querySelector('.tv');if(v&&LS)v.srcObject=LS;
 }
 function updSelfTile(){
@@ -1345,89 +1472,56 @@ function rTile(id){
   if(p.stream){const v=t.querySelector('.tv');if(v)v.srcObject=p.stream}
 }
 function mkTile(id,name,role,isMe,mu=false,co=false){
-  const c=gc(name),i=name?name[0]:'؟';
-  const esc_n=escHtml(name);
-  const muPath=mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>';
-  const coPath=co?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7"/>':'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>';
+  const c=gc(name),i=esc(name?name[0]:'؟');
+  const mp=mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>';
+  const cp=co?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7"/>':'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>';
   return`<video class="tv${co?' hidden':''}" autoplay playsinline${isMe?' muted':''}></video>
-${co?`<div class="tavtr"><div class="tavtr-l" style="background:${c}">${escHtml(i)}</div></div>`:''}
+${co?`<div class="tavtr"><div class="tavtr-l" style="background:${c}">${i}</div></div>`:''}
 <div class="tov"></div>
 <div class="trole ${role==='teacher'?'T':'S'}">${role==='teacher'?'معلم':'طالب'}</div>
-<div class="tname">
-  <span class="tname-txt">${isMe?'أنت':esc_n}</span>
-  <div class="ticns">
-    <div class="ticn mic-i${mu?' mu':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${muPath}</svg></div>
-    <div class="ticn cam-i${co?' co':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${coPath}</svg></div>
-  </div>
-</div>`;
+<div class="tname"><span class="tname-txt">${isMe?'أنت':esc(name)}</span>
+<div class="ticns">
+<div class="ticn mic-i${mu?' mu':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${mp}</svg></div>
+<div class="ticn cam-i${co?' co':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${cp}</svg></div>
+</div></div>`;
 }
-
-/* ── Participants list ──────────────────────────────────── */
 function updPList(){
-  const total=PEERS.size+1;
-  setTxt('pcnt',total);$('pcnt').classList.remove('hidden');
-  const panels=[$('sp'),$('msp')];
-  panels.forEach(panel=>{
-    if(!panel)return;
-    panel.innerHTML='';
-    // Self
-    const self=mkPLI(myName,myRole,true,micMuted,camOff);
-    panel.insertAdjacentHTML('beforeend',self);
-    PEERS.forEach(p=>panel.insertAdjacentHTML('beforeend',mkPLI(p.name,p.role,false,p.mu,p.co)));
-  });
+  const total=PEERS.size+1;setTxt('pcnt',total);$('pcnt').classList.remove('hidden');
+  let h=mkPLI(myName,myRole,true,micMuted,camOff);
+  PEERS.forEach(p=>h+=mkPLI(p.name,p.role,false,p.mu,p.co));
+  [$('sp'),$('msp')].forEach(el=>{if(el)el.innerHTML=h});
 }
 function mkPLI(name,role,isMe,mu,co){
-  const c=gc(name);const n=escHtml(name||'مشارك');const i=escHtml((name||'؟')[0]);
-  return`<div class="pli">
-  <div class="pav" style="background:${c}">${i}</div>
-  <div class="pi">
-    <div class="pn">${isMe?'أنت — ':''  }${n}</div>
-    <div class="pr">${role==='teacher'?'👨‍🏫 معلم':'🎒 طالب'} • ${mu?'🔇':'🎙️'} • ${co?'📵':'📹'}</div>
-  </div>
-  ${isMe?`<button class="pbtn${mu?' on':''}" onclick="togMic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg></button>`:''}
+  const c=gc(name);
+  return`<div class="pli"><div class="pav" style="background:${c}">${esc((name||'؟')[0])}</div>
+<div class="pi"><div class="pn">${isMe?'أنت — ':''  }${esc(name||'مشارك')}</div>
+<div class="pr">${role==='teacher'?'👨‍🏫 معلم':'🎒 طالب'} • ${mu?'🔇':'🎙️'} • ${co?'📵':'📹'}</div></div>
+${isMe?`<button class="pbtn${mu?' on':''}" onclick="togMic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg></button>`:''}
 </div>`;
 }
-
-/* ── Chat ──────────────────────────────────────────────── */
 function ck(e,src){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(src)}}
 async function send(src){
   const inp=$('ci-'+(src||'d'));
-  const raw=inp.value;
-  const txt=sanitizeMsg(raw);
-  if(!txt)return;
+  const txt=sanitizeMsg(inp.value);if(!txt)return;
   inp.value='';inp.style.height='auto';
-  // Track msg count
-  const me=getMe();
-  if(me){me.msgs=(me.msgs||0)+1;setMe(me);const db=getDB();if(db.users[me.uid]){db.users[me.uid].msgs=me.msgs;await saveDB(db)}}
-  renderMsg(myName,txt,true,myId);
-  bcast({t:'chat',name:myName,txt});
+  const me=getMe();if(me&&me.uid!=='admin'){me.msgs=(me.msgs||0)+1;setMe(me);const db=getDB();if(db.users[me.uid]){db.users[me.uid].msgs=me.msgs;await saveDB(db)}}
+  renderMsg(myName,txt,true,myId);bcast({t:'chat',name:myName,txt});
 }
 function renderMsg(name,txt,isMe,from){
-  const c=gc(name),i=escHtml(name?name[0]:'؟');
+  const c=gc(name),i=esc(name?name[0]:'؟');
   const now=new Date(),tm=pad(now.getHours())+':'+pad(now.getMinutes());
-  const nameHtml=escHtml(name);const txtHtml=escHtml(txt);
   const html=`<div class="cmsg${isMe?' me':''}">
-  <div class="cmsg-hd"><div class="cav" style="background:${c}">${i}</div>
-  <span class="cname">${isMe?'أنت':nameHtml}</span>
-  <span class="ctime">${tm}</span></div>
-  <div class="cbub">${txtHtml}</div></div>`;
-  [$('cwd'),$('cwm')].forEach(el=>{
-    if(!el)return;const d=document.createElement('div');d.innerHTML=html;
-    el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight;
-  });
+<div class="cmsg-hd"><div class="cav" style="background:${c}">${i}</div>
+<span class="cname">${isMe?'أنت':esc(name)}</span><span class="ctime">${tm}</span></div>
+<div class="cbub">${esc(txt)}</div></div>`;
+  [$('cwd'),$('cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
 }
 function sysmsg(txt){
-  const html=`<div class="cmsg sys"><div class="cbub">— ${escHtml(txt)} —</div></div>`;
-  [$('cwd'),$('cwm')].forEach(el=>{
-    if(!el)return;const d=document.createElement('div');d.innerHTML=html;
-    el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight;
-  });
+  const html=`<div class="cmsg sys"><div class="cbub">— ${esc(txt)} —</div></div>`;
+  [$('cwd'),$('cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
 }
-
-/* ── Sidebar tabs ──────────────────────────────────────── */
 function stab(t){
-  ctab=t;
-  $('st-p').classList.toggle('act',t==='p');$('st-c').classList.toggle('act',t==='c');
+  ctab=t;$('st-p').classList.toggle('act',t==='p');$('st-c').classList.toggle('act',t==='c');
   $('sp').classList.toggle('hidden',t!=='p');$('sc').classList.toggle('hidden',t!=='c');
   if(t==='c'){unread=0;updBadges();setTimeout(()=>$('ci-d')?.focus(),80)}
 }
@@ -1435,54 +1529,29 @@ function togDrawer(){bdOpen?closeDrawer():openDrawer()}
 function openDrawer(){bdOpen=true;$('bdrawer').classList.add('open');$('bd-ov').classList.add('open');$('mn-room').classList.add('act');if(bdtab==='c'){unread=0;updBadges()}}
 function closeDrawer(){bdOpen=false;$('bdrawer').classList.remove('open');$('bd-ov').classList.remove('open');$('mn-room').classList.remove('act')}
 function bdTab(t){
-  bdtab=t;
-  $('bdt-p').classList.toggle('act',t==='p');$('bdt-c').classList.toggle('act',t==='c');
+  bdtab=t;$('bdt-p').classList.toggle('act',t==='p');$('bdt-c').classList.toggle('act',t==='c');
   $('msp').classList.toggle('hidden',t!=='p');$('msc').classList.toggle('hidden',t!=='c');
   if(t==='c'){unread=0;updBadges();setTimeout(()=>$('ci-m')?.focus(),80)}
 }
-function updBadges(){
-  [$('cbadge'),$('bd-cbadge'),$('m-ubadge')].forEach(el=>{
-    if(!el)return;el.textContent=unread;el.classList.toggle('hidden',unread===0);
-  });
-}
-
-/* ── Leave ─────────────────────────────────────────────── */
+function updBadges(){[$('cbadge'),$('bd-cbadge'),$('m-ubadge')].forEach(el=>{if(!el)return;el.textContent=unread;el.classList.toggle('hidden',unread===0)})}
 function leaveRoom(){
   clearInterval(timerIv);timerIv=null;
-  // Properly stop all tracks
-  LS?.getTracks().forEach(t=>t.stop());LS=null;
-  SS?.getTracks().forEach(t=>t.stop());SS=null;
-  // Close all peer connections
-  PEERS.forEach(p=>{try{p.dc?.close()}catch(e){}try{p.mc?.close()}catch(e){}});
-  PEERS.clear();
+  LS?.getTracks().forEach(t=>t.stop());LS=null;SS?.getTracks().forEach(t=>t.stop());SS=null;
+  PEERS.forEach(p=>{try{p.dc?.close()}catch(e){}try{p.mc?.close()}catch(e){}});PEERS.clear();
   try{peer?.destroy()}catch(e){}peer=null;
-  // Reset state
   micMuted=false;camOff=false;sharing=false;sharerId=null;
   $('tiles').innerHTML='';$('sp').innerHTML='';$('msp').innerHTML='';
   $('cwd').innerHTML='';$('cwm').innerHTML='';
-  closeDrawer();
-  showPage('profile');setTimeout(()=>goProfile(),100);
-  toast('غادرت الغرفة','');
+  closeDrawer();showPage('profile');setTimeout(()=>goProfile(),100);toast('غادرت الغرفة','');
 }
-function cpRoom(){
-  if(!navigator.clipboard)return;
-  navigator.clipboard.writeText(roomId).then(()=>toast('تم نسخ معرّف الغرفة ✓','ok')).catch(()=>{});
-}
-
-/* ── Toast ─────────────────────────────────────────────── */
+function cpRoom(){navigator.clipboard?.writeText(roomId).then(()=>toast('تم نسخ المعرّف ✓','ok')).catch(()=>{})}
 let toastT=null;
 function toast(msg,type=''){
   const t=$('toast');t.textContent=String(msg||'');
   t.className='toast'+(type?' '+type:'');t.classList.remove('hidden');
   clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add('hidden'),3200);
 }
-
-/* ── Auto-resize textareas ─────────────────────────────── */
-['ci-d','ci-m'].forEach(id=>{
-  const el=$(id);if(!el)return;
-  el.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'});
-});
-/* ── Swipe drawer down to close ───────────────────────── */
+['ci-d','ci-m'].forEach(id=>{const el=$(id);if(!el)return;el.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'})});
 let ty0=0;
 const bdEl=$('bdrawer');
 if(bdEl){
@@ -1490,22 +1559,14 @@ if(bdEl){
   bdEl.addEventListener('touchmove',e=>{if(e.touches[0].clientY-ty0>60)closeDrawer()},{passive:true});
 }
 
-/* ── Boot ──────────────────────────────────────────────── */
-window.addEventListener('DOMContentLoaded',async()=>{
-  // Build level grids for registration
-  buildLevels('reg-levels',selRegLevel);
-
-  // Verify DB integrity on startup
-  const ok=await verifyDB();
-  if(!ok){
-    console.warn('EduRoom: DB integrity check failed — resetting');
-    localStorage.removeItem(DB_KEY);localStorage.removeItem(DB_HASH_KEY);localStorage.removeItem(ME_KEY);
-  }
-
-  // Check if already logged in
+/* ── Boot ── */
+window.addEventListener('DOMContentLoaded',()=>{
+  buildLevels('reg-levels',selRegLvl);
   const me=getMe();
-  if(me&&me.uid&&me.email){goProfile()}
-  else{showPage('auth')}
+  if(me?.uid){
+    if(me.role==='admin')goAdmin();
+    else goProfile();
+  }else showPage('auth');
 });
 </script>
 </body>
