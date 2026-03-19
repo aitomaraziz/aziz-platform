@@ -554,8 +554,8 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
         <p>سجّل دخولك — الأساتذة والطلاب من هنا</p>
       </div>
       <div id="lockout-warn" class="lockout hidden">🔒 <span id="lockout-msg">الحساب مؤقتاً محظور.</span></div>
-      <label class="fl">البريد الإلكتروني</label>
-      <input id="l-email" class="fi" type="email" placeholder="example@email.com" autocomplete="email"/>
+      <label class="fl">الاسم (للأستاذ) أو البريد الإلكتروني (للطالب)</label>
+      <input id="l-email" class="fi" type="text" placeholder="اسمك أو بريدك الإلكتروني…" autocomplete="off"/>
       <label class="fl">كلمة المرور</label>
       <div class="pw-wrap">
         <input id="l-pass" class="fi" type="password" placeholder="••••••••" autocomplete="current-password"/>
@@ -812,14 +812,15 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
         <div class="admin-sec-title">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--cy)"><path d="M12 5v14M5 12h14"/></svg>إضافة أستاذ جديد</span>
         </div>
-        <div class="add-form-grid">
-          <div><label class="fl">الاسم الأول</label><input id="t-fn" class="fi fi-nb" placeholder="اسم الأستاذ" maxlength="20" autocomplete="off"/></div>
-          <div><label class="fl">اسم العائلة</label><input id="t-ln" class="fi fi-nb" placeholder="اسم العائلة" maxlength="20" autocomplete="off"/></div>
-          <div><label class="fl">البريد الإلكتروني</label><input id="t-email" class="fi fi-nb" type="email" placeholder="teacher@email.com" autocomplete="off"/></div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px">
           <div>
-            <label class="fl">كلمة المرور</label>
+            <label class="fl">اسم الأستاذ الكامل</label>
+            <input id="t-fn" class="fi fi-nb" placeholder="مثال: محمد الأمين" maxlength="40" autocomplete="off"/>
+          </div>
+          <div>
+            <label class="fl">الرقم السري</label>
             <div class="pw-wrap" style="margin-bottom:0">
-              <input id="t-pass" class="fi fi-nb" type="password" placeholder="كلمة مرور للأستاذ" autocomplete="new-password"/>
+              <input id="t-pass" class="fi fi-nb" type="password" placeholder="اختر رقماً سرياً للأستاذ" autocomplete="new-password"/>
               <button class="pw-eye" onclick="togPw('t-pass',this)" tabindex="-1" type="button">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
@@ -832,7 +833,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
         <div class="cred-card hidden" id="cred-card">
           <h4>✅ تم إنشاء الحساب — أعطِ هذه البيانات للأستاذ</h4>
           <div class="cred-row">
-            <span class="cred-lbl">البريد</span>
+            <span class="cred-lbl">اسم الدخول</span>
             <span class="cred-val" id="cred-email">—</span>
             <button class="btn-cpcred" onclick="cpCred('cred-email')">نسخ</button>
           </div>
@@ -1247,25 +1248,30 @@ async function getAdminHash() {
 }
 
 async function doLogin() {
-  const email=($('l-email').value||'').trim().toLowerCase();
+  const input=($('l-email').value||'').trim();
   const pass =$('l-pass').value||'';
-  if(!email||!pass) return setErr('l-err','أدخل بياناتك');
+  if(!input||!pass) return setErr('l-err','أدخل اسمك أو بريدك وكلمة المرور');
+  const inputLow=input.toLowerCase();
   const db=getDB(); const now=Date.now();
-  const fi=db.fails?.[email]||{count:0,until:0};
+  const fi=db.fails?.[inputLow]||{count:0,until:0};
   if(fi.count>=MAX_ATTEMPTS&&fi.until>now) {
     $('lockout-warn').classList.remove('hidden');
     setTxt('lockout-msg','الحساب محظور — انتظر '+Math.ceil((fi.until-now)/60000)+' دقيقة');
     $('btn-login').disabled=true; return;
   }
-  const found=Object.values(db.users).find(u=>u.email===email);
-  if(!found) { recordFail(db,email,now); await saveDB(db); return setErr('l-err','البريد أو كلمة المرور غير صحيحة') }
+  // Match teacher by name OR student by email
+  const found=Object.values(db.users).find(u=>
+    (u.role==='teacher' && u.fname.toLowerCase()===inputLow) ||
+    (u.role==='student' && u.email.toLowerCase()===inputLow)
+  );
+  if(!found) { recordFail(db,inputLow,now); await saveDB(db); return setErr('l-err','الاسم أو البريد أو كلمة المرور غير صحيحة') }
   const ph=await sha256(pass);
   if(found.passHash!==ph) {
-    recordFail(db,email,now); await saveDB(db);
-    const rem=MAX_ATTEMPTS-(db.fails[email]?.count||0);
+    recordFail(db,inputLow,now); await saveDB(db);
+    const rem=MAX_ATTEMPTS-(db.fails[inputLow]?.count||0);
     return setErr('l-err', rem>0?'كلمة مرور خاطئة — متبقي '+rem+' محاولة':'تم قفل الحساب مؤقتاً');
   }
-  if(db.fails) delete db.fails[email];
+  if(db.fails) delete db.fails[inputLow];
   await saveDB(db);
   $('lockout-warn').classList.add('hidden'); $('btn-login').disabled=false;
   const session={uid:found.uid,fname:found.fname,lname:found.lname,email:found.email,
@@ -1415,30 +1421,29 @@ function renderAdminStats() {
   setTxt('adm-total',ts.length+ss.length);
 }
 async function addTeacher() {
-  const fn   =sanitizeName($('t-fn').value);
-  const ln   =sanitizeName($('t-ln').value);
-  const email=($('t-email').value||'').trim().toLowerCase();
-  const pass =$('t-pass').value||'';
-  if(!fn||!ln) return setErr('t-err','أدخل الاسم الأول واسم العائلة');
-  if(!email) return setErr('t-err','أدخل البريد الإلكتروني');
-  if(!email.includes('@')||!email.includes('.')) return setErr('t-err','البريد الإلكتروني يجب أن يحتوي على @ ونقطة');
-  if(pass.length<6) return setErr('t-err','كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+  const name = sanitizeName($('t-fn').value);
+  const pass = $('t-pass').value||'';
+  if(!name) return setErr('t-err','أدخل اسم الأستاذ');
+  if(pass.length<4) return setErr('t-err','الرقم السري يجب أن يكون 4 أحرف على الأقل');
   const db=getDB();
-  if(Object.values(db.users).some(u=>u.email===email)) return setErr('t-err','هذا البريد مسجّل مسبقاً');
+  // Check no duplicate name
+  if(Object.values(db.users).some(u=>u.role==='teacher'&&u.fname===name))
+    return setErr('t-err','يوجد أستاذ بهذا الاسم مسبقاً — اختر اسماً مختلفاً');
   const uid='t_'+randId(10);
   const roomId=makeRoomId(uid);
-  const user={uid,fname:fn,lname:ln,email,passHash:await sha256(pass),
-    role:'teacher',dob:'',level:'',
-    joined:new Date().toISOString().split('T')[0],sessions:0,msgs:0};
+  // Use name as login username (no email needed)
+  const user={uid, fname:name, lname:'', email:'', passHash:await sha256(pass),
+    role:'teacher', dob:'', level:'',
+    joined:new Date().toISOString().split('T')[0], sessions:0, msgs:0};
   db.users[uid]=user; await saveDB(db);
-  // Show credentials to admin
-  setTxt('cred-email',email);
-  setTxt('cred-pass',pass);
-  setTxt('cred-room',roomId);
+  // Show credentials
+  setTxt('cred-email', name);
+  setTxt('cred-pass', pass);
+  setTxt('cred-room', roomId);
   $('cred-card').classList.remove('hidden');
   // Clear form
-  $('t-fn').value='';$('t-ln').value='';$('t-email').value='';$('t-pass').value='';
-  toast('تم إضافة الأستاذ '+fn+' '+ln+' ✅','ok');
+  $('t-fn').value=''; $('t-pass').value='';
+  toast('تم إضافة الأستاذ '+name+' ✅','ok');
   renderAdminStats(); renderTeachers();
 }
 function delTeacher(uid) {
@@ -1454,7 +1459,7 @@ function renderTeachers() {
   const w=$('teachers-list'); if(!w) return;
   if(!ts.length){w.innerHTML='<div class="empty"><span>👨‍🏫</span>لا يوجد أساتذة — أضف أستاذاً من الأعلى</div>';return}
   let h=`<div style="overflow-x:auto"><table class="t-table"><thead><tr>
-    <th>الاسم</th><th>البريد</th><th>معرّف الغرفة</th><th>الحصص</th><th>التسجيل</th><th></th>
+    <th>الاسم</th><th>اسم الدخول</th><th>معرّف الغرفة</th><th>الحصص</th><th>التسجيل</th><th></th>
   </tr></thead><tbody>`;
   ts.forEach(t=>{
     const rid=makeRoomId(t.uid);
@@ -1462,7 +1467,7 @@ function renderTeachers() {
       <td><div style="display:flex;align-items:center;gap:8px">
         <div style="width:28px;height:28px;border-radius:50%;background:${gc(t.fname)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${esc(t.fname[0])}</div>
         <span>${esc(t.fname+' '+t.lname)}</span></div></td>
-      <td style="font-family:var(--M);font-size:11px;color:var(--tx2)">${esc(t.email)}</td>
+      <td style="font-family:var(--M);font-size:12px;color:var(--cy)">${esc(t.fname)}</td>
       <td><span style="font-family:var(--M);font-size:11px;color:var(--cy);background:var(--cy-g);padding:3px 8px;border-radius:6px">${esc(rid)}</span></td>
       <td style="font-family:var(--M);text-align:center">${t.sessions||0}</td>
       <td style="font-size:11px;color:var(--tx2)">${fmtDate(t.joined)}</td>
