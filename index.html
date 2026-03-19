@@ -11,10 +11,15 @@
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
+/* ══════════════════════════════════════════
+   EduRoom v8 — Professional Integrated Platform
+   Pages: Auth → Profile/Dashboard → Classroom
+   Roles: admin | teacher | student
+══════════════════════════════════════════ */
 :root{
   --bg:#060d1c;--bg2:#0b1628;--bg3:#101f38;
   --s1:#0f1c34;--s2:#162440;--s3:#1d2f50;
-  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);
+  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);--b3:rgba(255,255,255,.2);
   --cy:#00d4ff;--cy2:#0090cc;--cy-g:rgba(0,212,255,.13);
   --go:#f0b429;--go-g:rgba(240,180,41,.13);
   --gn:#00e676;--gn-g:rgba(0,230,118,.12);
@@ -41,10 +46,11 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
 
-/* BG */
+/* ─── Animated BG ─── */
 .pbg{position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 70% 60% at 15% 35%,rgba(0,90,180,.16) 0%,transparent 70%),
-             radial-gradient(ellipse 60% 50% at 85% 70%,rgba(0,160,130,.1) 0%,transparent 70%);
+             radial-gradient(ellipse 60% 50% at 85% 70%,rgba(0,160,130,.1) 0%,transparent 70%),
+             radial-gradient(ellipse 40% 40% at 55% 20%,rgba(100,50,200,.07) 0%,transparent 70%);
   animation:hue 22s ease-in-out infinite alternate}
 @keyframes hue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(28deg)}}
 .pgrid{position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -52,46 +58,71 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
                    linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);
   background-size:52px 52px}
 
-/* Shared */
-.card{background:rgba(10,18,36,.9);border:1px solid var(--b2);border-radius:var(--r3);
-  backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
-  box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.05);
+/* ─── Card ─── */
+.card{background:rgba(10,18,36,.92);border:1px solid var(--b2);border-radius:var(--r3);
+  backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);
+  box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.06);
   animation:cardUp .5s cubic-bezier(.22,1,.36,1) both}
-@keyframes cardUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Shared form elements ─── */
 .fl{font-family:var(--M);font-size:10px;letter-spacing:.1em;color:var(--cy);margin-bottom:7px;display:block}
-.fi-wrap{position:relative;margin-bottom:13px}
-.fi-wrap .fi{margin-bottom:0;padding-left:42px}
 .fi{width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
   padding:14px 15px;font-size:15px;color:var(--tx);transition:all .2s;
-  -webkit-appearance:none}
+  margin-bottom:13px;-webkit-appearance:none}
 .fi::placeholder{color:var(--tx3)}
 .fi:focus{border-color:rgba(0,212,255,.45);box-shadow:0 0 0 3px rgba(0,212,255,.07)}
-.fi.err-f{border-color:rgba(255,61,90,.5)}
-.fi-mb{margin-bottom:13px}
-/* Password toggle */
+.fi.err-f{border-color:rgba(255,61,90,.5);box-shadow:0 0 0 3px rgba(255,61,90,.07)}
+.fi-nb{margin-bottom:0}
+/* Password wrapper */
 .pw-wrap{position:relative;margin-bottom:13px}
-.pw-wrap .fi{padding-left:44px;margin-bottom:0}
+.pw-wrap .fi{padding-left:46px;margin-bottom:0}
 .pw-eye{position:absolute;left:12px;top:50%;transform:translateY(-50%);
   background:none;color:var(--tx2);padding:4px;display:flex;align-items:center}
-.pw-eye svg{width:18px;height:18px}
+.pw-eye svg{width:18px;height:18px;transition:color .2s}
+.pw-eye:hover svg{color:var(--cy)}
+/* Buttons */
 .btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,var(--cy),var(--cy2));
   border-radius:var(--r);color:#060d1c;font-size:15px;font-weight:700;
   box-shadow:0 4px 22px rgba(0,212,255,.35);transition:all .15s}
 .btn-primary:active{transform:scale(.97);opacity:.9}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn-sec{padding:10px 16px;background:var(--s1);border:1px solid var(--b2);
   border-radius:var(--r);color:var(--tx2);font-size:13px;font-weight:600;transition:all .2s}
 .btn-sec:active{background:var(--s2);color:var(--tx)}
-.btn-danger{padding:8px 14px;background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
-  border-radius:var(--r);color:var(--rd);font-size:12px;font-weight:600}
-.btn-danger:active{background:var(--rd);color:#fff}
+.btn-icon{display:flex;align-items:center;gap:7px}
+.btn-icon svg{width:15px;height:15px;flex-shrink:0}
 .msg-err{font-family:var(--M);font-size:12px;color:var(--rd);text-align:center;
   min-height:18px;margin-top:8px;letter-spacing:.02em}
-.msg-ok{font-family:var(--M);font-size:12px;color:var(--cy);text-align:center;min-height:18px;margin-top:8px}
-.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--tx3);font-size:12px}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--b1)}
+.msg-ok{font-family:var(--M);font-size:12px;color:var(--gn);text-align:center;min-height:18px;margin-top:6px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:13px}
+.two-col .fi{margin-bottom:0}
+/* Level grid */
+.level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.lv-btn{padding:9px 5px;background:var(--s1);border:2px solid var(--b1);
+  border-radius:var(--r);color:var(--tx2);font-size:11px;font-weight:600;
+  text-align:center;transition:all .2s;cursor:pointer;line-height:1.4}
+.lv-btn .lv-i{font-size:16px;display:block;margin-bottom:3px}
+.lv-btn.sel{border-color:var(--cy);background:var(--cy-g);color:var(--cy)}
+/* Lockout */
+.lockout{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--rd-g);border:1px solid rgba(255,61,90,.3);border-radius:var(--r);
+  font-size:12px;color:var(--rd);margin-bottom:12px}
+/* Tabs row */
+.tab-row{display:flex;background:var(--s1);border-radius:var(--r);padding:4px;margin-bottom:0}
+.atab{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;
+  color:var(--tx2);transition:all .2s;background:none}
+.atab.act{background:linear-gradient(135deg,var(--cy),var(--cy2));color:#060d1c;
+  box-shadow:0 2px 12px rgba(0,212,255,.3)}
+/* Admin hint */
+.admin-hint{text-align:center;margin-top:12px}
+.admin-hint button{background:none;color:var(--tx2);font-size:12px;
+  text-decoration:none;padding:4px 8px;border-radius:6px;transition:all .2s}
+.admin-hint button:hover{color:var(--cy);background:var(--cy-g)}
 
-/* ════ PAGE: AUTH ════ */
+/* ════════════════════════════════════
+   PAGE: AUTH
+════════════════════════════════════ */
 #pg-auth{position:fixed;inset:0;padding:calc(var(--st)+16px) 16px calc(var(--sb)+16px);
   display:flex;align-items:center;justify-content:center;z-index:10;overflow-y:auto}
 .auth-card{width:min(460px,100%);padding:36px 28px 30px}
@@ -103,224 +134,274 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 .brand-name span{color:var(--cy)}
 .brand-tag{font-family:var(--M);font-size:9px;letter-spacing:.1em;color:var(--go);
   background:var(--go-g);border:1px solid rgba(240,180,41,.25);padding:3px 7px;border-radius:5px}
-.auth-tabs{display:flex;margin-bottom:26px;background:var(--s1);border-radius:var(--r);padding:4px;gap:0}
-.atab{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;
-  color:var(--tx2);transition:all .2s;background:none}
-.atab.act{background:linear-gradient(135deg,var(--cy),var(--cy2));color:#060d1c;
-  box-shadow:0 2px 12px rgba(0,212,255,.3)}
+.auth-head{margin-bottom:20px}
 .auth-head h2{font-size:22px;font-weight:700;margin-bottom:5px}
-.auth-head p{font-size:13px;color:var(--tx2);margin-bottom:18px;line-height:1.6}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:13px}
-.two-col .fi-mb{margin-bottom:0}
-.role-pick{display:flex;gap:10px;margin-bottom:18px}
-.rp-btn{flex:1;padding:13px 8px;background:var(--s1);border:2px solid var(--b1);
-  border-radius:var(--r);color:var(--tx2);font-size:13px;font-weight:600;
-  display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .2s}
-.rp-btn.sel{border-color:var(--cy);background:var(--cy-g);color:var(--cy)}
-.level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.lv-btn{padding:9px 5px;background:var(--s1);border:2px solid var(--b1);
-  border-radius:var(--r);color:var(--tx2);font-size:11px;font-weight:600;
-  text-align:center;transition:all .2s;cursor:pointer;line-height:1.4}
-.lv-btn .lv-ico{font-size:16px;display:block;margin-bottom:3px}
-.lv-btn.sel{border-color:var(--cy);background:var(--cy-g);color:var(--cy)}
-.lockout{display:flex;align-items:center;gap:8px;padding:10px 14px;
-  background:var(--rd-g);border:1px solid rgba(255,61,90,.3);border-radius:var(--r);
-  font-size:12px;color:var(--rd);margin-bottom:12px}
-/* Admin hint link */
-.admin-hint{text-align:center;margin-top:10px;font-size:12px;color:var(--tx3)}
-.admin-hint button{background:none;color:var(--cy);font-size:12px;text-decoration:underline;padding:0}
+.auth-head p{font-size:13px;color:var(--tx2);line-height:1.6}
 
-/* ════ PAGE: PROFILE ════ */
-#pg-profile{position:fixed;inset:0;padding-top:var(--st);
+/* ════════════════════════════════════
+   PAGE: TEACHER DASHBOARD
+════════════════════════════════════ */
+#pg-teacher{position:fixed;inset:0;padding-top:var(--st);
   display:flex;flex-direction:column;z-index:10;overflow:hidden}
-.prof-hdr{display:flex;align-items:center;justify-content:space-between;
-  padding:12px 20px;padding-right:calc(20px + var(--sr));padding-left:calc(20px + var(--sl));
-  background:var(--bg2);border-bottom:1px solid var(--b1);flex-shrink:0}
-.prof-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + var(--sb));
-  display:flex;flex-direction:column;gap:16px;max-width:680px;margin:0 auto;width:100%}
-.prof-hero{background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(100,50,200,.08));
-  border:1px solid var(--b2);border-radius:var(--r3);
-  padding:28px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.prof-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:32px;font-weight:700;color:#fff;flex-shrink:0;
-  border:3px solid rgba(0,212,255,.4);box-shadow:0 0 24px rgba(0,212,255,.2)}
-.prof-hero-info h2{font-size:22px;font-weight:700;margin-bottom:4px}
-.prof-hero-info p{font-size:13px;color:var(--tx2);margin-bottom:10px}
-.prof-badges{display:flex;gap:8px;flex-wrap:wrap}
-.pbadge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
-.pbadge.cy{background:var(--cy-g);border:1px solid rgba(0,212,255,.25);color:var(--cy)}
-.pbadge.go{background:var(--go-g);border:1px solid rgba(240,180,41,.25);color:var(--go)}
-.pbadge.pu{background:var(--pu-g);border:1px solid rgba(167,139,250,.25);color:var(--pu)}
-.pbadge.or{background:var(--or-g);border:1px solid rgba(255,159,67,.25);color:var(--or)}
-.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
-.info-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px}
-.info-card-label{font-family:var(--M);font-size:9px;letter-spacing:.1em;color:var(--tx2);margin-bottom:8px}
-.info-card-val{font-size:15px;font-weight:600;color:var(--tx)}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px;text-align:center}
-.stat-num{font-size:24px;font-weight:700;color:var(--cy);font-family:var(--M);line-height:1}
-.stat-lbl{font-size:11px;color:var(--tx2);margin-top:4px}
-.action-card{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(0,150,200,.05));
-  border:1px solid rgba(0,212,255,.2);border-radius:var(--r2);padding:20px;
-  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.action-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
-.action-card p{font-size:12px;color:var(--tx2)}
-.btn-enter{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;
-  background:linear-gradient(135deg,var(--cy),var(--cy2));
-  border-radius:var(--r);color:#060d1c;font-size:14px;font-weight:700;
-  box-shadow:0 4px 20px rgba(0,212,255,.3);width:100%;transition:all .15s}
-.btn-enter:active{transform:scale(.96)}
-.edit-sec{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px}
-.edit-sec h3{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.edit-sec h3 svg{width:16px;height:16px;color:var(--cy)}
-.btn-save{padding:13px 18px;background:linear-gradient(135deg,var(--cy),var(--cy2));
-  border-radius:var(--r);color:#060d1c;font-size:13px;font-weight:700}
+.dash-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;padding-right:calc(20px + var(--sr));padding-left:calc(20px + var(--sl));
+  height:58px;background:var(--bg2);border-bottom:1px solid var(--b1);flex-shrink:0}
+.dash-brand{display:flex;align-items:center;gap:8px}
+.dash-brand-ico{width:32px;height:32px;background:linear-gradient(135deg,var(--cy),var(--cy2));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.dash-brand-name{font-size:15px;font-weight:700}
+.dash-brand-name span{color:var(--cy)}
+.dash-body{flex:1;overflow-y:auto;padding:24px 20px;padding-bottom:calc(24px + var(--sb));
+  display:flex;flex-direction:column;gap:18px;max-width:720px;margin:0 auto;width:100%}
+/* Teacher welcome */
+.teacher-welcome{
+  background:linear-gradient(135deg,rgba(240,180,41,.12),rgba(255,159,67,.06));
+  border:1px solid rgba(240,180,41,.2);border-radius:var(--r3);padding:28px 24px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
+.teacher-welcome::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 80% at 100% 50%,rgba(240,180,41,.06) 0%,transparent 70%)}
+.tw-avatar{width:72px;height:72px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;
+  border:3px solid rgba(240,180,41,.4);box-shadow:0 0 20px rgba(240,180,41,.2);position:relative;z-index:1}
+.tw-info{position:relative;z-index:1;flex:1;min-width:0}
+.tw-info h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.tw-info p{font-size:13px;color:var(--tx2);margin-bottom:12px}
+.tw-badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;
+  border-radius:20px;font-size:12px;font-weight:600}
+.badge.go{background:var(--go-g);border:1px solid rgba(240,180,41,.3);color:var(--go)}
+.badge.cy{background:var(--cy-g);border:1px solid rgba(0,212,255,.3);color:var(--cy)}
+.badge.gn{background:var(--gn-g);border:1px solid rgba(0,230,118,.3);color:var(--gn)}
+.badge.pu{background:var(--pu-g);border:1px solid rgba(167,139,250,.3);color:var(--pu)}
+.badge.or{background:var(--or-g);border:1px solid rgba(255,159,67,.3);color:var(--or)}
+/* Room card — teacher's main action */
+.room-card{
+  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,100,180,.08));
+  border:1px solid rgba(0,212,255,.25);border-radius:var(--r3);padding:24px;
+  display:flex;flex-direction:column;gap:16px}
+.room-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.room-card-info h3{font-size:16px;font-weight:700;margin-bottom:5px;color:var(--tx)}
+.room-card-info p{font-size:13px;color:var(--tx2)}
+.room-id-display{display:flex;align-items:center;gap:10px;background:var(--s1);
+  border:1px solid var(--b2);border-radius:var(--r2);padding:14px 16px}
+.room-id-display .rid-label{font-family:var(--M);font-size:10px;letter-spacing:.08em;color:var(--tx2);white-space:nowrap}
+.room-id-display .rid-value{font-family:var(--M);font-size:15px;font-weight:700;color:var(--cy);flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-cp-room{display:flex;align-items:center;gap:5px;padding:8px 14px;
+  background:var(--cy-g);border:1px solid rgba(0,212,255,.3);
+  border-radius:var(--r);color:var(--cy);font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s}
+.btn-cp-room:active{background:var(--cy);color:#060d1c}
+.btn-cp-room svg{width:14px;height:14px}
+.btn-enter-room{display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:16px;background:linear-gradient(135deg,var(--go),#e08000);
+  border-radius:var(--r2);color:#060d1c;font-size:16px;font-weight:700;
+  box-shadow:0 4px 20px rgba(240,180,41,.35);transition:all .15s}
+.btn-enter-room:active{transform:scale(.97);opacity:.9}
+.btn-enter-room svg{width:20px;height:20px}
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
+  padding:16px;text-align:center}
+.stat-num{font-size:26px;font-weight:700;font-family:var(--M);line-height:1}
+.stat-lbl{font-size:11px;color:var(--tx2);margin-top:5px}
+/* Info cards */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.info-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px}
+.info-card-label{font-family:var(--M);font-size:9px;letter-spacing:.1em;color:var(--tx2);margin-bottom:7px}
+.info-card-val{font-size:14px;font-weight:600;color:var(--tx)}
+/* Logout btn */
 .btn-logout{display:flex;align-items:center;gap:6px;padding:8px 14px;
   background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
-  border-radius:var(--r);color:var(--rd);font-size:12px;font-weight:600}
+  border-radius:var(--r);color:var(--rd);font-size:12px;font-weight:600;transition:all .2s}
+.btn-logout:active{background:var(--rd);color:#fff}
 .btn-logout svg{width:14px;height:14px}
 
-/* ════ PAGE: ADMIN ════ */
+/* ════════════════════════════════════
+   PAGE: STUDENT PROFILE
+════════════════════════════════════ */
+#pg-student{position:fixed;inset:0;padding-top:var(--st);
+  display:flex;flex-direction:column;z-index:10;overflow:hidden}
+.prof-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + var(--sb));
+  display:flex;flex-direction:column;gap:16px;max-width:680px;margin:0 auto;width:100%}
+/* Hero */
+.student-hero{background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(100,50,200,.07));
+  border:1px solid var(--b2);border-radius:var(--r3);
+  padding:26px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.s-av{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;color:#fff;flex-shrink:0;
+  border:3px solid rgba(0,212,255,.4);box-shadow:0 0 20px rgba(0,212,255,.2)}
+.s-hero-info h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.s-hero-info p{font-size:13px;color:var(--tx2);margin-bottom:10px}
+/* Join room */
+.join-room-card{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(0,100,180,.05));
+  border:1px solid rgba(0,212,255,.2);border-radius:var(--r2);padding:20px;
+  display:flex;flex-direction:column;gap:12px}
+.join-room-card h3{font-size:15px;font-weight:700}
+.join-room-card p{font-size:12px;color:var(--tx2)}
+.join-row{display:flex;gap:10px}
+.join-row .fi{margin-bottom:0;flex:1}
+.btn-join-cls{display:flex;align-items:center;gap:7px;padding:14px 20px;
+  background:linear-gradient(135deg,var(--cy),var(--cy2));
+  border-radius:var(--r);color:#060d1c;font-size:14px;font-weight:700;
+  box-shadow:0 4px 18px rgba(0,212,255,.3);white-space:nowrap;transition:all .15s}
+.btn-join-cls:active{transform:scale(.96)}
+.btn-join-cls svg{width:17px;height:17px}
+/* Edit section */
+.edit-sec{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px}
+.edit-sec h3{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.edit-sec h3 svg{width:15px;height:15px;color:var(--cy)}
+.btn-save{padding:12px 18px;background:linear-gradient(135deg,var(--cy),var(--cy2));
+  border-radius:var(--r);color:#060d1c;font-size:13px;font-weight:700}
+
+/* ════════════════════════════════════
+   PAGE: ADMIN
+════════════════════════════════════ */
 #pg-admin{position:fixed;inset:0;padding-top:var(--st);
   display:flex;flex-direction:column;z-index:10;overflow:hidden}
-.admin-hdr{display:flex;align-items:center;justify-content:space-between;
-  padding:12px 20px;padding-right:calc(20px + var(--sr));padding-left:calc(20px + var(--sl));
+.admin-hdr{height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;padding-right:calc(20px + var(--sr));padding-left:calc(20px + var(--sl));
   background:var(--bg2);border-bottom:1px solid var(--b1);flex-shrink:0}
-.admin-hdr-title{display:flex;align-items:center;gap:10px}
-.admin-badge{font-family:var(--M);font-size:10px;letter-spacing:.08em;padding:4px 10px;
-  background:var(--or-g);border:1px solid rgba(255,159,67,.3);border-radius:6px;color:var(--or)}
+.admin-badge-hdr{font-family:var(--M);font-size:9px;letter-spacing:.1em;padding:3px 9px;
+  background:var(--or-g);border:1px solid rgba(255,159,67,.3);border-radius:5px;color:var(--or)}
 .admin-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + var(--sb));
-  display:flex;flex-direction:column;gap:18px;max-width:780px;margin:0 auto;width:100%}
-.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  display:flex;flex-direction:column;gap:16px;max-width:820px;margin:0 auto;width:100%}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
 .admin-stat{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px;text-align:center}
-.admin-stat-num{font-size:28px;font-weight:700;font-family:var(--M);line-height:1}
-.admin-stat-lbl{font-size:11px;color:var(--tx2);margin-top:5px}
+.admin-stat-n{font-size:28px;font-weight:700;font-family:var(--M);line-height:1}
+.admin-stat-l{font-size:11px;color:var(--tx2);margin-top:5px}
+.admin-tabs{display:flex;background:var(--s1);border-radius:var(--r);padding:4px;gap:0}
+.adm-tab{flex:1;padding:9px;border-radius:7px;font-size:12px;font-weight:600;
+  color:var(--tx2);background:none;transition:all .2s}
+.adm-tab.act{background:var(--s2);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .admin-sec{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:20px}
-.admin-sec-title{font-size:15px;font-weight:700;margin-bottom:16px;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.admin-sec-title span{display:flex;align-items:center;gap:8px}
-.admin-sec-title svg{width:17px;height:17px;color:var(--cy)}
-/* Add teacher form */
-.add-teacher-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-@media(max-width:520px){.add-teacher-form{grid-template-columns:1fr}}
-.add-teacher-form .fi{margin-bottom:0}
+.admin-sec-title{font-size:14px;font-weight:700;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px}
+.admin-sec-title span{display:flex;align-items:center;gap:7px;color:var(--tx)}
+.admin-sec-title span svg{width:16px;height:16px;color:var(--cy)}
+.add-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:540px){.add-form-grid{grid-template-columns:1fr}}
+.add-form-grid .fi,.add-form-grid .pw-wrap{margin-bottom:0}
+.add-form-grid .pw-wrap{margin-bottom:0}
 /* Teachers table */
-.teachers-table{width:100%;border-collapse:collapse}
-.teachers-table th{font-family:var(--M);font-size:10px;letter-spacing:.08em;color:var(--tx2);
+.t-table{width:100%;border-collapse:collapse}
+.t-table th{font-family:var(--M);font-size:10px;letter-spacing:.06em;color:var(--tx2);
   padding:8px 10px;text-align:right;border-bottom:1px solid var(--b1);font-weight:500}
-.teachers-table td{padding:11px 10px;font-size:13px;color:var(--tx);border-bottom:1px solid rgba(255,255,255,.04)}
-.teachers-table tr:last-child td{border-bottom:none}
-.teachers-table tr:hover td{background:rgba(255,255,255,.02)}
-.t-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
-  padding:3px 9px;border-radius:10px}
-.t-status.active{background:var(--gn-g);color:var(--gn);border:1px solid rgba(0,230,118,.25)}
-.t-status.inactive{background:var(--rd-g);color:var(--rd);border:1px solid rgba(255,61,90,.25)}
-.t-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
-.btn-tbl-del{padding:5px 10px;background:var(--rd-g);border:1px solid rgba(255,61,90,.2);
+.t-table td{padding:12px 10px;font-size:13px;color:var(--tx);
+  border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.t-table tr:last-child td{border-bottom:none}
+.t-table tr:hover td{background:rgba(255,255,255,.015)}
+.btn-del{padding:5px 10px;background:var(--rd-g);border:1px solid rgba(255,61,90,.2);
   border-radius:7px;color:var(--rd);font-size:11px;font-weight:600}
-.btn-tbl-del:active{background:var(--rd);color:#fff}
-.cred-card{background:var(--bg2);border:1px solid var(--gn-g);border-radius:var(--r2);padding:16px;
-  margin-top:14px;display:none}
-.cred-card.show{display:block}
+.btn-del:active{background:var(--rd);color:#fff}
+/* Credentials card */
+.cred-card{background:rgba(0,230,118,.05);border:1px solid rgba(0,230,118,.2);
+  border-radius:var(--r2);padding:16px;margin-top:14px}
 .cred-card h4{font-size:13px;font-weight:700;color:var(--gn);margin-bottom:12px;
   display:flex;align-items:center;gap:7px}
 .cred-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.cred-label{font-family:var(--M);font-size:10px;color:var(--tx2);width:80px;flex-shrink:0}
+.cred-lbl{font-family:var(--M);font-size:10px;color:var(--tx2);width:90px;flex-shrink:0}
 .cred-val{font-family:var(--M);font-size:13px;color:var(--cy);background:var(--s1);
-  padding:7px 12px;border-radius:8px;flex:1;user-select:text;-webkit-user-select:text;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btn-cp-cred{padding:6px 10px;background:var(--s2);border:1px solid var(--b2);
+  padding:7px 12px;border-radius:8px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  user-select:text;-webkit-user-select:text}
+.btn-cpcred{padding:6px 10px;background:var(--s2);border:1px solid var(--b2);
   border-radius:7px;color:var(--tx2);font-size:11px;flex-shrink:0}
-.btn-cp-cred:active{background:var(--cy-g);color:var(--cy)}
-.empty-state{text-align:center;padding:30px;color:var(--tx3);font-size:13px}
-.empty-state span{font-size:28px;display:block;margin-bottom:8px;opacity:.5}
-/* Students list */
-.students-list{display:flex;flex-direction:column;gap:6px}
-.student-row{display:flex;align-items:center;gap:10px;padding:10px 12px;
+.btn-cpcred:active{background:var(--cy-g);color:var(--cy)}
+/* Student rows */
+.s-rows{display:flex;flex-direction:column;gap:6px}
+.s-row{display:flex;align-items:center;gap:10px;padding:10px 12px;
   background:var(--bg2);border:1px solid var(--b1);border-radius:var(--r)}
-.s-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
-.s-info{flex:1;min-width:0}
-.s-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.s-detail{font-size:11px;color:var(--tx2);margin-top:2px}
-.tab-row{display:flex;gap:0;background:var(--bg2);border-radius:var(--r);padding:4px;margin-bottom:16px}
-.tab-btn{flex:1;padding:9px;border-radius:7px;font-size:12px;font-weight:600;
-  color:var(--tx2);background:none;transition:all .2s}
-.tab-btn.act{background:var(--s2);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.s-row-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.s-row-info{flex:1;min-width:0}
+.s-row-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-row-detail{font-size:11px;color:var(--tx2);margin-top:2px}
+.empty{text-align:center;padding:28px;color:var(--tx3);font-size:13px}
+.empty span{font-size:26px;display:block;margin-bottom:8px;opacity:.5}
 
-/* ════ PAGE: CLASSROOM ════ */
-#cls{position:fixed;inset:0;padding-top:var(--st);
-  background:var(--bg);display:flex;flex-direction:column}
-.hdr{height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+/* ════════════════════════════════════
+   PAGE: CLASSROOM
+════════════════════════════════════ */
+#cls{position:fixed;inset:0;padding-top:var(--st);background:var(--bg);display:flex;flex-direction:column}
+/* Header */
+.c-hdr{height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
   padding:0 16px;padding-right:calc(16px + var(--sr));padding-left:calc(16px + var(--sl));
   background:var(--bg2);border-bottom:1px solid var(--b1);z-index:40}
-.hdr-l{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.hdr-brand{display:flex;align-items:center;gap:7px;flex-shrink:0}
-.hdr-ico{width:28px;height:28px;background:linear-gradient(135deg,var(--cy),var(--cy2));
+.c-hdr-l{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.c-hdr-brand{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.c-hdr-ico{width:28px;height:28px;background:linear-gradient(135deg,var(--cy),var(--cy2));
   border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
-.hdr-name{font-size:14px;font-weight:700}
-.hdr-name span{color:var(--cy)}
-.rid{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--b1);
-  border-radius:8px;padding:5px 10px;max-width:180px;overflow:hidden}
-.rid-lbl{font-family:var(--M);font-size:9px;color:var(--tx2);flex-shrink:0}
-.rid-val{font-family:var(--M);font-size:11px;color:var(--tx);font-weight:500;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btn-cp{background:none;color:var(--tx2);padding:2px;display:flex;align-items:center}
-.btn-cp svg{width:12px;height:12px}
-.hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.mbd{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
-.mbd-dot{width:7px;height:7px;border-radius:50%;background:var(--cy);box-shadow:0 0 7px var(--cy);flex-shrink:0}
-.mbd-dot.T{background:var(--go);box-shadow:0 0 7px var(--go)}
-.mbd-txt{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tbadge{font-family:var(--M);font-size:11px;color:var(--tx2);background:var(--s1);
+.c-hdr-name{font-size:14px;font-weight:700}
+.c-hdr-name span{color:var(--cy)}
+.c-rid{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--b1);
+  border-radius:8px;padding:5px 10px;cursor:pointer;transition:border-color .2s}
+.c-rid:hover{border-color:rgba(0,212,255,.3)}
+.c-rid-lbl{font-family:var(--M);font-size:9px;color:var(--tx2);flex-shrink:0}
+.c-rid-val{font-family:var(--M);font-size:11px;color:var(--cy);font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px}
+.c-rid-ico{color:var(--tx2)}
+.c-rid-ico svg{width:12px;height:12px}
+.c-hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.c-uname{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
+.c-dot{width:7px;height:7px;border-radius:50%;background:var(--cy);box-shadow:0 0 6px var(--cy);flex-shrink:0}
+.c-dot.T{background:var(--go);box-shadow:0 0 6px var(--go)}
+.c-uname-txt{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-timer{font-family:var(--M);font-size:11px;color:var(--tx2);background:var(--s1);
   border:1px solid var(--b1);border-radius:6px;padding:3px 8px;white-space:nowrap}
-.btn-leave{display:flex;align-items:center;gap:5px;padding:6px 12px;
+.c-leave{display:flex;align-items:center;gap:5px;padding:6px 12px;
   background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
   border-radius:8px;color:var(--rd);font-size:12px;font-weight:600}
-.btn-leave:active{background:var(--rd);color:#fff}
-.btn-leave svg{width:14px;height:14px}
-.cls-body{flex:1;display:flex;overflow:hidden}
-.stage{flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden}
-.scr-area{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.c-leave svg{width:13px;height:13px}
+.c-leave:active{background:var(--rd);color:#fff}
+/* Body */
+.c-body{flex:1;display:flex;overflow:hidden}
+/* Stage */
+.c-stage{flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden}
+.c-scr{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:var(--bg)}
 #scr-vid{width:100%;height:100%;object-fit:contain;background:#000}
-.scr-ph{position:absolute;inset:0;display:flex;flex-direction:column;
+.c-scr-ph{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:12px;pointer-events:none}
-.scr-ph-ico{font-size:44px;opacity:.4;animation:flt 3s ease-in-out infinite}
+.c-scr-ph-ico{font-size:48px;opacity:.4;animation:flt 3s ease-in-out infinite}
 @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.scr-ph p{font-size:14px;color:var(--tx2);text-align:center;padding:0 24px}
-.shr-bn{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+.c-scr-ph p{font-size:14px;color:var(--tx2);text-align:center;padding:0 24px}
+.c-scr-ph small{font-size:12px;color:var(--tx3);text-align:center}
+/* Share banner */
+.c-shr-bn{position:absolute;top:10px;left:50%;transform:translateX(-50%);
   display:flex;align-items:center;gap:8px;background:rgba(0,230,118,.1);
   border:1px solid rgba(0,230,118,.3);border-radius:40px;padding:6px 14px;
   font-size:12px;color:var(--gn);z-index:20;backdrop-filter:blur(10px);white-space:nowrap}
-.shr-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);animation:blk 1.4s infinite}
+.c-shr-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);animation:blk 1.4s infinite}
 @keyframes blk{0%,100%{opacity:1}50%{opacity:.3}}
-.btn-stp{background:var(--gn);color:#060d1c;border:none;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
-.ctrl-bar{position:absolute;z-index:20;bottom:calc(110px + 12px);left:50%;transform:translateX(-50%);
+.btn-stop-shr{background:var(--gn);color:#060d1c;border:none;border-radius:20px;
+  padding:3px 10px;font-size:11px;font-weight:700}
+/* Controls */
+.c-ctrl{position:absolute;z-index:20;left:50%;transform:translateX(-50%);
+  bottom:calc(112px + 12px);
   display:flex;align-items:center;gap:5px;background:rgba(6,13,28,.9);
   border:1px solid rgba(255,255,255,.1);border-radius:50px;
   backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
   padding:8px 14px;box-shadow:0 8px 36px rgba(0,0,0,.65)}
-.cb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+.c-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   border-radius:50%;background:rgba(255,255,255,.06);border:1px solid transparent;
-  color:var(--tx);transition:all .15s;width:54px;height:54px;padding:0}
-.cb:active{transform:scale(.9)}
-.cb.off{background:var(--rd-g);border-color:rgba(255,61,90,.4);color:var(--rd)}
-.cb.on{background:var(--gn-g);border-color:rgba(0,230,118,.4);color:var(--gn)}
-.cb svg{width:19px;height:19px}
-.cb-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
-.cb-div{width:1px;height:32px;background:rgba(255,255,255,.1);margin:0 3px}
-.cb-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--tx);transition:all .15s;width:56px;height:56px;padding:0}
+.c-btn:active{transform:scale(.9)}
+.c-btn.off{background:var(--rd-g);border-color:rgba(255,61,90,.4);color:var(--rd)}
+.c-btn.on{background:var(--gn-g);border-color:rgba(0,230,118,.4);color:var(--gn)}
+.c-btn svg{width:19px;height:19px}
+.c-btn-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
+.c-div{width:1px;height:32px;background:rgba(255,255,255,.1);margin:0 3px}
+.c-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   border-radius:50%;background:var(--rd-g);border:1px solid rgba(255,61,90,.45);
-  color:var(--rd);width:54px;height:54px;padding:0;transition:all .15s}
-.cb-end:active{background:var(--rd);color:#fff;transform:scale(.9)}
-.cb-end svg{width:19px;height:19px}
-.cb-end-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
-.tile-strip{display:flex;gap:7px;padding:8px 10px;background:var(--bg2);border-top:1px solid var(--b1);
-  overflow-x:auto;flex-shrink:0;align-items:center;height:110px;
+  color:var(--rd);width:56px;height:56px;padding:0;transition:all .15s}
+.c-end:active{background:var(--rd);color:#fff;transform:scale(.9)}
+.c-end svg{width:19px;height:19px}
+.c-end-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
+/* Tile strip */
+.c-tiles{display:flex;gap:7px;padding:8px 10px;background:var(--bg2);border-top:1px solid var(--b1);
+  overflow-x:auto;flex-shrink:0;align-items:center;height:112px;
   -webkit-overflow-scrolling:touch;scrollbar-width:none}
-.tile-strip::-webkit-scrollbar{display:none}
-.ptile{position:relative;flex-shrink:0;width:148px;height:94px;
-  border-radius:11px;overflow:hidden;background:var(--s1);border:2px solid transparent}
+.c-tiles::-webkit-scrollbar{display:none}
+.ptile{position:relative;flex-shrink:0;width:150px;height:96px;
+  border-radius:11px;overflow:hidden;background:var(--s1);border:2px solid transparent;transition:border-color .2s}
 .ptile.me{border-color:var(--pu)}.ptile.tea{border-color:var(--go)}
 .tv{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .tov{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,13,28,.86) 0%,transparent 50%)}
@@ -338,16 +419,17 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 .trole.S{background:rgba(0,212,255,.13);color:var(--cy);border:1px solid rgba(0,212,255,.18)}
 .tavtr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--s2)}
 .tavtr-l{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
-.sidebar{width:290px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg2);border-right:1px solid var(--b1);overflow:hidden}
-.stabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0}
-.stab{flex:1;padding:12px 6px;background:none;border:none;font-size:12px;font-weight:600;
+/* Sidebar */
+.c-sidebar{width:292px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg2);border-right:1px solid var(--b1);overflow:hidden}
+.c-stabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0}
+.c-stab{flex:1;padding:12px 6px;background:none;border:none;font-size:12px;font-weight:600;
   color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
-.stab.act{color:var(--cy);border-bottom-color:var(--cy)}
-.stab svg{width:13px;height:13px;flex-shrink:0}
-.sbadge{background:var(--rd);color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700}
-#sp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
-#sc{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.chat-wrap{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;-webkit-overflow-scrolling:touch}
+.c-stab.act{color:var(--cy);border-bottom-color:var(--cy)}
+.c-stab svg{width:13px;height:13px;flex-shrink:0}
+.c-sbadge{background:var(--rd);color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700}
+#c-sp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
+#c-sc{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.c-chat{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;-webkit-overflow-scrolling:touch}
 .cmsg{display:flex;flex-direction:column;gap:3px;animation:min .22s ease}
 @keyframes min{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .cmsg.me{align-items:flex-end}
@@ -360,16 +442,17 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
   border-radius:12px 12px 4px 12px;font-size:13px;line-height:1.5;color:var(--tx);word-break:break-word}
 .cmsg.me .cbub{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.2);border-radius:12px 12px 12px 4px}
 .cmsg.sys .cbub{background:rgba(255,255,255,.04);border-color:transparent;font-size:11px;color:var(--tx2);text-align:center;width:100%;border-radius:8px}
-.cinp-wrap{padding:8px 10px 10px;border-top:1px solid var(--b1);flex-shrink:0;padding-bottom:calc(10px + var(--sb))}
-.cinp-row{display:flex;gap:7px}
-.cinp{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:10px;
+.c-cinp-wrap{padding:8px 10px 10px;border-top:1px solid var(--b1);flex-shrink:0;padding-bottom:calc(10px + var(--sb))}
+.c-cinp-row{display:flex;gap:7px}
+.c-cinp{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:10px;
   padding:10px 12px;font-size:14px;color:var(--tx);resize:none;max-height:80px;min-height:40px;transition:border-color .2s}
-.cinp::placeholder{color:var(--tx3)}
-.cinp:focus{border-color:rgba(0,212,255,.4)}
-.btn-snd{width:40px;height:40px;border-radius:10px;flex-shrink:0;
+.c-cinp::placeholder{color:var(--tx3)}
+.c-cinp:focus{border-color:rgba(0,212,255,.4)}
+.c-snd{width:40px;height:40px;border-radius:10px;flex-shrink:0;
   background:linear-gradient(135deg,var(--cy),var(--cy2));display:flex;align-items:center;justify-content:center;color:#060d1c}
-.btn-snd:active{transform:scale(.9)}
-.btn-snd svg{width:16px;height:16px}
+.c-snd:active{transform:scale(.9)}
+.c-snd svg{width:16px;height:16px}
+/* Participant list item */
 .pli{display:flex;align-items:center;gap:9px;padding:9px 10px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r)}
 .pav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 .pi{flex:1;min-width:0}
@@ -378,49 +461,59 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 .pbtn{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid var(--b1);color:var(--tx2);display:flex;align-items:center;justify-content:center}
 .pbtn svg{width:12px;height:12px}
 .pbtn.on{background:var(--rd-g);border-color:rgba(255,61,90,.3);color:var(--rd)}
-.mnav{position:fixed;bottom:0;left:0;right:0;padding-bottom:var(--sb);
+/* Mobile nav */
+.c-mnav{position:fixed;bottom:0;left:0;right:0;padding-bottom:var(--sb);
   background:var(--bg2);border-top:1px solid var(--b2);z-index:50;display:none}
-.mnav-in{display:flex;align-items:center;justify-content:space-around;padding:7px 8px}
-.mnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
+.c-mnav-in{display:flex;align-items:center;justify-content:space-around;padding:7px 6px}
+.c-mnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:7px 10px;border-radius:10px;background:none;
   color:var(--tx2);font-size:10px;font-weight:600;min-width:50px;position:relative}
-.mnav-btn svg{width:20px;height:20px}
-.mnav-btn.act{background:var(--cy-g);color:var(--cy)}
-.mnav-btn.off{background:var(--rd-g);color:var(--rd)}
-.mnav-btn.danger{color:var(--rd)}
-.mbadge{position:absolute;top:4px;right:6px;background:var(--rd);color:#fff;border-radius:10px;padding:1px 4px;font-size:9px;font-weight:700}
-.bdrawer{display:none;position:fixed;bottom:0;left:0;right:0;height:66vh;max-height:520px;
+.c-mnav-btn svg{width:20px;height:20px}
+.c-mnav-btn.act{background:var(--cy-g);color:var(--cy)}
+.c-mnav-btn.off{background:var(--rd-g);color:var(--rd)}
+.c-mnav-btn.danger{color:var(--rd)}
+.c-mbadge{position:absolute;top:4px;right:6px;background:var(--rd);color:#fff;border-radius:10px;padding:1px 4px;font-size:9px;font-weight:700}
+/* Drawer */
+.c-bdrawer{display:none;position:fixed;bottom:0;left:0;right:0;height:66vh;max-height:520px;
   background:var(--bg2);border-top:2px solid var(--b2);border-radius:18px 18px 0 0;
   z-index:60;flex-direction:column;transform:translateY(100%);
   transition:transform .3s cubic-bezier(.32,1,.55,1)}
-.bdrawer.open{transform:translateY(0)}
-.bd-handle{width:36px;height:4px;background:var(--b2);border-radius:2px;margin:10px auto}
-.bd-tabs{display:flex;border-bottom:1px solid var(--b1);padding:0 14px;flex-shrink:0}
-.bdtab{flex:1;padding:10px 5px;background:none;border:none;font-size:12px;font-weight:600;
+.c-bdrawer.open{transform:translateY(0)}
+.c-bd-handle{width:36px;height:4px;background:var(--b2);border-radius:2px;margin:10px auto}
+.c-bd-tabs{display:flex;border-bottom:1px solid var(--b1);padding:0 14px;flex-shrink:0}
+.c-bdtab{flex:1;padding:10px 5px;background:none;border:none;font-size:12px;font-weight:600;
   color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;
   display:flex;align-items:center;justify-content:center;gap:5px}
-.bdtab.act{color:var(--cy);border-bottom-color:var(--cy)}
-.bdtab svg{width:13px;height:13px}
-.bdtab-badge{background:var(--rd);color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700}
-.bd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
-.bd-overlay.open{display:block}
-#msp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
-#msc{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.c-bdtab.act{color:var(--cy);border-bottom-color:var(--cy)}
+.c-bdtab svg{width:13px;height:13px}
+.c-bdtab-badge{background:var(--rd);color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700}
+.c-bd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
+.c-bd-overlay.open{display:block}
+#c-msp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
+#c-msc{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── Responsive ─── */
 @media(max-width:768px){
-  .sidebar{display:none}.mnav{display:block}.bdrawer{display:flex}
-  .ctrl-bar{bottom:calc(var(--sb)+66px+108px+10px);padding:7px 10px;gap:4px}
-  .cb{width:50px;height:50px}.cb svg{width:17px;height:17px}
-  .cb-lbl,.cb-end-lbl{font-size:8px}.cb-end{width:50px;height:50px}.cb-end svg{width:17px;height:17px}
-  .tile-strip{height:108px;padding-bottom:calc(8px + var(--sb) + 66px)}
+  .c-sidebar{display:none}.c-mnav{display:block}.c-bdrawer{display:flex}
+  .c-ctrl{bottom:calc(var(--sb)+66px+112px+10px);padding:7px 10px;gap:4px}
+  .c-btn{width:50px;height:50px}.c-btn svg{width:17px;height:17px}
+  .c-btn-lbl,.c-end-lbl{font-size:8px}.c-end{width:50px;height:50px}.c-end svg{width:17px;height:17px}
+  .c-tiles{height:108px;padding-bottom:calc(8px + var(--sb) + 66px)}
   .ptile{width:134px;height:88px}
-  #cb-scr{display:none!important}
-  .tbadge,.mbd{display:none}.rid-val{max-width:90px}
+  #c-scr-btn{display:none!important}
+  .c-timer,.c-uname{display:none}
+  .c-rid-val{max-width:80px}
   .two-col{grid-template-columns:1fr}
-  .prof-hero{flex-direction:column;text-align:center;align-items:center}
-  .prof-badges{justify-content:center}
-  .action-card{flex-direction:column}
+  .student-hero{flex-direction:column;text-align:center;align-items:center}
+  .join-row{flex-direction:column}
+  .teacher-welcome{flex-direction:column;text-align:center;align-items:center}
+  .tw-badges{justify-content:center}
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+  .room-card-top{flex-direction:column}
 }
-@media(min-width:769px){.mnav,.bdrawer,.bd-overlay{display:none!important}.sidebar{display:flex}}
+@media(min-width:769px){.c-mnav,.c-bdrawer,.c-bd-overlay{display:none!important}.c-sidebar{display:flex}}
+
+/* ─── Toast ─── */
 .toast{position:fixed;left:50%;transform:translateX(-50%);
   background:var(--s2);border:1px solid var(--b2);border-radius:10px;
   padding:10px 18px;font-size:13px;color:var(--tx);z-index:300;
@@ -430,79 +523,93 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 @media(min-width:769px){.toast{bottom:24px}}
 .toast.err{border-color:rgba(255,61,90,.4);color:var(--rd)}
 .toast.ok{border-color:rgba(0,230,118,.4);color:var(--gn)}
+.toast.info{border-color:rgba(0,212,255,.4);color:var(--cy)}
 @keyframes tai{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
 </head>
 <body>
 <div class="pbg"></div><div class="pgrid"></div>
 
-<!-- ══════════ AUTH ══════════ -->
+<!-- ══════════════════════════════════════
+     PAGE 1: AUTH
+══════════════════════════════════════ -->
 <div id="pg-auth">
   <div class="auth-card card">
     <div class="brand-bar">
       <div class="brand-ico">🎓</div>
       <div class="brand-name">Edu<span>Room</span></div>
-      <div class="brand-tag">v7</div>
+      <div class="brand-tag">v8</div>
     </div>
-    <div class="auth-tabs">
+
+    <!-- Tabs: Login | Register -->
+    <div class="tab-row" style="margin-bottom:24px">
       <button class="atab act" id="at-login" onclick="authTab('login')">تسجيل الدخول</button>
-      <button class="atab" id="at-reg" onclick="authTab('reg')">إنشاء حساب طالب</button>
+      <button class="atab" id="at-reg" onclick="authTab('reg')">حساب طالب جديد</button>
     </div>
 
     <!-- ─── LOGIN ─── -->
     <div id="form-login">
-      <div class="auth-head"><h2>مرحباً بعودتك 👋</h2><p>سجّل دخولك للوصول إلى فصلك</p></div>
+      <div class="auth-head">
+        <h2>أهلاً بك 👋</h2>
+        <p>سجّل دخولك — الأساتذة والطلاب من هنا</p>
+      </div>
       <div id="lockout-warn" class="lockout hidden">🔒 <span id="lockout-msg">الحساب مؤقتاً محظور.</span></div>
       <label class="fl">البريد الإلكتروني</label>
-      <input id="l-email" class="fi fi-mb" type="email" placeholder="example@email.com" autocomplete="email"/>
+      <input id="l-email" class="fi" type="email" placeholder="example@email.com" autocomplete="email"/>
       <label class="fl">كلمة المرور</label>
       <div class="pw-wrap">
         <input id="l-pass" class="fi" type="password" placeholder="••••••••" autocomplete="current-password"/>
-        <button class="pw-eye" type="button" onclick="togglePw('l-pass',this)" tabindex="-1">
+        <button class="pw-eye" onclick="togPw('l-pass',this)" tabindex="-1" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
-      <button class="btn-primary" id="btn-login" onclick="doLogin()">تسجيل الدخول ←</button>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">دخول ←</button>
       <div id="l-err" class="msg-err"></div>
       <div class="admin-hint">
-        <button onclick="authTab('admin')">🔑 دخول الإدارة</button>
+        <button onclick="authTab('admin')">🛡️ دخول لوحة الإدارة</button>
       </div>
     </div>
 
     <!-- ─── ADMIN LOGIN ─── -->
     <div id="form-admin" class="hidden">
-      <div class="auth-head"><h2>لوحة الإدارة 🛡️</h2><p>خاص بمدير المنصة فقط</p></div>
+      <div class="auth-head">
+        <h2>لوحة الإدارة 🛡️</h2>
+        <p>خاص بمدير المنصة فقط</p>
+      </div>
       <label class="fl">بريد المدير</label>
-      <input id="a-email" class="fi fi-mb" type="email" placeholder="admin@email.com" autocomplete="off"/>
+      <input id="a-email" class="fi" type="email" placeholder="admin@email.com" autocomplete="off"/>
       <label class="fl">كلمة مرور المدير</label>
       <div class="pw-wrap">
         <input id="a-pass" class="fi" type="password" placeholder="••••••••" autocomplete="off"/>
-        <button class="pw-eye" type="button" onclick="togglePw('a-pass',this)" tabindex="-1">
+        <button class="pw-eye" onclick="togPw('a-pass',this)" tabindex="-1" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
       <button class="btn-primary" onclick="doAdminLogin()">دخول لوحة الإدارة ←</button>
       <div id="a-err" class="msg-err"></div>
-      <div class="admin-hint"><button onclick="authTab('login')">← العودة لتسجيل الدخول</button></div>
+      <div class="admin-hint"><button onclick="authTab('login')">← رجوع</button></div>
     </div>
 
-    <!-- ─── REGISTER (STUDENT ONLY) ─── -->
+    <!-- ─── STUDENT REGISTER ─── -->
     <div id="form-reg" class="hidden">
-      <div class="auth-head"><h2>إنشاء حساب طالب 🎒</h2><p>سجّل كطالب للانضمام إلى فصلك</p></div>
+      <div class="auth-head">
+        <h2>إنشاء حساب طالب 🎒</h2>
+        <p>سجّل بياناتك للانضمام إلى فصلك</p>
+      </div>
       <div class="two-col">
-        <div><label class="fl">الاسم الأول</label><input id="r-fn" class="fi fi-mb" placeholder="محمد" maxlength="20" autocomplete="off"/></div>
-        <div><label class="fl">اسم العائلة</label><input id="r-ln" class="fi fi-mb" placeholder="الأمين" maxlength="20" autocomplete="off"/></div>
+        <div><label class="fl">الاسم الأول</label><input id="r-fn" class="fi" placeholder="محمد" maxlength="20" autocomplete="off"/></div>
+        <div><label class="fl">اسم العائلة</label><input id="r-ln" class="fi" placeholder="الأمين" maxlength="20" autocomplete="off"/></div>
       </div>
       <label class="fl">تاريخ الازدياد</label>
-      <input id="r-dob" class="fi fi-mb" type="date"/>
+      <input id="r-dob" class="fi" type="date"/>
       <label class="fl">المستوى الدراسي</label>
       <div class="level-grid" id="reg-levels"></div>
       <label class="fl">البريد الإلكتروني</label>
-      <input id="r-email" class="fi fi-mb" type="email" placeholder="example@email.com" autocomplete="off"/>
+      <input id="r-email" class="fi" type="email" placeholder="example@email.com" autocomplete="off"/>
       <label class="fl">كلمة المرور</label>
       <div class="pw-wrap">
         <input id="r-pass" class="fi" type="password" placeholder="8 أحرف على الأقل" autocomplete="new-password"/>
-        <button class="pw-eye" type="button" onclick="togglePw('r-pass',this)" tabindex="-1">
+        <button class="pw-eye" onclick="togPw('r-pass',this)" tabindex="-1" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
@@ -512,12 +619,89 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
   </div>
 </div>
 
-<!-- ══════════ PROFILE ══════════ -->
-<div id="pg-profile" class="hidden">
-  <header class="prof-hdr">
-    <div class="brand-bar" style="margin-bottom:0">
-      <div class="brand-ico" style="width:32px;height:32px;font-size:15px;border-radius:8px">🎓</div>
-      <div class="brand-name" style="font-size:15px">Edu<span>Room</span></div>
+<!-- ══════════════════════════════════════
+     PAGE 2: TEACHER DASHBOARD
+══════════════════════════════════════ -->
+<div id="pg-teacher" class="hidden">
+  <header class="dash-hdr">
+    <div class="dash-brand">
+      <div class="dash-brand-ico">🎓</div>
+      <div class="dash-brand-name">Edu<span>Room</span></div>
+    </div>
+    <button class="btn-logout" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>خروج
+    </button>
+  </header>
+  <div class="dash-body">
+
+    <!-- Welcome -->
+    <div class="teacher-welcome">
+      <div class="tw-avatar" id="t-av"></div>
+      <div class="tw-info">
+        <h2 id="t-name">—</h2>
+        <p id="t-email">—</p>
+        <div class="tw-badges">
+          <span class="badge go">👨‍🏫 معلم</span>
+          <span class="badge cy" id="t-join-badge">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="t-sessions" style="color:var(--go)">0</div><div class="stat-lbl">حصص أجريتها</div></div>
+      <div class="stat-card"><div class="stat-num" id="t-days" style="color:var(--cy)">0</div><div class="stat-lbl">أيام في المنصة</div></div>
+      <div class="stat-card"><div class="stat-num" id="t-msgs" style="color:var(--pu)">0</div><div class="stat-lbl">رسائل أرسلتها</div></div>
+    </div>
+
+    <!-- Room card — teacher enters directly -->
+    <div class="room-card">
+      <div class="room-card-top">
+        <div class="room-card-info">
+          <h3>🚪 غرفتك الخاصة</h3>
+          <p>هذا هو معرّف غرفتك — شاركه مع طلابك للانضمام</p>
+        </div>
+      </div>
+      <div class="room-id-display">
+        <span class="rid-label">ROOM ID</span>
+        <span class="rid-value" id="t-room-id">—</span>
+        <button class="btn-cp-room" onclick="cpTeacherRoom()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>نسخ المعرّف
+        </button>
+      </div>
+      <button class="btn-enter-room" onclick="teacherEnterRoom()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        ابدأ الحصة — ادخل غرفتك الآن
+      </button>
+    </div>
+
+    <!-- Info -->
+    <div class="info-grid">
+      <div class="info-card"><div class="info-card-label">الاسم الكامل</div><div class="info-card-val">👤 <span id="t-ic-name">—</span></div></div>
+      <div class="info-card"><div class="info-card-label">تاريخ التسجيل</div><div class="info-card-val">📅 <span id="t-ic-joined">—</span></div></div>
+      <div class="info-card"><div class="info-card-label">الدور</div><div class="info-card-val">👨‍🏫 معلم</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 3: STUDENT PROFILE
+══════════════════════════════════════ -->
+<div id="pg-student" class="hidden">
+  <header class="dash-hdr">
+    <div class="dash-brand">
+      <div class="dash-brand-ico">🎓</div>
+      <div class="dash-brand-name">Edu<span>Room</span></div>
     </div>
     <button class="btn-logout" onclick="logout()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -527,49 +711,60 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
     </button>
   </header>
   <div class="prof-body">
-    <div class="prof-hero">
-      <div class="prof-av" id="pav"></div>
-      <div class="prof-hero-info">
-        <h2 id="p-fullname">—</h2>
-        <p id="p-email-d">—</p>
-        <div class="prof-badges">
-          <div class="pbadge cy" id="p-lvlbadge"></div>
-          <div class="pbadge go" id="p-rolebadge">—</div>
-          <div class="pbadge pu" id="p-joinbadge">—</div>
+    <!-- Hero -->
+    <div class="student-hero">
+      <div class="s-av" id="s-av"></div>
+      <div class="s-hero-info">
+        <h2 id="s-name">—</h2>
+        <p id="s-email-d">—</p>
+        <div class="tw-badges">
+          <span class="badge cy" id="s-lvl-badge">—</span>
+          <span class="badge pu" id="s-join-badge">—</span>
         </div>
       </div>
     </div>
-    <div class="info-grid">
-      <div class="info-card"><div class="info-card-label">الاسم الكامل</div><div class="info-card-val">👤 <span id="ic-name">—</span></div></div>
-      <div class="info-card" id="ic-dob-card"><div class="info-card-label">تاريخ الازدياد</div><div class="info-card-val">🎂 <span id="ic-dob">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">تاريخ التسجيل</div><div class="info-card-val">📅 <span id="ic-joined">—</span></div></div>
-      <div class="info-card" id="ic-lvl-card"><div class="info-card-label">المستوى الدراسي</div><div class="info-card-val">📚 <span id="ic-level">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">الدور</div><div class="info-card-val"><span id="ic-role-ico">🎒</span> <span id="ic-role">—</span></div></div>
-      <div class="info-card" id="ic-age-card"><div class="info-card-label">العمر</div><div class="info-card-val">⏳ <span id="ic-age">—</span></div></div>
-    </div>
+
+    <!-- Stats -->
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="st-sessions">0</div><div class="stat-lbl">حصص حضرتها</div></div>
-      <div class="stat-card"><div class="stat-num" id="st-days">0</div><div class="stat-lbl">أيام في المنصة</div></div>
-      <div class="stat-card"><div class="stat-num" id="st-msgs">0</div><div class="stat-lbl">رسائل أرسلتها</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-sessions" style="color:var(--cy)">0</div><div class="stat-lbl">حصص حضرتها</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-days" style="color:var(--go)">0</div><div class="stat-lbl">أيام في المنصة</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-msgs" style="color:var(--pu)">0</div><div class="stat-lbl">رسائل أرسلتها</div></div>
     </div>
-    <div class="action-card">
-      <div><h3>🚀 الدخول إلى الفصل</h3><p>أدخل معرّف الغرفة للانضمام</p></div>
-      <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:280px">
-        <input id="p-room" class="fi" placeholder="معرّف الغرفة…" style="margin-bottom:0" maxlength="60" autocomplete="off"/>
-        <button class="btn-enter" onclick="enterCls()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px">
+
+    <!-- Join room -->
+    <div class="join-room-card">
+      <div>
+        <h3>🚀 الدخول إلى حصة</h3>
+        <p>أدخل معرّف الغرفة الذي أرسله لك أستاذك</p>
+      </div>
+      <div class="join-row">
+        <input id="s-room-id" class="fi" placeholder="معرّف الغرفة…" maxlength="60" autocomplete="off"/>
+        <button class="btn-join-cls" onclick="studentEnterRoom()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
-          </svg>الدخول للفصل
+          </svg>دخول
         </button>
       </div>
+      <div id="s-err" class="msg-err"></div>
     </div>
-    <div class="edit-sec" id="edit-sec">
+
+    <!-- Info -->
+    <div class="info-grid">
+      <div class="info-card"><div class="info-card-label">الاسم الكامل</div><div class="info-card-val">👤 <span id="s-ic-name">—</span></div></div>
+      <div class="info-card"><div class="info-card-label">تاريخ الازدياد</div><div class="info-card-val">🎂 <span id="s-ic-dob">—</span></div></div>
+      <div class="info-card"><div class="info-card-label">تاريخ التسجيل</div><div class="info-card-val">📅 <span id="s-ic-joined">—</span></div></div>
+      <div class="info-card"><div class="info-card-label">المستوى</div><div class="info-card-val">📚 <span id="s-ic-level">—</span></div></div>
+      <div class="info-card"><div class="info-card-label">العمر</div><div class="info-card-val">⏳ <span id="s-ic-age">—</span></div></div>
+    </div>
+
+    <!-- Edit level -->
+    <div class="edit-sec">
       <h3>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>تعديل المستوى
+        </svg>تعديل المستوى الدراسي
       </h3>
       <div class="level-grid" id="edit-levels"></div>
       <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
@@ -580,14 +775,16 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
   </div>
 </div>
 
-<!-- ══════════ ADMIN PANEL ══════════ -->
+<!-- ══════════════════════════════════════
+     PAGE 4: ADMIN PANEL
+══════════════════════════════════════ -->
 <div id="pg-admin" class="hidden">
   <header class="admin-hdr">
-    <div class="admin-hdr-title">
-      <div class="brand-ico" style="width:32px;height:32px;font-size:15px;border-radius:8px;background:linear-gradient(135deg,var(--or),#e08000)">🛡️</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--or),#d07000);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px">🛡️</div>
       <div>
-        <div class="brand-name" style="font-size:15px">لوحة الإدارة</div>
-        <div class="admin-badge">ADMIN PANEL</div>
+        <div class="dash-brand-name" style="font-size:15px">لوحة الإدارة</div>
+        <div class="admin-badge-hdr">EduRoom Admin</div>
       </div>
     </div>
     <button class="btn-logout" onclick="logout()">
@@ -598,119 +795,103 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
     </button>
   </header>
   <div class="admin-body">
-
     <!-- Stats -->
     <div class="admin-stats">
-      <div class="admin-stat"><div class="admin-stat-num" id="adm-teachers" style="color:var(--go)">0</div><div class="admin-stat-lbl">👨‍🏫 أساتذة</div></div>
-      <div class="admin-stat"><div class="admin-stat-num" id="adm-students" style="color:var(--cy)">0</div><div class="admin-stat-lbl">🎒 طلاب</div></div>
-      <div class="admin-stat"><div class="admin-stat-num" id="adm-total" style="color:var(--pu)">0</div><div class="admin-stat-lbl">👥 المجموع</div></div>
+      <div class="admin-stat"><div class="admin-stat-n" id="adm-t-count" style="color:var(--go)">0</div><div class="admin-stat-l">👨‍🏫 أساتذة</div></div>
+      <div class="admin-stat"><div class="admin-stat-n" id="adm-s-count" style="color:var(--cy)">0</div><div class="admin-stat-l">🎒 طلاب</div></div>
+      <div class="admin-stat"><div class="admin-stat-n" id="adm-total" style="color:var(--pu)">0</div><div class="admin-stat-l">👥 المجموع</div></div>
     </div>
-
     <!-- Tabs -->
-    <div class="tab-row">
-      <button class="tab-btn act" id="adm-tab-t" onclick="admTab('teachers')">👨‍🏫 الأساتذة</button>
-      <button class="tab-btn" id="adm-tab-s" onclick="admTab('students')">🎒 الطلاب</button>
+    <div class="admin-tabs">
+      <button class="adm-tab act" id="adm-tab-t" onclick="admTab('teachers')">👨‍🏫 الأساتذة</button>
+      <button class="adm-tab" id="adm-tab-s" onclick="admTab('students')">🎒 الطلاب</button>
     </div>
-
-    <!-- Teachers section -->
+    <!-- Teachers -->
     <div id="adm-teachers-sec">
       <div class="admin-sec">
         <div class="admin-sec-title">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>إضافة أستاذ جديد</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--cy)"><path d="M12 5v14M5 12h14"/></svg>إضافة أستاذ جديد</span>
         </div>
-        <div class="add-teacher-form">
-          <div>
-            <label class="fl">الاسم الأول</label>
-            <input id="t-fn" class="fi" placeholder="اسم الأستاذ" maxlength="20" autocomplete="off"/>
-          </div>
-          <div>
-            <label class="fl">اسم العائلة</label>
-            <input id="t-ln" class="fi" placeholder="اسم العائلة" maxlength="20" autocomplete="off"/>
-          </div>
-          <div>
-            <label class="fl">البريد الإلكتروني</label>
-            <input id="t-email" class="fi" type="email" placeholder="teacher@email.com" autocomplete="off"/>
-          </div>
+        <div class="add-form-grid">
+          <div><label class="fl">الاسم الأول</label><input id="t-fn" class="fi fi-nb" placeholder="اسم الأستاذ" maxlength="20" autocomplete="off"/></div>
+          <div><label class="fl">اسم العائلة</label><input id="t-ln" class="fi fi-nb" placeholder="اسم العائلة" maxlength="20" autocomplete="off"/></div>
+          <div><label class="fl">البريد الإلكتروني</label><input id="t-email" class="fi fi-nb" type="email" placeholder="teacher@email.com" autocomplete="off"/></div>
           <div>
             <label class="fl">كلمة المرور</label>
             <div class="pw-wrap" style="margin-bottom:0">
-              <input id="t-pass" class="fi" type="password" placeholder="كلمة مرور للأستاذ" autocomplete="new-password"/>
-              <button class="pw-eye" type="button" onclick="togglePw('t-pass',this)" tabindex="-1">
+              <input id="t-pass" class="fi fi-nb" type="password" placeholder="كلمة مرور للأستاذ" autocomplete="new-password"/>
+              <button class="pw-eye" onclick="togPw('t-pass',this)" tabindex="-1" type="button">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
           </div>
         </div>
-        <button class="btn-primary" onclick="addTeacher()" style="margin-top:4px">إضافة الأستاذ ←</button>
+        <button class="btn-primary" onclick="addTeacher()" style="margin-top:8px">إضافة الأستاذ ←</button>
         <div id="t-err" class="msg-err"></div>
-
-        <!-- Generated credentials card -->
-        <div class="cred-card" id="cred-card">
+        <!-- Credentials -->
+        <div class="cred-card hidden" id="cred-card">
           <h4>✅ تم إنشاء الحساب — أعطِ هذه البيانات للأستاذ</h4>
           <div class="cred-row">
-            <span class="cred-label">البريد</span>
+            <span class="cred-lbl">البريد</span>
             <span class="cred-val" id="cred-email">—</span>
-            <button class="btn-cp-cred" onclick="cpCred('cred-email')">نسخ</button>
+            <button class="btn-cpcred" onclick="cpCred('cred-email')">نسخ</button>
           </div>
           <div class="cred-row">
-            <span class="cred-label">كلمة المرور</span>
+            <span class="cred-lbl">كلمة المرور</span>
             <span class="cred-val" id="cred-pass">—</span>
-            <button class="btn-cp-cred" onclick="cpCred('cred-pass')">نسخ</button>
+            <button class="btn-cpcred" onclick="cpCred('cred-pass')">نسخ</button>
           </div>
-          <div style="font-size:11px;color:var(--tx3);margin-top:8px">⚠️ احفظ هذه البيانات الآن — لن تظهر مرة أخرى</div>
+          <div class="cred-row">
+            <span class="cred-lbl">معرّف الغرفة</span>
+            <span class="cred-val" id="cred-room">—</span>
+            <button class="btn-cpcred" onclick="cpCred('cred-room')">نسخ</button>
+          </div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:8px">⚠️ احتفظ بهذه البيانات — لن تظهر مرة أخرى</div>
         </div>
       </div>
-
       <!-- Teachers list -->
       <div class="admin-sec" style="margin-top:0">
         <div class="admin-sec-title">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>قائمة الأساتذة</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--cy)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>قائمة الأساتذة</span>
         </div>
-        <div id="teachers-list-wrap"></div>
+        <div id="teachers-list"></div>
       </div>
     </div>
-
-    <!-- Students section -->
+    <!-- Students -->
     <div id="adm-students-sec" class="hidden">
       <div class="admin-sec">
         <div class="admin-sec-title">
-          <span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            </svg>قائمة الطلاب
-          </span>
-          <span id="adm-student-count" style="font-family:var(--M);font-size:12px;color:var(--tx2)">0 طالب</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--cy)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>قائمة الطلاب</span>
+          <span id="adm-s-label" style="font-family:var(--M);font-size:12px;color:var(--tx2)">0 طالب</span>
         </div>
-        <div class="students-list" id="students-list-wrap"></div>
+        <div class="s-rows" id="students-list"></div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ══════════ CLASSROOM ══════════ -->
+<!-- ══════════════════════════════════════
+     PAGE 5: CLASSROOM
+══════════════════════════════════════ -->
 <div id="cls" class="hidden">
-  <header class="hdr">
-    <div class="hdr-l">
-      <div class="hdr-brand"><div class="hdr-ico">🎓</div><div class="hdr-name">Edu<span>Room</span></div></div>
-      <div class="rid">
-        <span class="rid-lbl">ROOM</span>
-        <span class="rid-val" id="h-rid">—</span>
-        <button class="btn-cp" onclick="cpRoom()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-        </button>
+  <!-- Header -->
+  <header class="c-hdr">
+    <div class="c-hdr-l">
+      <div class="c-hdr-brand">
+        <div class="c-hdr-ico">🎓</div>
+        <div class="c-hdr-name">Edu<span>Room</span></div>
+      </div>
+      <!-- Room ID — clickable to copy -->
+      <div class="c-rid" onclick="cpRoom()" title="اضغط لنسخ معرّف الغرفة">
+        <span class="c-rid-lbl">ROOM</span>
+        <span class="c-rid-val" id="h-rid">—</span>
+        <span class="c-rid-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
       </div>
     </div>
-    <div class="hdr-r">
-      <div class="mbd"><div class="mbd-dot" id="h-dot"></div><span class="mbd-txt" id="h-uname">—</span></div>
-      <div class="tbadge" id="h-timer">00:00</div>
-      <button class="btn-leave" onclick="leaveRoom()">
+    <div class="c-hdr-r">
+      <div class="c-uname"><div class="c-dot" id="c-dot"></div><span class="c-uname-txt" id="c-uname">—</span></div>
+      <div class="c-timer" id="c-timer">00:00</div>
+      <button class="c-leave" onclick="leaveRoom()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -718,18 +899,30 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
       </button>
     </div>
   </header>
-  <div class="cls-body">
-    <div class="stage">
-      <div class="scr-area">
+
+  <!-- Body -->
+  <div class="c-body">
+    <!-- Stage -->
+    <div class="c-stage">
+      <!-- Screen area -->
+      <div class="c-scr">
         <video id="scr-vid" class="hidden" autoplay playsinline></video>
-        <div id="scr-ph" class="scr-ph"><div class="scr-ph-ico">🖥️</div><p>لا توجد مشاركة شاشة</p></div>
+        <div id="c-scr-ph" class="c-scr-ph">
+          <div class="c-scr-ph-ico">🖥️</div>
+          <p>لا توجد مشاركة شاشة نشطة</p>
+          <small id="c-scr-hint">المعلم يمكنه مشاركة شاشته من أزرار التحكم</small>
+        </div>
       </div>
-      <div id="shr-bn" class="shr-bn hidden">
-        <div class="shr-dot"></div><span>أنت تشارك شاشتك</span>
-        <button class="btn-stp" onclick="stopScr()">إيقاف</button>
+      <!-- Share banner -->
+      <div id="c-shr-bn" class="c-shr-bn hidden">
+        <div class="c-shr-dot"></div>
+        <span>أنت تشارك شاشتك الآن</span>
+        <button class="btn-stop-shr" onclick="stopScr()">إيقاف</button>
       </div>
-      <div class="ctrl-bar">
-        <button class="cb" id="cb-mic" onclick="togMic()">
+      <!-- Controls -->
+      <div class="c-ctrl">
+        <!-- Mic -->
+        <button class="c-btn" id="cb-mic" onclick="togMic()">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -741,19 +934,22 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
             <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
             <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
           </svg>
-          <span class="cb-lbl">ميك</span>
+          <span class="c-btn-lbl">ميك</span>
         </button>
-        <button class="cb" id="cb-cam" onclick="togCam()">
+        <!-- Camera -->
+        <button class="c-btn" id="cb-cam" onclick="togCam()">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            <polygon points="23 7 16 12 23 17 23 7"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
           </svg>
           <svg class="ico-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/>
             <line x1="1" y1="1" x2="23" y2="23"/>
           </svg>
-          <span class="cb-lbl">كام</span>
+          <span class="c-btn-lbl">كام</span>
         </button>
-        <button class="cb" id="cb-scr" onclick="togScr()" style="display:none">
+        <!-- Screen share — teacher only, desktop only -->
+        <button class="c-btn" id="c-scr-btn" onclick="togScr()" style="display:none">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="3" width="20" height="14" rx="2"/>
             <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
@@ -763,40 +959,46 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
             <polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="21"/>
             <line x1="15" y1="3" x2="21" y2="3"/><line x1="21" y1="3" x2="21" y2="9"/><line x1="15" y1="9" x2="21" y2="3"/>
           </svg>
-          <span class="cb-lbl">شاشة</span>
+          <span class="c-btn-lbl">شاشة</span>
         </button>
-        <div class="cb-div"></div>
-        <button class="cb-end" onclick="leaveRoom()">
+        <div class="c-div"></div>
+        <!-- End -->
+        <button class="c-end" onclick="leaveRoom()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          <span class="cb-end-lbl">خروج</span>
+          <span class="c-end-lbl">خروج</span>
         </button>
       </div>
-      <div class="tile-strip" id="tiles"></div>
+      <!-- Tile strip -->
+      <div class="c-tiles" id="tiles"></div>
     </div>
-    <aside class="sidebar">
-      <div class="stabs">
-        <button class="stab act" id="st-p" onclick="stab('p')">
+
+    <!-- Sidebar (desktop) -->
+    <aside class="c-sidebar">
+      <div class="c-stabs">
+        <button class="c-stab act" id="c-st-p" onclick="cStab('p')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>المشاركون<span class="sbadge hidden" id="pcnt">0</span>
+          </svg>المشاركون
+          <span class="c-sbadge hidden" id="c-pcnt">0</span>
         </button>
-        <button class="stab" id="st-c" onclick="stab('c')">
+        <button class="c-stab" id="c-st-c" onclick="cStab('c')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>الدردشة<span class="sbadge hidden" id="cbadge">0</span>
+          </svg>الدردشة
+          <span class="c-sbadge hidden" id="c-cbadge">0</span>
         </button>
       </div>
-      <div id="sp"></div>
-      <div id="sc" class="hidden">
-        <div class="chat-wrap" id="cwd"></div>
-        <div class="cinp-wrap">
-          <div class="cinp-row">
-            <textarea class="cinp" id="ci-d" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'d')"></textarea>
-            <button class="btn-snd" onclick="send('d')">
+      <div id="c-sp"></div>
+      <div id="c-sc" class="hidden">
+        <div class="c-chat" id="c-cwd"></div>
+        <div class="c-cinp-wrap">
+          <div class="c-cinp-row">
+            <textarea class="c-cinp" id="c-ci-d" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'d')"></textarea>
+            <button class="c-snd" onclick="send('d')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
@@ -806,62 +1008,70 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
       </div>
     </aside>
   </div>
-  <nav class="mnav"><div class="mnav-in">
-    <button class="mnav-btn" id="mn-mic" onclick="togMic()">
-      <svg id="mn-mic-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-        <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-      </svg><span>ميك</span>
-    </button>
-    <button class="mnav-btn" id="mn-cam" onclick="togCam()">
-      <svg id="mn-cam-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-      </svg><span>كام</span>
-    </button>
-    <button class="mnav-btn" id="mn-flip" onclick="flipCam()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
-        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
-      </svg><span>قلب</span>
-    </button>
-    <button class="mnav-btn" id="mn-room" onclick="togDrawer()">
-      <div style="position:relative;display:inline-flex">
+
+  <!-- Mobile nav -->
+  <nav class="c-mnav">
+    <div class="c-mnav-in">
+      <button class="c-mnav-btn" id="m-mic" onclick="togMic()">
+        <svg id="m-mic-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+        </svg><span>ميك</span>
+      </button>
+      <button class="c-mnav-btn" id="m-cam" onclick="togCam()">
+        <svg id="m-cam-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="23 7 16 12 23 17 23 7"/>
+          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+        </svg><span>كام</span>
+      </button>
+      <button class="c-mnav-btn" id="m-flip" onclick="flipCam()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-        <span class="mbadge hidden" id="m-ubadge">0</span>
-      </div><span>الغرفة</span>
-    </button>
-    <button class="mnav-btn danger" onclick="leaveRoom()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-      </svg><span>خروج</span>
-    </button>
-  </div></nav>
-  <div class="bd-overlay" id="bd-ov" onclick="closeDrawer()"></div>
-  <div class="bdrawer" id="bdrawer">
-    <div class="bd-handle"></div>
-    <div class="bd-tabs">
-      <button class="bdtab act" id="bdt-p" onclick="bdTab('p')">
+          <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+        </svg><span>قلب</span>
+      </button>
+      <button class="c-mnav-btn" id="m-room" onclick="togDrawer()">
+        <div style="position:relative;display:inline-flex">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="c-mbadge hidden" id="m-ubadge">0</span>
+        </div><span>الغرفة</span>
+      </button>
+      <button class="c-mnav-btn danger" onclick="leaveRoom()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg><span>خروج</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Drawer overlay -->
+  <div class="c-bd-overlay" id="c-bd-ov" onclick="closeDrawer()"></div>
+  <div class="c-bdrawer" id="c-bdrawer">
+    <div class="c-bd-handle"></div>
+    <div class="c-bd-tabs">
+      <button class="c-bdtab act" id="c-bdt-p" onclick="cBdTab('p')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
         </svg>المشاركون
       </button>
-      <button class="bdtab" id="bdt-c" onclick="bdTab('c')">
+      <button class="c-bdtab" id="c-bdt-c" onclick="cBdTab('c')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>الدردشة<span class="bdtab-badge hidden" id="bd-cbadge">0</span>
+        </svg>الدردشة
+        <span class="c-bdtab-badge hidden" id="c-bd-cbadge">0</span>
       </button>
     </div>
-    <div id="msp"></div>
-    <div id="msc" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
-      <div class="chat-wrap" id="cwm"></div>
-      <div class="cinp-wrap">
-        <div class="cinp-row">
-          <textarea class="cinp" id="ci-m" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'m')"></textarea>
-          <button class="btn-snd" onclick="send('m')">
+    <div id="c-msp"></div>
+    <div id="c-msc" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="c-chat" id="c-cwm"></div>
+      <div class="c-cinp-wrap">
+        <div class="c-cinp-row">
+          <textarea class="c-cinp" id="c-ci-m" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'m')"></textarea>
+          <button class="c-snd" onclick="send('m')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
@@ -877,19 +1087,32 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 <script>
 'use strict';
 /* ═══════════════════════════════════════════════════════
-   EduRoom v7
-   - Admin account: fixed credentials (hashed)
-   - Teachers: created ONLY by admin, no self-registration
-   - Students: self-register
-   - Password show/hide toggle on all forms
+   EduRoom v8 — Full Integrated Platform
+   
+   Flow:
+   ┌─────────┐    ┌──────────────────┐    ┌──────────┐
+   │  Login  │───▶│ Teacher Dashboard│───▶│Classroom │
+   │  /Reg   │    │ (auto room ID)   │    │(teacher) │
+   └─────────┘    └──────────────────┘    └──────────┘
+        │         ┌──────────────────┐    ┌──────────┐
+        └────────▶│ Student Profile  │───▶│Classroom │
+                  │ (enter room ID)  │    │(student) │
+                  └──────────────────┘    └──────────┘
+        │         ┌──────────────────┐
+        └────────▶│  Admin Panel     │
+                  │ (manage teachers)│
+                  └──────────────────┘
 ═══════════════════════════════════════════════════════ */
 
-/* ── Admin credentials (SHA-256 hashed) ── */
-// Email: aitomaraziz@gmail.com  Password: AZIZ@2026
-const ADMIN_EMAIL = 'aitomaraziz@gmail.com';
-const ADMIN_PASS_HASH = ''; // computed on first load
+/* ─── Config ─── */
+const ADMIN_EMAIL    = 'aitomùaraziz@gmail.com';
+const ADMIN_PASS_RAW = 'AZIZ@2026'; // hashed on first use
+const MAX_ATTEMPTS   = 5;
+const LOCKOUT_MS     = 30 * 60 * 1000;
+const DB_KEY         = 'eduroom_db_v8';
+const ME_KEY         = 'eduroom_me_v8';
 
-const LEVELS=[
+const LEVELS = [
   {id:'ps1',ico:'🌱',lbl:'السنة 1 ابتدائي'},
   {id:'ps2',ico:'🌿',lbl:'السنة 2 ابتدائي'},
   {id:'ps3',ico:'🍀',lbl:'السنة 3 ابتدائي'},
@@ -903,404 +1126,428 @@ const LEVELS=[
   {id:'ly2',ico:'🏆',lbl:'السنة 2 ثانوي'},
   {id:'bac',ico:'🎓',lbl:'الباكالوريا'},
 ];
-const COLORS=['#00d4ff','#f0b429','#a78bfa','#00e676','#ff6b9d','#ff9f43','#54a0ff','#e17055'];
-const MAX_LOGIN_ATTEMPTS=5,LOCKOUT_MS=30*60*1000;
-const DB_KEY='eduroom_db_v7',ME_KEY='eduroom_me_v7';
+const COLORS = ['#00d4ff','#f0b429','#a78bfa','#00e676','#ff6b9d','#ff9f43','#54a0ff','#e17055'];
+const MSG_TYPES = new Set(['hello','state','chat','mu','co','scr:on','scr:off']);
 
-/* ── Crypto ── */
-async function sha256(s){
-  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+/* ─── Crypto ─── */
+async function sha256(s) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
 }
-function randId(n=8){
-  const a=new Uint8Array(n);crypto.getRandomValues(a);
+function randId(n=8) {
+  const a = new Uint8Array(n); crypto.getRandomValues(a);
   return Array.from(a).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,n);
 }
+/* Generate a stable room ID from teacher's uid */
+function makeRoomId(uid) {
+  // Take last 8 chars of uid + fixed prefix = consistent, unique per teacher
+  return 'room-' + uid.slice(-8).toUpperCase();
+}
 
-/* ── Storage ── */
-function getDB(){try{return JSON.parse(localStorage.getItem(DB_KEY))||{users:{},loginFails:{}}}catch(e){return{users:{},loginFails:{}}}}
-async function saveDB(db){localStorage.setItem(DB_KEY,JSON.stringify(db))}
-function getMe(){try{return JSON.parse(localStorage.getItem(ME_KEY))||null}catch(e){return null}}
-function setMe(u){localStorage.setItem(ME_KEY,JSON.stringify(u))}
-function clearMe(){localStorage.removeItem(ME_KEY)}
+/* ─── Storage ─── */
+function getDB() { try{return JSON.parse(localStorage.getItem(DB_KEY))||{users:{},fails:{}}}catch(e){return{users:{},fails:{}}} }
+async function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)) }
+function getMe() { try{return JSON.parse(localStorage.getItem(ME_KEY))||null}catch(e){return null} }
+function setMe(u) { localStorage.setItem(ME_KEY, JSON.stringify(u)) }
+function clearMe() { localStorage.removeItem(ME_KEY) }
 
-/* ── Utils ── */
-const $=id=>document.getElementById(id);
-const pad=n=>String(n).padStart(2,'0');
-const gc=n=>{let h=0;for(let c of(n||'?'))h=(h*31+c.charCodeAt(0))%COLORS.length;return COLORS[h]};
-const esc=s=>{const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML};
-const setTxt=(id,v)=>{const e=$(id);if(e)e.textContent=String(v||'')};
-const sanitizeName=s=>(s||'').trim().replace(/[<>"'&]/g,'').slice(0,28);
-const sanitizeRoom=s=>(s||'').trim().replace(/[^a-zA-Z0-9\u0600-\u06FF\-_]/g,'').slice(0,50);
-const sanitizeMsg=s=>(s||'').trim().slice(0,500);
-const fmtDate=d=>{if(!d)return'—';try{return new Date(d).toLocaleDateString('ar-MA',{year:'numeric',month:'long',day:'numeric'})}catch(e){return d}};
-const calcAge=dob=>{const b=new Date(dob),n=new Date();let a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a};
+/* ─── Utils ─── */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+const gc = n => { let h=0; for(let c of(n||'?')) h=(h*31+c.charCodeAt(0))%COLORS.length; return COLORS[h] };
+const esc = s => { const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML };
+const setTxt = (id,v) => { const e=$(id); if(e) e.textContent=String(v||'') };
+const sanitizeName = s => (s||'').trim().replace(/[<>"'&]/g,'').slice(0,28);
+const sanitizeRoom = s => (s||'').trim().replace(/[^a-zA-Z0-9\-_]/g,'').slice(0,50);
+const sanitizeMsg  = s => (s||'').trim().slice(0,500);
+const fmtDate = d => { if(!d)return'—'; try{return new Date(d).toLocaleDateString('ar-MA',{year:'numeric',month:'long',day:'numeric'})}catch(e){return d} };
+const calcAge = dob => { const b=new Date(dob),n=new Date(); let a=n.getFullYear()-b.getFullYear(); if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--; return a };
+const setErr = (id,m) => { const e=$(id); if(!e)return; e.textContent=m; setTimeout(()=>{if(e)e.textContent=''},5000) };
 
-function showPage(pg){
-  ['pg-auth','pg-profile','pg-admin','cls'].forEach(id=>$(id)?.classList.add('hidden'));
-  if(pg==='cls')$('cls')?.classList.remove('hidden');
+function showPage(pg) {
+  ['pg-auth','pg-teacher','pg-student','pg-admin','cls'].forEach(id=>$(id)?.classList.add('hidden'));
+  if(pg==='cls') $('cls')?.classList.remove('hidden');
   else $('pg-'+pg)?.classList.remove('hidden');
 }
-function setErr(id,m){const e=$(id);if(!e)return;e.textContent=m;setTimeout(()=>{if(e)e.textContent=''},5000)}
 
-/* ── Password visibility toggle ── */
-function togglePw(inputId,btn){
-  const inp=$(inputId);if(!inp)return;
-  const show=inp.type==='password';
-  inp.type=show?'text':'password';
-  btn.innerHTML=show
-    ?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
-    :`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+/* ─── Password toggle ─── */
+function togPw(id, btn) {
+  const inp = $(id); if(!inp) return;
+  const show = inp.type==='password';
+  inp.type = show ? 'text' : 'password';
+  btn.innerHTML = show
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 }
 
-/* ── Auth tabs ── */
-function authTab(t){
-  $('at-login').classList.toggle('act',t==='login');
-  $('at-reg').classList.toggle('act',t==='reg');
-  ['form-login','form-admin','form-reg'].forEach(id=>$(id).classList.add('hidden'));
-  if(t==='login')$('form-login').classList.remove('hidden');
-  else if(t==='admin')$('form-admin').classList.remove('hidden');
-  else if(t==='reg')$('form-reg').classList.remove('hidden');
+/* ─── Auth tabs ─── */
+function authTab(t) {
+  $('at-login').classList.toggle('act', t==='login');
+  $('at-reg').classList.toggle('act', t==='reg');
+  ['form-login','form-admin','form-reg'].forEach(id => $(id)?.classList.add('hidden'));
+  if(t==='login')       $('form-login')?.classList.remove('hidden');
+  else if(t==='admin')  $('form-admin')?.classList.remove('hidden');
+  else if(t==='reg')    $('form-reg')?.classList.remove('hidden');
 }
 
-/* ── Level grids ── */
-let regSelLvl='',editSelLvl='';
-function buildLevels(cid,onSel){
-  const el=$(cid);if(!el)return;el.innerHTML='';
-  LEVELS.forEach(lv=>{
-    const btn=document.createElement('button');
-    btn.className='lv-btn';btn.type='button';btn.id='lv-'+cid+'-'+lv.id;
-    const ico=document.createElement('span');ico.className='lv-ico';ico.textContent=lv.ico;
+/* ─── Level grids ─── */
+let regSelLvl='', editSelLvl='';
+function buildLevels(cid, onSel) {
+  const el=$(cid); if(!el) return; el.innerHTML='';
+  LEVELS.forEach(lv => {
+    const btn = document.createElement('button');
+    btn.className='lv-btn'; btn.type='button'; btn.id='lv-'+cid+'-'+lv.id;
+    const ico=document.createElement('span'); ico.className='lv-i'; ico.textContent=lv.ico;
     btn.appendChild(ico);
-    btn.appendChild(document.createTextNode(lv.lbl.replace('السنة ','').replace(' ابتدائي','↑').replace(' إعدادي','↑↑').replace(' ثانوي','↑↑↑').replace('الباكالوريا','باك')));
-    btn.addEventListener('click',()=>onSel(lv.id));
+    const short=lv.lbl.replace('السنة ','').replace(' ابتدائي','↑').replace(' إعدادي','↑↑').replace(' ثانوي','↑↑↑').replace('الباكالوريا','باك');
+    btn.appendChild(document.createTextNode(short));
+    btn.addEventListener('click', ()=>onSel(lv.id));
     el.appendChild(btn);
   });
 }
-function selRegLvl(id){regSelLvl=id;LEVELS.forEach(l=>$('lv-reg-levels-'+l.id)?.classList.toggle('sel',l.id===id))}
-function selEditLvl(id){editSelLvl=id;LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===id))}
+function selRegLvl(id) { regSelLvl=id; LEVELS.forEach(l=>$('lv-reg-levels-'+l.id)?.classList.toggle('sel',l.id===id)) }
+function selEditLvl(id) { editSelLvl=id; LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===id)) }
 
-/* ═══════════════════════
+/* ══════════════════════════════════════
    STUDENT REGISTER
-═══════════════════════ */
-async function doRegister(){
-  const fn=sanitizeName($('r-fn').value);
-  const ln=sanitizeName($('r-ln').value);
-  const email=($('r-email').value||'').trim().toLowerCase();
-  const pass=$('r-pass').value||'';
-  const dob=$('r-dob').value||'';
-  if(!fn||!ln)return setErr('r-err','أدخل الاسم الأول واسم العائلة');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr('r-err','بريد إلكتروني غير صحيح');
-  if(pass.length<8)return setErr('r-err','كلمة المرور يجب أن تكون 8 أحرف على الأقل');
-  if(!dob)return setErr('r-err','أدخل تاريخ ازديادك');
-  const dobDate=new Date(dob);const now=new Date();
-  const age=(now-dobDate)/(365.25*24*3600*1000);
-  if(dobDate>=now||age<4||age>100)return setErr('r-err','تاريخ ازدياد غير صحيح');
-  if(!regSelLvl)return setErr('r-err','اختر مستواك الدراسي');
-  const db=getDB();
-  if(Object.values(db.users).some(u=>u.email===email))
-    return setErr('r-err','هذا البريد مسجّل مسبقاً');
-  const passHash=await sha256(pass);
-  const uid='u_'+randId(10);
-  const user={uid,fname:fn,lname:ln,email,passHash,role:'student',dob,level:regSelLvl,
+══════════════════════════════════════ */
+async function doRegister() {
+  const fn   = sanitizeName($('r-fn').value);
+  const ln   = sanitizeName($('r-ln').value);
+  const email= ($('r-email').value||'').trim().toLowerCase();
+  const pass = $('r-pass').value||'';
+  const dob  = $('r-dob').value||'';
+  if(!fn||!ln) return setErr('r-err','أدخل الاسم الأول واسم العائلة');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr('r-err','بريد إلكتروني غير صحيح');
+  if(pass.length<8) return setErr('r-err','كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+  if(!dob) return setErr('r-err','أدخل تاريخ ازديادك');
+  const dAge=(Date.now()-new Date(dob).getTime())/(365.25*24*3600*1000);
+  if(new Date(dob)>=new Date()||dAge<4||dAge>100) return setErr('r-err','تاريخ ازدياد غير صحيح');
+  if(!regSelLvl) return setErr('r-err','اختر مستواك الدراسي');
+  const db = getDB();
+  if(Object.values(db.users).some(u=>u.email===email)) return setErr('r-err','هذا البريد مسجّل مسبقاً');
+  const uid='s_'+randId(10);
+  const user={uid,fname:fn,lname:ln,email,passHash:await sha256(pass),
+    role:'student',dob,level:regSelLvl,
     joined:new Date().toISOString().split('T')[0],sessions:0,msgs:0};
-  db.users[uid]=user;
-  await saveDB(db);
+  db.users[uid]=user; await saveDB(db);
   setMe({uid,fname:fn,lname:ln,email,role:'student',dob,level:regSelLvl,joined:user.joined,sessions:0,msgs:0});
   toast('تم إنشاء حسابك 🎉','ok');
   setTimeout(()=>goProfile(),500);
 }
 
-/* ═══════════════════════
+/* ══════════════════════════════════════
    LOGIN
-═══════════════════════ */
-let adminPassHash='';
-
-async function doLogin(){
-  const email=($('l-email').value||'').trim().toLowerCase();
-  const pass=$('l-pass').value||'';
-  if(!email||!pass)return setErr('l-err','أدخل بياناتك');
-  const db=getDB();const now=Date.now();
-  const failInfo=db.loginFails?.[email]||{count:0,until:0};
-  if(failInfo.count>=MAX_LOGIN_ATTEMPTS&&failInfo.until>now){
-    const mins=Math.ceil((failInfo.until-now)/60000);
-    $('lockout-warn').classList.remove('hidden');
-    setTxt('lockout-msg','الحساب محظور — انتظر '+mins+' دقيقة');
-    $('btn-login').disabled=true;return;
-  }
-  const found=Object.values(db.users).find(u=>u.email===email);
-  if(!found){recordFail(db,email,now);await saveDB(db);return setErr('l-err','البريد أو كلمة المرور غير صحيحة')}
-  const ph=await sha256(pass);
-  if(found.passHash!==ph){
-    recordFail(db,email,now);await saveDB(db);
-    const rem=MAX_LOGIN_ATTEMPTS-(db.loginFails[email]?.count||0);
-    return setErr('l-err',rem>0?'كلمة مرور خاطئة — متبقي '+rem+' محاولة':'تم قفل الحساب مؤقتاً');
-  }
-  if(db.loginFails)delete db.loginFails[email];
-  await saveDB(db);
-  $('lockout-warn').classList.add('hidden');$('btn-login').disabled=false;
-  setMe({uid:found.uid,fname:found.fname,lname:found.lname,email:found.email,
-    role:found.role,dob:found.dob||'',level:found.level||'',
-    joined:found.joined,sessions:found.sessions||0,msgs:found.msgs||0});
-  toast('أهلاً بك '+found.fname+' 👋','ok');
-  setTimeout(()=>goProfile(),500);
+══════════════════════════════════════ */
+let _adminHash='';
+async function getAdminHash() {
+  if(!_adminHash) _adminHash=await sha256(ADMIN_PASS_RAW);
+  return _adminHash;
 }
 
-/* ═══════════════════════
-   ADMIN LOGIN
-═══════════════════════ */
-async function doAdminLogin(){
-  const email=($('a-email').value||'').trim().toLowerCase();
-  const pass=$('a-pass').value||'';
-  if(!email||!pass)return setErr('a-err','أدخل بيانات الإدارة');
-  if(email!==ADMIN_EMAIL.toLowerCase())return setErr('a-err','بريد المدير غير صحيح');
-  if(!adminPassHash)adminPassHash=await sha256('AZIZ@2026');
+async function doLogin() {
+  const email=($('l-email').value||'').trim().toLowerCase();
+  const pass =$('l-pass').value||'';
+  if(!email||!pass) return setErr('l-err','أدخل بياناتك');
+  const db=getDB(); const now=Date.now();
+  const fi=db.fails?.[email]||{count:0,until:0};
+  if(fi.count>=MAX_ATTEMPTS&&fi.until>now) {
+    $('lockout-warn').classList.remove('hidden');
+    setTxt('lockout-msg','الحساب محظور — انتظر '+Math.ceil((fi.until-now)/60000)+' دقيقة');
+    $('btn-login').disabled=true; return;
+  }
+  const found=Object.values(db.users).find(u=>u.email===email);
+  if(!found) { recordFail(db,email,now); await saveDB(db); return setErr('l-err','البريد أو كلمة المرور غير صحيحة') }
   const ph=await sha256(pass);
-  if(ph!==adminPassHash)return setErr('a-err','كلمة مرور المدير غير صحيحة');
+  if(found.passHash!==ph) {
+    recordFail(db,email,now); await saveDB(db);
+    const rem=MAX_ATTEMPTS-(db.fails[email]?.count||0);
+    return setErr('l-err', rem>0?'كلمة مرور خاطئة — متبقي '+rem+' محاولة':'تم قفل الحساب مؤقتاً');
+  }
+  if(db.fails) delete db.fails[email];
+  await saveDB(db);
+  $('lockout-warn').classList.add('hidden'); $('btn-login').disabled=false;
+  const session={uid:found.uid,fname:found.fname,lname:found.lname,email:found.email,
+    role:found.role,dob:found.dob||'',level:found.level||'',
+    joined:found.joined,sessions:found.sessions||0,msgs:found.msgs||0};
+  setMe(session);
+  toast('أهلاً بك '+found.fname+' 👋','ok');
+  setTimeout(()=>goProfile(),400);
+}
+
+async function doAdminLogin() {
+  const email=($('a-email').value||'').trim().toLowerCase();
+  const pass =$('a-pass').value||'';
+  if(!email||!pass) return setErr('a-err','أدخل بيانات الإدارة');
+  if(email!==ADMIN_EMAIL.toLowerCase()) return setErr('a-err','بريد المدير غير صحيح');
+  const ph=await sha256(pass);
+  if(ph!==await getAdminHash()) return setErr('a-err','كلمة مرور المدير غير صحيحة');
   setMe({uid:'admin',fname:'المدير',lname:'',email:ADMIN_EMAIL,role:'admin',joined:new Date().toISOString().split('T')[0]});
   toast('أهلاً بك في لوحة الإدارة 🛡️','ok');
   setTimeout(()=>goAdmin(),400);
 }
 
-function recordFail(db,email,now){
-  if(!db.loginFails)db.loginFails={};
-  const f=db.loginFails[email]||{count:0,until:0};
-  f.count++;if(f.count>=MAX_LOGIN_ATTEMPTS)f.until=now+LOCKOUT_MS;
-  db.loginFails[email]=f;
+function recordFail(db,email,now) {
+  if(!db.fails) db.fails={};
+  const f=db.fails[email]||{count:0,until:0};
+  f.count++; if(f.count>=MAX_ATTEMPTS) f.until=now+LOCKOUT_MS;
+  db.fails[email]=f;
 }
 
-/* ═══════════════════════
-   ADMIN PANEL
-═══════════════════════ */
-let admCurrentTab='teachers';
-
-function goAdmin(){
-  showPage('admin');
-  renderAdminStats();
-  renderTeachersList();
-  renderStudentsList();
+/* ══════════════════════════════════════
+   PROFILE ROUTING
+══════════════════════════════════════ */
+function goProfile() {
+  const me=getMe(); if(!me){showPage('auth');return}
+  if(me.role==='admin')   { goAdmin(); return }
+  if(me.role==='teacher') { goTeacher(); return }
+  goStudent();
 }
 
-function admTab(t){
-  admCurrentTab=t;
-  $('adm-tab-t').classList.toggle('act',t==='teachers');
-  $('adm-tab-s').classList.toggle('act',t==='students');
-  $('adm-teachers-sec').classList.toggle('hidden',t!=='teachers');
-  $('adm-students-sec').classList.toggle('hidden',t!=='students');
-  if(t==='students')renderStudentsList();
-}
-
-function renderAdminStats(){
-  const db=getDB();
-  const teachers=Object.values(db.users).filter(u=>u.role==='teacher');
-  const students=Object.values(db.users).filter(u=>u.role==='student');
-  setTxt('adm-teachers',teachers.length);
-  setTxt('adm-students',students.length);
-  setTxt('adm-total',teachers.length+students.length);
-}
-
-async function addTeacher(){
-  const fn=sanitizeName($('t-fn').value);
-  const ln=sanitizeName($('t-ln').value);
-  const email=($('t-email').value||'').trim().toLowerCase();
-  const pass=$('t-pass').value||'';
-  if(!fn||!ln)return setErr('t-err','أدخل الاسم الأول واسم العائلة');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr('t-err','بريد إلكتروني غير صحيح');
-  if(pass.length<6)return setErr('t-err','كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-  const db=getDB();
-  if(Object.values(db.users).some(u=>u.email===email))
-    return setErr('t-err','هذا البريد مسجّل مسبقاً');
-  const passHash=await sha256(pass);
-  const uid='t_'+randId(10);
-  const user={uid,fname:fn,lname:ln,email,passHash,role:'teacher',dob:'',level:'',
-    joined:new Date().toISOString().split('T')[0],sessions:0,msgs:0};
-  db.users[uid]=user;
-  await saveDB(db);
-  // Show credentials
-  setTxt('cred-email',email);
-  setTxt('cred-pass',pass);
-  $('cred-card').classList.add('show');
-  // Clear form
-  $('t-fn').value='';$('t-ln').value='';$('t-email').value='';$('t-pass').value='';
-  toast('تم إضافة الأستاذ '+fn+' '+ln+' ✅','ok');
-  renderAdminStats();
-  renderTeachersList();
-}
-
-function deleteTeacher(uid){
-  if(!confirm('هل أنت متأكد من حذف هذا الحساب؟'))return;
-  const db=getDB();
-  delete db.users[uid];
-  saveDB(db);
-  renderAdminStats();renderTeachersList();
-  toast('تم حذف الحساب','');
-}
-
-function renderTeachersList(){
-  const db=getDB();
-  const teachers=Object.values(db.users).filter(u=>u.role==='teacher');
-  const wrap=$('teachers-list-wrap');if(!wrap)return;
-  if(!teachers.length){
-    wrap.innerHTML='<div class="empty-state"><span>👨‍🏫</span>لا يوجد أساتذة بعد — أضف أستاذاً من الأعلى</div>';
-    return;
-  }
-  let html=`<div style="overflow-x:auto"><table class="teachers-table">
-  <thead><tr>
-    <th>الاسم</th><th>البريد الإلكتروني</th><th>تاريخ الإضافة</th><th>الحصص</th><th></th>
-  </tr></thead><tbody>`;
-  teachers.forEach(t=>{
-    html+=`<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div style="width:28px;height:28px;border-radius:50%;background:${gc(t.fname)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${esc(t.fname[0])}</div>
-        <span>${esc(t.fname+' '+t.lname)}</span>
-      </div></td>
-      <td style="font-family:var(--M);font-size:12px;color:var(--tx2)">${esc(t.email)}</td>
-      <td style="font-size:12px;color:var(--tx2)">${fmtDate(t.joined)}</td>
-      <td style="font-family:var(--M);text-align:center">${t.sessions||0}</td>
-      <td><button class="btn-tbl-del" onclick="deleteTeacher('${esc(t.uid)}')">حذف</button></td>
-    </tr>`;
-  });
-  html+=`</tbody></table></div>`;
-  wrap.innerHTML=html;
-}
-
-function renderStudentsList(){
-  const db=getDB();
-  const students=Object.values(db.users).filter(u=>u.role==='student');
-  const wrap=$('students-list-wrap');if(!wrap)return;
-  setTxt('adm-student-count',students.length+' طالب');
-  if(!students.length){
-    wrap.innerHTML='<div class="empty-state"><span>🎒</span>لا يوجد طلاب مسجلون بعد</div>';
-    return;
-  }
-  wrap.innerHTML='';
-  students.forEach(s=>{
-    const lv=LEVELS.find(l=>l.id===s.level);
-    const div=document.createElement('div');
-    div.className='student-row';
-    div.innerHTML=`
-      <div class="s-av" style="background:${gc(s.fname)}">${esc(s.fname[0])}</div>
-      <div class="s-info">
-        <div class="s-name">${esc(s.fname+' '+s.lname)}</div>
-        <div class="s-detail">${esc(s.email)} • ${lv?lv.ico+' '+lv.lbl:'—'} • ${s.dob?calcAge(s.dob)+' سنة':'—'}</div>
-      </div>
-      <div style="font-family:var(--M);font-size:11px;color:var(--tx2);text-align:center;flex-shrink:0">
-        ${s.sessions||0}<br><span style="font-size:10px">حصة</span>
-      </div>`;
-    wrap.appendChild(div);
-  });
-}
-
-function cpCred(id){
-  const el=$(id);if(!el)return;
-  navigator.clipboard.writeText(el.textContent).then(()=>toast('تم النسخ ✓','ok')).catch(()=>{});
-}
-
-/* ═══════════════════════
-   PROFILE
-═══════════════════════ */
-function goProfile(){
-  const me=getMe();if(!me){showPage('auth');return}
-  if(me.role==='admin'){goAdmin();return}
-  showPage('profile');
+/* ══════════════════════════════════════
+   TEACHER DASHBOARD
+══════════════════════════════════════ */
+function goTeacher() {
+  const me=getMe(); if(!me){showPage('auth');return}
+  showPage('teacher');
   const c=gc(me.fname);
-  const av=$('pav');if(av){av.style.background=c;av.textContent=me.fname[0]||'؟'}
-  setTxt('p-fullname',me.fname+' '+me.lname);
-  setTxt('p-email-d',me.email);
-  const lv=LEVELS.find(l=>l.id===me.level);
-  const lvb=$('p-lvlbadge');
-  if(lvb){if(me.role==='student'&&lv){lvb.style.display='';setTxt('p-lvlbadge',lv.ico+' '+lv.lbl)}else lvb.style.display='none'}
-  setTxt('p-rolebadge',me.role==='teacher'?'👨‍🏫 معلم':'🎒 طالب');
-  setTxt('p-joinbadge','📅 منذ '+fmtDate(me.joined));
-  setTxt('ic-name',me.fname+' '+me.lname);
-  const dobCard=$('ic-dob-card');if(dobCard)dobCard.style.display=me.role==='student'?'':'none';
-  setTxt('ic-dob',me.dob?fmtDate(me.dob):'—');
-  setTxt('ic-joined',fmtDate(me.joined));
-  const lvCard=$('ic-lvl-card');if(lvCard)lvCard.style.display=me.role==='student'?'':'none';
-  setTxt('ic-level',lv?lv.lbl:'—');
-  setTxt('ic-role',me.role==='teacher'?'معلم':'طالب');
-  setTxt('ic-role-ico',me.role==='teacher'?'👨‍🏫':'🎒');
-  const ageCard=$('ic-age-card');if(ageCard)ageCard.style.display=me.role==='student'?'':'none';
-  setTxt('ic-age',me.dob&&me.role==='student'?calcAge(me.dob)+' سنة':'—');
-  setTxt('st-sessions',me.sessions||0);
-  setTxt('st-days',Math.floor((Date.now()-new Date(me.joined).getTime())/86400000));
-  setTxt('st-msgs',me.msgs||0);
-  const es=$('edit-sec');if(es)es.style.display=me.role==='student'?'':'none';
-  if(me.role==='student'){
-    buildLevels('edit-levels',selEditLvl);
-    editSelLvl=me.level;
-    LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===me.level));
-  }
+  const av=$('t-av'); if(av){av.style.background=c;av.textContent=me.fname[0]||'؟'}
+  setTxt('t-name', me.fname+' '+me.lname);
+  setTxt('t-email', me.email);
+  setTxt('t-join-badge', '📅 منذ '+fmtDate(me.joined));
+  setTxt('t-ic-name', me.fname+' '+me.lname);
+  setTxt('t-ic-joined', fmtDate(me.joined));
+  setTxt('t-sessions', me.sessions||0);
+  setTxt('t-days', Math.floor((Date.now()-new Date(me.joined).getTime())/86400000));
+  setTxt('t-msgs', me.msgs||0);
+  // Teacher's room ID is derived from their uid — permanent & unique
+  const roomId = makeRoomId(me.uid);
+  setTxt('t-room-id', roomId);
 }
 
-async function saveLevel(){
-  if(!editSelLvl)return toast('اختر مستوى أولاً','err');
-  const me=getMe();if(!me)return;
-  me.level=editSelLvl;setMe(me);
-  const db=getDB();if(db.users[me.uid])db.users[me.uid].level=editSelLvl;
+function cpTeacherRoom() {
+  const me=getMe(); if(!me) return;
+  const roomId=makeRoomId(me.uid);
+  navigator.clipboard?.writeText(roomId).then(()=>toast('تم نسخ معرّف الغرفة ✓ — شاركه مع طلابك','ok')).catch(()=>{});
+}
+
+async function teacherEnterRoom() {
+  const me=getMe(); if(!me) return;
+  // Update session count
+  me.sessions=(me.sessions||0)+1; setMe(me);
+  const db=getDB(); if(db.users[me.uid]){db.users[me.uid].sessions=me.sessions;await saveDB(db)}
+  const roomId=makeRoomId(me.uid);
+  startClassroom(me.fname+' '+me.lname,'teacher',roomId);
+}
+
+/* ══════════════════════════════════════
+   STUDENT PROFILE
+══════════════════════════════════════ */
+function goStudent() {
+  const me=getMe(); if(!me){showPage('auth');return}
+  showPage('student');
+  const c=gc(me.fname);
+  const av=$('s-av'); if(av){av.style.background=c;av.textContent=me.fname[0]||'؟'}
+  setTxt('s-name', me.fname+' '+me.lname);
+  setTxt('s-email-d', me.email);
+  const lv=LEVELS.find(l=>l.id===me.level);
+  setTxt('s-lvl-badge', lv?lv.ico+' '+lv.lbl:'—');
+  setTxt('s-join-badge', '📅 منذ '+fmtDate(me.joined));
+  setTxt('s-sessions', me.sessions||0);
+  setTxt('s-days', Math.floor((Date.now()-new Date(me.joined).getTime())/86400000));
+  setTxt('s-msgs', me.msgs||0);
+  setTxt('s-ic-name', me.fname+' '+me.lname);
+  setTxt('s-ic-dob', me.dob?fmtDate(me.dob):'—');
+  setTxt('s-ic-joined', fmtDate(me.joined));
+  setTxt('s-ic-level', lv?lv.lbl:'—');
+  setTxt('s-ic-age', me.dob?calcAge(me.dob)+' سنة':'—');
+  buildLevels('edit-levels', selEditLvl);
+  editSelLvl=me.level;
+  LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===me.level));
+}
+
+async function studentEnterRoom() {
+  const raw=$('s-room-id')?.value||'';
+  const roomId=sanitizeRoom(raw);
+  if(!roomId) return setErr('s-err','أدخل معرّف الغرفة الذي أرسله لك أستاذك');
+  const me=getMe(); if(!me) return;
+  me.sessions=(me.sessions||0)+1; setMe(me);
+  const db=getDB(); if(db.users[me.uid]){db.users[me.uid].sessions=me.sessions;await saveDB(db)}
+  startClassroom(me.fname+' '+me.lname,'student',roomId);
+}
+
+async function saveLevel() {
+  if(!editSelLvl) return toast('اختر مستوى أولاً','err');
+  const me=getMe(); if(!me) return;
+  me.level=editSelLvl; setMe(me);
+  const db=getDB(); if(db.users[me.uid]) db.users[me.uid].level=editSelLvl;
   await saveDB(db);
   const lv=LEVELS.find(l=>l.id===editSelLvl);
-  setTxt('ic-level',lv?lv.lbl:'—');
-  if(lv)setTxt('p-lvlbadge',lv.ico+' '+lv.lbl);
+  setTxt('s-ic-level', lv?lv.lbl:'—');
+  setTxt('s-lvl-badge', lv?lv.ico+' '+lv.lbl:'—');
   setTxt('save-msg','✓ تم الحفظ');
   toast('تم حفظ المستوى','ok');
   setTimeout(()=>setTxt('save-msg',''),3000);
 }
 
-function logout(){
-  clearMe();
-  showPage('auth');authTab('login');
-  $('l-email').value='';$('l-pass').value='';
+/* ══════════════════════════════════════
+   ADMIN PANEL
+══════════════════════════════════════ */
+let admTab_='teachers';
+function goAdmin() {
+  showPage('admin');
+  renderAdminStats(); renderTeachers(); renderStudents();
+}
+function admTab(t) {
+  admTab_=t;
+  $('adm-tab-t').classList.toggle('act',t==='teachers');
+  $('adm-tab-s').classList.toggle('act',t==='students');
+  $('adm-teachers-sec').classList.toggle('hidden',t!=='teachers');
+  $('adm-students-sec').classList.toggle('hidden',t!=='students');
+  if(t==='students') renderStudents();
+}
+function renderAdminStats() {
+  const db=getDB();
+  const ts=Object.values(db.users).filter(u=>u.role==='teacher');
+  const ss=Object.values(db.users).filter(u=>u.role==='student');
+  setTxt('adm-t-count',ts.length); setTxt('adm-s-count',ss.length);
+  setTxt('adm-total',ts.length+ss.length);
+}
+async function addTeacher() {
+  const fn   =sanitizeName($('t-fn').value);
+  const ln   =sanitizeName($('t-ln').value);
+  const email=($('t-email').value||'').trim().toLowerCase();
+  const pass =$('t-pass').value||'';
+  if(!fn||!ln) return setErr('t-err','أدخل الاسم الأول واسم العائلة');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr('t-err','بريد إلكتروني غير صحيح');
+  if(pass.length<6) return setErr('t-err','كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+  const db=getDB();
+  if(Object.values(db.users).some(u=>u.email===email)) return setErr('t-err','هذا البريد مسجّل مسبقاً');
+  const uid='t_'+randId(10);
+  const roomId=makeRoomId(uid);
+  const user={uid,fname:fn,lname:ln,email,passHash:await sha256(pass),
+    role:'teacher',dob:'',level:'',
+    joined:new Date().toISOString().split('T')[0],sessions:0,msgs:0};
+  db.users[uid]=user; await saveDB(db);
+  // Show credentials to admin
+  setTxt('cred-email',email);
+  setTxt('cred-pass',pass);
+  setTxt('cred-room',roomId);
+  $('cred-card').classList.remove('hidden');
+  // Clear form
+  $('t-fn').value='';$('t-ln').value='';$('t-email').value='';$('t-pass').value='';
+  toast('تم إضافة الأستاذ '+fn+' '+ln+' ✅','ok');
+  renderAdminStats(); renderTeachers();
+}
+function delTeacher(uid) {
+  if(!confirm('هل أنت متأكد من حذف هذا الحساب؟')) return;
+  const db=getDB(); delete db.users[uid]; saveDB(db);
+  $('cred-card').classList.add('hidden');
+  renderAdminStats(); renderTeachers();
+  toast('تم حذف الحساب','');
+}
+function renderTeachers() {
+  const db=getDB();
+  const ts=Object.values(db.users).filter(u=>u.role==='teacher');
+  const w=$('teachers-list'); if(!w) return;
+  if(!ts.length){w.innerHTML='<div class="empty"><span>👨‍🏫</span>لا يوجد أساتذة — أضف أستاذاً من الأعلى</div>';return}
+  let h=`<div style="overflow-x:auto"><table class="t-table"><thead><tr>
+    <th>الاسم</th><th>البريد</th><th>معرّف الغرفة</th><th>الحصص</th><th>التسجيل</th><th></th>
+  </tr></thead><tbody>`;
+  ts.forEach(t=>{
+    const rid=makeRoomId(t.uid);
+    h+=`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${gc(t.fname)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${esc(t.fname[0])}</div>
+        <span>${esc(t.fname+' '+t.lname)}</span></div></td>
+      <td style="font-family:var(--M);font-size:11px;color:var(--tx2)">${esc(t.email)}</td>
+      <td><span style="font-family:var(--M);font-size:11px;color:var(--cy);background:var(--cy-g);padding:3px 8px;border-radius:6px">${esc(rid)}</span></td>
+      <td style="font-family:var(--M);text-align:center">${t.sessions||0}</td>
+      <td style="font-size:11px;color:var(--tx2)">${fmtDate(t.joined)}</td>
+      <td><button class="btn-del" onclick="delTeacher('${esc(t.uid)}')">حذف</button></td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  w.innerHTML=h;
+}
+function renderStudents() {
+  const db=getDB();
+  const ss=Object.values(db.users).filter(u=>u.role==='student');
+  const w=$('students-list'); if(!w) return;
+  setTxt('adm-s-label', ss.length+' طالب');
+  if(!ss.length){w.innerHTML='<div class="empty"><span>🎒</span>لا يوجد طلاب مسجلون بعد</div>';return}
+  w.innerHTML='';
+  ss.forEach(s=>{
+    const lv=LEVELS.find(l=>l.id===s.level);
+    const d=document.createElement('div'); d.className='s-row';
+    d.innerHTML=`
+      <div class="s-row-av" style="background:${gc(s.fname)}">${esc(s.fname[0])}</div>
+      <div class="s-row-info">
+        <div class="s-row-name">${esc(s.fname+' '+s.lname)}</div>
+        <div class="s-row-detail">${esc(s.email)} • ${lv?lv.ico+' '+lv.lbl:'—'} • ${s.dob?calcAge(s.dob)+' سنة':'—'}</div>
+      </div>
+      <div style="font-family:var(--M);font-size:11px;color:var(--tx2);text-align:center;flex-shrink:0;min-width:40px">
+        ${s.sessions||0}<div style="font-size:10px">حصة</div>
+      </div>`;
+    w.appendChild(d);
+  });
+}
+function cpCred(id) {
+  const e=$(id); if(!e) return;
+  navigator.clipboard?.writeText(e.textContent).then(()=>toast('تم النسخ ✓','ok')).catch(()=>{});
+}
+
+/* ══════════════════════════════════════
+   LOGOUT
+══════════════════════════════════════ */
+function logout() {
+  clearMe(); showPage('auth'); authTab('login');
+  $('l-email').value=''; $('l-pass').value='';
   $('lockout-warn')?.classList.add('hidden');
   $('btn-login').disabled=false;
-  $('cred-card')?.classList.remove('show');
+  $('cred-card')?.classList.add('hidden');
   toast('تم تسجيل الخروج','');
 }
 
-/* ═══════════════════════
-   CLASSROOM
-═══════════════════════ */
+/* ══════════════════════════════════════
+   CLASSROOM ENGINE
+══════════════════════════════════════ */
 let peer=null,myId='',myName='',myRole='student',roomId='';
 let LS=null,SS=null,micMuted=false,camOff=false,sharing=false,faceMode='user';
 const PEERS=new Map();
 let sesStart=null,timerIv=null,unread=0,ctab='p',bdtab='p',bdOpen=false,sharerId=null;
-const MSG_TYPES=new Set(['hello','state','chat','mu','co','scr:on','scr:off']);
 
-async function enterCls(){
-  const cleanRoom=sanitizeRoom($('p-room')?.value||'');
-  if(!cleanRoom){toast('أدخل معرّف الغرفة','err');return}
-  const me=getMe();if(!me)return;
-  me.sessions=(me.sessions||0)+1;setMe(me);
-  const db=getDB();if(db.users[me.uid]){db.users[me.uid].sessions=me.sessions;await saveDB(db)}
-  roomId=cleanRoom;myName=sanitizeName(me.fname+' '+me.lname);myRole=me.role;
-  startCls();
-}
-
-async function startCls(){
-  setTxt('h-uname',myName);
-  if(myRole==='teacher'){$('h-dot').classList.add('T');$('cb-scr').style.display='flex'}
-  if(navigator.wakeLock)navigator.wakeLock.request('screen').catch(()=>{});
-  try{
+async function startClassroom(name, role, room) {
+  myName=sanitizeName(name); myRole=role; roomId=sanitizeRoom(room);
+  setTxt('h-rid', roomId);
+  setTxt('c-uname', myName);
+  if(role==='teacher'){$('c-dot').classList.add('T');$('c-scr-btn').style.display='flex'}
+  else {$('c-dot').classList.remove('T');$('c-scr-btn').style.display='none'}
+  if(navigator.wakeLock) navigator.wakeLock.request('screen').catch(()=>{});
+  try {
     LS=await navigator.mediaDevices.getUserMedia({
       video:{width:{ideal:640},height:{ideal:480},facingMode:faceMode},
       audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
     });
-  }catch(e){toast('تعذّر الكاميرا: '+e.message,'err');return}
+  } catch(e){toast('تعذّر الكاميرا: '+e.message,'err');return}
   myId=myRole==='teacher'?roomId+'_host':roomId+'_'+randId(4);
-  if(!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(myId)){toast('معرّف الغرفة غير صالح','err');return}
   peer=new Peer(myId,{debug:0});
   peer.on('open',()=>{
-    showPage('cls');setTxt('h-rid',roomId);
-    selfTile();updPList();sesStart=Date.now();
-    timerIv=setInterval(()=>{const s=Math.floor((Date.now()-sesStart)/1000);setTxt('h-timer',pad(Math.floor(s/60))+':'+pad(s%60))},1000);
-    sysmsg('أهلاً '+myName+'! دخلت الغرفة');
-    if(myRole==='student')connTeacher();
-    toast('متصل بالغرفة ✓','ok');
+    showPage('cls');
+    selfTile(); updPList();
+    sesStart=Date.now();
+    timerIv=setInterval(()=>{
+      const s=Math.floor((Date.now()-sesStart)/1000);
+      setTxt('c-timer',pad(Math.floor(s/60))+':'+pad(s%60));
+    },1000);
+    sysmsg('أهلاً '+myName+'! دخلت الغرفة — المعرّف: '+roomId);
+    if(myRole==='student') connTeacher();
+    else toast('🚀 الغرفة مفتوحة — شارك المعرّف '+roomId+' مع طلابك','info');
   });
   peer.on('error',e=>{
-    const m={'peer-unavailable':'الغرفة غير موجودة أو المعلم لم يدخل بعد.','network':'خطأ في الشبكة','unavailable-id':'معرّف مستخدم، أعد المحاولة'};
+    const m={'peer-unavailable':'الغرفة غير موجودة أو الأستاذ لم يفتحها بعد.','network':'خطأ في الشبكة','unavailable-id':'المعرّف مستخدم — حاول مجدداً'};
     toast(m[e.type]||'خطأ: '+e.message,'err');
-    showPage('profile');setTimeout(()=>goProfile(),100);
+    goProfile();
   });
   peer.on('call',call=>{
     call.answer(LS);
@@ -1309,36 +1556,41 @@ async function startCls(){
   });
   peer.on('connection',conn=>setupDC(conn));
 }
-function connTeacher(){
+
+function connTeacher() {
   const tid=roomId+'_host';
   const dc=peer.connect(tid,{metadata:{name:myName,role:myRole}});
   dc.on('open',()=>{
     dc.send({t:'hello',name:myName,role:myRole,id:myId});
-    if(!PEERS.has(tid))PEERS.set(tid,{name:'المعلم',role:'teacher',dc,mc:null,stream:null,mu:false,co:false});
+    if(!PEERS.has(tid)) PEERS.set(tid,{name:'الأستاذ',role:'teacher',dc,mc:null,stream:null,mu:false,co:false});
     else PEERS.get(tid).dc=dc;
-    setupDC(dc);updPList();sysmsg('تواصلت مع المعلم');
+    setupDC(dc); updPList(); sysmsg('تواصلت مع الأستاذ');
   });
   const mc=peer.call(tid,LS,{metadata:{name:myName,role:myRole}});
-  mc.on('stream',s=>upPeer(tid,'...','teacher',s,mc));mc.on('close',()=>delPeer(tid));
+  mc.on('stream',s=>upPeer(tid,'...','teacher',s,mc));
+  mc.on('close',()=>delPeer(tid));
 }
-function setupDC(conn){
+
+function setupDC(conn) {
   const pid=conn.peer;
-  if(!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(pid)){conn.close();return}
+  if(!/^[a-zA-Z0-9\-_]+$/.test(pid)){conn.close();return}
   conn.on('open',()=>{
     if(!PEERS.has(pid)){const m=conn.metadata||{};PEERS.set(pid,{name:sanitizeName(m.name||'مشارك'),role:m.role==='teacher'?'teacher':'student',dc:conn,mc:null,stream:null,mu:false,co:false})}
     else PEERS.get(pid).dc=conn;
     updPList();
   });
-  conn.on('data',d=>onMsg(pid,d));conn.on('close',()=>delPeer(pid));conn.on('error',()=>delPeer(pid));
+  conn.on('data',d=>onMsg(pid,d));
+  conn.on('close',()=>delPeer(pid));conn.on('error',()=>delPeer(pid));
 }
-function onMsg(from,d){
-  if(!d||typeof d!=='object')return;
-  if(!MSG_TYPES.has(d.t))return;
+
+function onMsg(from,d) {
+  if(!d||typeof d!=='object') return;
+  if(!MSG_TYPES.has(d.t)) return;
   try{if(JSON.stringify(d).length>4096)return}catch(e){return}
   switch(d.t){
     case 'hello':{
       const sn=sanitizeName(d.name||'مشارك'),sr=d.role==='teacher'?'teacher':'student';
-      if(!PEERS.has(from))PEERS.set(from,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
+      if(!PEERS.has(from)) PEERS.set(from,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
       else{PEERS.get(from).name=sn;PEERS.get(from).role=sr}
       sysmsg(sn+' دخل الغرفة');toast(sn+' انضم 👋','ok');
       if(myRole==='teacher'){
@@ -1355,26 +1607,32 @@ function onMsg(from,d){
       updPList();break;
     }
     case 'state':{
-      if(!Array.isArray(d.peers))return;
+      if(!Array.isArray(d.peers)) return;
       d.peers.slice(0,100).forEach(p=>{
-        if(!p.id||typeof p.id!=='string')return;
-        if(p.id===myId||!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(p.id))return;
+        if(!p.id||p.id===myId||!/^[a-zA-Z0-9\-_]+$/.test(p.id)) return;
         const sn=sanitizeName(p.name||'مشارك'),sr=p.role==='teacher'?'teacher':'student';
-        if(!PEERS.has(p.id))PEERS.set(p.id,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
-        if(p.id!==roomId+'_host')connPeer(p.id,sn,sr);
+        if(!PEERS.has(p.id)) PEERS.set(p.id,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
+        if(p.id!==roomId+'_host') connPeer(p.id,sn,sr);
       });
-      if(d.sharer&&d.sharer!==myId){sharerId=d.sharer;toast('المعلم يشارك الشاشة 🖥️','ok')}
+      if(d.sharer&&d.sharer!==myId){sharerId=d.sharer;toast('الأستاذ يشارك الشاشة 🖥️','ok')}
       updPList();break;
     }
-    case 'chat':{const p=PEERS.get(from);const txt=sanitizeMsg(String(d.txt||''));if(!txt)return;renderMsg(p?.name||sanitizeName(d.name||'مشارك'),txt,false,from);if(ctab!=='c'||!bdOpen){unread++;updBadges()}break}
+    case 'chat':{
+      const p=PEERS.get(from);
+      const txt=sanitizeMsg(String(d.txt||'')); if(!txt) return;
+      renderMsg(p?.name||sanitizeName(d.name||'مشارك'),txt,false,from);
+      if(ctab!=='c'||!bdOpen){unread++;updBadges()}
+      break;
+    }
     case 'mu':{const p=PEERS.get(from);if(p){p.mu=!!d.v;rTile(from);updPList()}break}
     case 'co':{const p=PEERS.get(from);if(p){p.co=!!d.v;rTile(from);updPList()}break}
-    case 'scr:on':{sharerId=from;const sh=PEERS.get(from);showScr(null);toast((sh?.name||'المعلم')+' يشارك الشاشة 🖥️','ok');break}
+    case 'scr:on':{sharerId=from;const sh=PEERS.get(from);showScr(null);toast((sh?.name||'الأستاذ')+' يشارك الشاشة 🖥️','ok');break}
     case 'scr:off':{sharerId=null;hideScr();break}
   }
 }
+
 function connPeer(pid,name,role){
-  if(pid===myId||!/^[a-zA-Z0-9\u0600-\u06FF\-_]+$/.test(pid))return;
+  if(pid===myId||!/^[a-zA-Z0-9\-_]+$/.test(pid))return;
   const dc=peer.connect(pid,{metadata:{name:myName,role:myRole}});
   dc.on('open',()=>{dc.send({t:'hello',name:myName,role:myRole,id:myId});if(PEERS.has(pid))PEERS.get(pid).dc=dc;setupDC(dc)});
   const mc=peer.call(pid,LS,{metadata:{name:myName,role:myRole}});
@@ -1389,18 +1647,20 @@ function upPeer(id,name,role,stream,mc){
 }
 function delPeer(id){
   if(!PEERS.has(id))return;
-  const p=PEERS.get(id);sysmsg((p.name||'مشارك')+' غادر');toast((p.name||'مشارك')+' غادر','');
+  const p=PEERS.get(id);sysmsg((p.name||'مشارك')+' غادر الغرفة');toast((p.name||'مشارك')+' غادر','');
   PEERS.delete(id);const t=$('t-'+id);if(t)t.remove();
   if(id===sharerId){sharerId=null;hideScr()}updPList();
 }
 function bcast(d){PEERS.forEach(p=>{if(p.dc&&p.dc.open)try{p.dc.send(d)}catch(e){}})}
+
+/* ─── Media ─── */
 function togMic(){
   micMuted=!micMuted;LS?.getAudioTracks().forEach(t=>t.enabled=!micMuted);
   const b=$('cb-mic');b.classList.toggle('off',micMuted);
   b.querySelector('.ico-on').classList.toggle('hidden',micMuted);
   b.querySelector('.ico-off').classList.toggle('hidden',!micMuted);
-  $('mn-mic').classList.toggle('off',micMuted);
-  $('mn-mic-ico').innerHTML=micMuted
+  $('m-mic').classList.toggle('off',micMuted);
+  $('m-mic-i').innerHTML=micMuted
     ?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>'
     :'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>';
   bcast({t:'mu',v:micMuted});updSelfTile();
@@ -1410,8 +1670,8 @@ function togCam(){
   const b=$('cb-cam');b.classList.toggle('off',camOff);
   b.querySelector('.ico-on').classList.toggle('hidden',camOff);
   b.querySelector('.ico-off').classList.toggle('hidden',!camOff);
-  $('mn-cam').classList.toggle('off',camOff);
-  $('mn-cam-ico').innerHTML=camOff
+  $('m-cam').classList.toggle('off',camOff);
+  $('m-cam-i').innerHTML=camOff
     ?'<path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/><line x1="1" y1="1" x2="23" y2="23"/>'
     :'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>';
   bcast({t:'co',v:camOff});updSelfTile();
@@ -1435,20 +1695,24 @@ async function startScr(){
     const st=SS.getVideoTracks()[0];
     PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(st).catch(()=>{})}});
     st.onended=()=>stopScr();sharing=true;sharerId=myId;
-    $('scr-vid').srcObject=SS;showScr(SS);$('shr-bn').classList.remove('hidden');
-    const b=$('cb-scr');b.classList.add('on');b.querySelector('.ico-on').classList.add('hidden');b.querySelector('.ico-off').classList.remove('hidden');
+    $('scr-vid').srcObject=SS;showScr(SS);$('c-shr-bn').classList.remove('hidden');
+    const b=$('c-scr-btn');b.classList.add('on');
+    b.querySelector('.ico-on').classList.add('hidden');b.querySelector('.ico-off').classList.remove('hidden');
     bcast({t:'scr:on',name:myName});toast('بدأت مشاركة الشاشة 🖥️','ok');
   }catch(e){if(e.name!=='NotAllowedError')toast('خطأ: '+e.message,'err')}
 }
 async function stopScr(){
   if(!sharing)return;SS?.getTracks().forEach(t=>t.stop());SS=null;sharing=false;sharerId=null;
   if(LS){const ct=LS.getVideoTracks()[0];if(ct)PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(ct).catch(()=>{})}})}
-  hideScr();$('shr-bn').classList.add('hidden');
-  const b=$('cb-scr');b.classList.remove('on');b.querySelector('.ico-on').classList.remove('hidden');b.querySelector('.ico-off').classList.add('hidden');
-  bcast({t:'scr:off'});toast('أوقفت المشاركة','');
+  hideScr();$('c-shr-bn').classList.add('hidden');
+  const b=$('c-scr-btn');b.classList.remove('on');
+  b.querySelector('.ico-on').classList.remove('hidden');b.querySelector('.ico-off').classList.add('hidden');
+  bcast({t:'scr:off'});toast('أوقفت مشاركة الشاشة','');
 }
-function showScr(s){if(s)$('scr-vid').srcObject=s;$('scr-vid').classList.remove('hidden');$('scr-ph').classList.add('hidden')}
-function hideScr(){$('scr-vid').srcObject=null;$('scr-vid').classList.add('hidden');$('scr-ph').classList.remove('hidden')}
+function showScr(s){if(s)$('scr-vid').srcObject=s;$('scr-vid').classList.remove('hidden');$('c-scr-ph').classList.add('hidden')}
+function hideScr(){$('scr-vid').srcObject=null;$('scr-vid').classList.add('hidden');$('c-scr-ph').classList.remove('hidden')}
+
+/* ─── Tiles ─── */
 function selfTile(){
   let t=$('t-self');
   if(!t){t=document.createElement('div');t.id='t-self';t.className='ptile me';$('tiles').prepend(t)}
@@ -1478,7 +1742,7 @@ function mkTile(id,name,role,isMe,mu=false,co=false){
   return`<video class="tv${co?' hidden':''}" autoplay playsinline${isMe?' muted':''}></video>
 ${co?`<div class="tavtr"><div class="tavtr-l" style="background:${c}">${i}</div></div>`:''}
 <div class="tov"></div>
-<div class="trole ${role==='teacher'?'T':'S'}">${role==='teacher'?'معلم':'طالب'}</div>
+<div class="trole ${role==='teacher'?'T':'S'}">${role==='teacher'?'أستاذ':'طالب'}</div>
 <div class="tname"><span class="tname-txt">${isMe?'أنت':esc(name)}</span>
 <div class="ticns">
 <div class="ticn mic-i${mu?' mu':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${mp}</svg></div>
@@ -1486,25 +1750,28 @@ ${co?`<div class="tavtr"><div class="tavtr-l" style="background:${c}">${i}</div>
 </div></div>`;
 }
 function updPList(){
-  const total=PEERS.size+1;setTxt('pcnt',total);$('pcnt').classList.remove('hidden');
+  const total=PEERS.size+1;setTxt('c-pcnt',total);$('c-pcnt').classList.remove('hidden');
   let h=mkPLI(myName,myRole,true,micMuted,camOff);
   PEERS.forEach(p=>h+=mkPLI(p.name,p.role,false,p.mu,p.co));
-  [$('sp'),$('msp')].forEach(el=>{if(el)el.innerHTML=h});
+  [$('c-sp'),$('c-msp')].forEach(el=>{if(el)el.innerHTML=h});
 }
 function mkPLI(name,role,isMe,mu,co){
   const c=gc(name);
   return`<div class="pli"><div class="pav" style="background:${c}">${esc((name||'؟')[0])}</div>
 <div class="pi"><div class="pn">${isMe?'أنت — ':''  }${esc(name||'مشارك')}</div>
-<div class="pr">${role==='teacher'?'👨‍🏫 معلم':'🎒 طالب'} • ${mu?'🔇':'🎙️'} • ${co?'📵':'📹'}</div></div>
+<div class="pr">${role==='teacher'?'👨‍🏫 أستاذ':'🎒 طالب'} • ${mu?'🔇':'🎙️'} • ${co?'📵':'📹'}</div></div>
 ${isMe?`<button class="pbtn${mu?' on':''}" onclick="togMic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg></button>`:''}
 </div>`;
 }
+
+/* ─── Chat ─── */
 function ck(e,src){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(src)}}
 async function send(src){
-  const inp=$('ci-'+(src||'d'));
+  const inp=$('c-ci-'+(src||'d'));
   const txt=sanitizeMsg(inp.value);if(!txt)return;
   inp.value='';inp.style.height='auto';
-  const me=getMe();if(me&&me.uid!=='admin'){me.msgs=(me.msgs||0)+1;setMe(me);const db=getDB();if(db.users[me.uid]){db.users[me.uid].msgs=me.msgs;await saveDB(db)}}
+  const me=getMe();
+  if(me&&me.uid!=='admin'){me.msgs=(me.msgs||0)+1;setMe(me);const db=getDB();if(db.users[me.uid]){db.users[me.uid].msgs=me.msgs;await saveDB(db)}}
   renderMsg(myName,txt,true,myId);bcast({t:'chat',name:myName,txt});
 }
 function renderMsg(name,txt,isMe,from){
@@ -1514,59 +1781,74 @@ function renderMsg(name,txt,isMe,from){
 <div class="cmsg-hd"><div class="cav" style="background:${c}">${i}</div>
 <span class="cname">${isMe?'أنت':esc(name)}</span><span class="ctime">${tm}</span></div>
 <div class="cbub">${esc(txt)}</div></div>`;
-  [$('cwd'),$('cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
+  [$('c-cwd'),$('c-cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
 }
 function sysmsg(txt){
   const html=`<div class="cmsg sys"><div class="cbub">— ${esc(txt)} —</div></div>`;
-  [$('cwd'),$('cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
+  [$('c-cwd'),$('c-cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
 }
-function stab(t){
-  ctab=t;$('st-p').classList.toggle('act',t==='p');$('st-c').classList.toggle('act',t==='c');
-  $('sp').classList.toggle('hidden',t!=='p');$('sc').classList.toggle('hidden',t!=='c');
-  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('ci-d')?.focus(),80)}
+
+/* ─── Sidebar ─── */
+function cStab(t){
+  ctab=t;$('c-st-p').classList.toggle('act',t==='p');$('c-st-c').classList.toggle('act',t==='c');
+  $('c-sp').classList.toggle('hidden',t!=='p');$('c-sc').classList.toggle('hidden',t!=='c');
+  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('c-ci-d')?.focus(),80)}
 }
 function togDrawer(){bdOpen?closeDrawer():openDrawer()}
-function openDrawer(){bdOpen=true;$('bdrawer').classList.add('open');$('bd-ov').classList.add('open');$('mn-room').classList.add('act');if(bdtab==='c'){unread=0;updBadges()}}
-function closeDrawer(){bdOpen=false;$('bdrawer').classList.remove('open');$('bd-ov').classList.remove('open');$('mn-room').classList.remove('act')}
-function bdTab(t){
-  bdtab=t;$('bdt-p').classList.toggle('act',t==='p');$('bdt-c').classList.toggle('act',t==='c');
-  $('msp').classList.toggle('hidden',t!=='p');$('msc').classList.toggle('hidden',t!=='c');
-  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('ci-m')?.focus(),80)}
+function openDrawer(){bdOpen=true;$('c-bdrawer').classList.add('open');$('c-bd-ov').classList.add('open');$('m-room').classList.add('act');if(bdtab==='c'){unread=0;updBadges()}}
+function closeDrawer(){bdOpen=false;$('c-bdrawer').classList.remove('open');$('c-bd-ov').classList.remove('open');$('m-room').classList.remove('act')}
+function cBdTab(t){
+  bdtab=t;$('c-bdt-p').classList.toggle('act',t==='p');$('c-bdt-c').classList.toggle('act',t==='c');
+  $('c-msp').classList.toggle('hidden',t!=='p');$('c-msc').classList.toggle('hidden',t!=='c');
+  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('c-ci-m')?.focus(),80)}
 }
-function updBadges(){[$('cbadge'),$('bd-cbadge'),$('m-ubadge')].forEach(el=>{if(!el)return;el.textContent=unread;el.classList.toggle('hidden',unread===0)})}
+function updBadges(){[$('c-cbadge'),$('c-bd-cbadge'),$('m-ubadge')].forEach(el=>{if(!el)return;el.textContent=unread;el.classList.toggle('hidden',unread===0)})}
+
+/* ─── Leave ─── */
 function leaveRoom(){
   clearInterval(timerIv);timerIv=null;
-  LS?.getTracks().forEach(t=>t.stop());LS=null;SS?.getTracks().forEach(t=>t.stop());SS=null;
+  LS?.getTracks().forEach(t=>t.stop());LS=null;
+  SS?.getTracks().forEach(t=>t.stop());SS=null;
   PEERS.forEach(p=>{try{p.dc?.close()}catch(e){}try{p.mc?.close()}catch(e){}});PEERS.clear();
   try{peer?.destroy()}catch(e){}peer=null;
   micMuted=false;camOff=false;sharing=false;sharerId=null;
-  $('tiles').innerHTML='';$('sp').innerHTML='';$('msp').innerHTML='';
-  $('cwd').innerHTML='';$('cwm').innerHTML='';
-  closeDrawer();showPage('profile');setTimeout(()=>goProfile(),100);toast('غادرت الغرفة','');
+  $('tiles').innerHTML='';$('c-sp').innerHTML='';$('c-msp').innerHTML='';
+  $('c-cwd').innerHTML='';$('c-cwm').innerHTML='';
+  closeDrawer();
+  goProfile();
+  toast('غادرت الغرفة','');
 }
-function cpRoom(){navigator.clipboard?.writeText(roomId).then(()=>toast('تم نسخ المعرّف ✓','ok')).catch(()=>{})}
+function cpRoom(){
+  navigator.clipboard?.writeText(roomId)
+    .then(()=>toast('تم نسخ معرّف الغرفة: '+roomId+' ✓','ok'))
+    .catch(()=>{});
+}
+
+/* ─── Toast ─── */
 let toastT=null;
 function toast(msg,type=''){
   const t=$('toast');t.textContent=String(msg||'');
   t.className='toast'+(type?' '+type:'');t.classList.remove('hidden');
-  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add('hidden'),3200);
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add('hidden'),4000);
 }
-['ci-d','ci-m'].forEach(id=>{const el=$(id);if(!el)return;el.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'})});
+
+/* ─── Init ─── */
+['c-ci-d','c-ci-m'].forEach(id=>{
+  const el=$(id);if(!el)return;
+  el.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'});
+});
 let ty0=0;
-const bdEl=$('bdrawer');
+const bdEl=$('c-bdrawer');
 if(bdEl){
   bdEl.addEventListener('touchstart',e=>ty0=e.touches[0].clientY,{passive:true});
   bdEl.addEventListener('touchmove',e=>{if(e.touches[0].clientY-ty0>60)closeDrawer()},{passive:true});
 }
 
-/* ── Boot ── */
 window.addEventListener('DOMContentLoaded',()=>{
-  buildLevels('reg-levels',selRegLvl);
+  buildLevels('reg-levels', selRegLvl);
   const me=getMe();
-  if(me?.uid){
-    if(me.role==='admin')goAdmin();
-    else goProfile();
-  }else showPage('auth');
+  if(me?.uid) goProfile();
+  else showPage('auth');
 });
 </script>
 </body>
