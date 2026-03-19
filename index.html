@@ -1218,7 +1218,8 @@ async function doRegister() {
   const pass = $('r-pass').value||'';
   const dob  = $('r-dob').value||'';
   if(!fn||!ln) return setErr('r-err','أدخل الاسم الأول واسم العائلة');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr('r-err','بريد إلكتروني غير صحيح');
+  if(!email) return setErr('r-err','أدخل البريد الإلكتروني');
+  if(!email.includes('@')||!email.includes('.')) return setErr('r-err','البريد يجب أن يحتوي على @ ونقطة');
   if(pass.length<8) return setErr('r-err','كلمة المرور يجب أن تكون 8 أحرف على الأقل');
   if(!dob) return setErr('r-err','أدخل تاريخ ازديادك');
   const dAge=(Date.now()-new Date(dob).getTime())/(365.25*24*3600*1000);
@@ -1419,7 +1420,8 @@ async function addTeacher() {
   const email=($('t-email').value||'').trim().toLowerCase();
   const pass =$('t-pass').value||'';
   if(!fn||!ln) return setErr('t-err','أدخل الاسم الأول واسم العائلة');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr('t-err','بريد إلكتروني غير صحيح');
+  if(!email) return setErr('t-err','أدخل البريد الإلكتروني');
+  if(!email.includes('@')||!email.includes('.')) return setErr('t-err','البريد الإلكتروني يجب أن يحتوي على @ ونقطة');
   if(pass.length<6) return setErr('t-err','كلمة المرور يجب أن تكون 6 أحرف على الأقل');
   const db=getDB();
   if(Object.values(db.users).some(u=>u.email===email)) return setErr('t-err','هذا البريد مسجّل مسبقاً');
