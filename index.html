@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="theme-color" content="#060d1c"/>
 <title>EduRoom — المنصة التعليمية</title>
+<meta name="description" content="منصة EduRoom للتعليم الافتراضي — فصول دراسية مباشرة"/>
+<meta name="robots" content="noindex,nofollow"/>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -533,7 +535,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 <!-- ══════════════════════════════════════
      PAGE 1: AUTH
 ══════════════════════════════════════ -->
-<div id="pg-auth">
+<div id="pg-auth" role="main">
   <div class="auth-card card">
     <div class="brand-bar">
       <div class="brand-ico">🎓</div>
@@ -563,7 +565,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
-      <button class="btn-primary" id="btn-login" onclick="doLogin()">دخول ←</button>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()" aria-label="تسجيل الدخول">دخول ←</button>
       <div id="l-err" class="msg-err"></div>
       <div class="admin-hint">
         <button onclick="authTab('admin')">🛡️ دخول لوحة الإدارة</button>
@@ -622,7 +624,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 <!-- ══════════════════════════════════════
      PAGE 2: TEACHER DASHBOARD
 ══════════════════════════════════════ -->
-<div id="pg-teacher" class="hidden">
+<div id="pg-teacher" role="main" class="hidden">
   <header class="dash-hdr">
     <div class="dash-brand">
       <div class="dash-brand-ico">🎓</div>
@@ -697,7 +699,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 <!-- ══════════════════════════════════════
      PAGE 3: STUDENT PROFILE
 ══════════════════════════════════════ -->
-<div id="pg-student" class="hidden">
+<div id="pg-student" role="main" class="hidden">
   <header class="dash-hdr">
     <div class="dash-brand">
       <div class="dash-brand-ico">🎓</div>
@@ -778,7 +780,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 <!-- ══════════════════════════════════════
      PAGE 4: ADMIN PANEL
 ══════════════════════════════════════ -->
-<div id="pg-admin" class="hidden">
+<div id="pg-admin" role="main" class="hidden">
   <header class="admin-hdr">
     <div style="display:flex;align-items:center;gap:10px">
       <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--or),#d07000);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px">🛡️</div>
@@ -923,7 +925,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
       <!-- Controls -->
       <div class="c-ctrl">
         <!-- Mic -->
-        <button class="c-btn" id="cb-mic" onclick="togMic()">
+        <button class="c-btn" id="cb-mic" onclick="togMic()" aria-label="تشغيل/إيقاف الميكروفون">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -938,7 +940,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
           <span class="c-btn-lbl">ميك</span>
         </button>
         <!-- Camera -->
-        <button class="c-btn" id="cb-cam" onclick="togCam()">
+        <button class="c-btn" id="cb-cam" onclick="togCam()" aria-label="تشغيل/إيقاف الكاميرا">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="23 7 16 12 23 17 23 7"/>
             <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
@@ -950,7 +952,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
           <span class="c-btn-lbl">كام</span>
         </button>
         <!-- Screen share — teacher only, desktop only -->
-        <button class="c-btn" id="c-scr-btn" onclick="togScr()" style="display:none">
+        <button class="c-btn" id="c-scr-btn" onclick="togScr()" aria-label="مشاركة الشاشة" style="display:none">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="3" width="20" height="14" rx="2"/>
             <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
@@ -964,7 +966,7 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
         </button>
         <div class="c-div"></div>
         <!-- End -->
-        <button class="c-end" onclick="leaveRoom()">
+        <button class="c-end" onclick="leaveRoom()" aria-label="مغادرة الغرفة">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -1106,12 +1108,16 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 ═══════════════════════════════════════════════════════ */
 
 /* ─── Config ─── */
-const ADMIN_EMAIL    = 'aitomùaraziz@gmail.com';
-const ADMIN_PASS_RAW = 'AZIZ@2026'; // hashed on first use
-const MAX_ATTEMPTS   = 5;
-const LOCKOUT_MS     = 30 * 60 * 1000;
-const DB_KEY         = 'eduroom_db_v8';
-const ME_KEY         = 'eduroom_me_v8';
+// بيانات المدير تُحفظ مشفّرة في localStorage عند أول تشغيل
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS   = 30 * 60 * 1000;
+const DB_KEY       = 'eduroom_db_v8';
+const ME_KEY       = 'eduroom_me_v8';
+const ADM_KEY      = 'eduroom_adm_v8'; // {emailHash, passHash}
+
+/* تهيئة حساب المدير الافتراضي عند أول تشغيل فقط */
+const DEFAULT_ADMIN_EMAIL = 'aitomùaraziz@gmail.com';
+const DEFAULT_ADMIN_PASS  = 'AZIZ@2026';
 
 const LEVELS = [
   {id:'ps1',ico:'🌱',lbl:'السنة 1 ابتدائي'},
@@ -1159,7 +1165,7 @@ const gc = n => { let h=0; for(let c of(n||'?')) h=(h*31+c.charCodeAt(0))%COLORS
 const esc = s => { const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML };
 const setTxt = (id,v) => { const e=$(id); if(e) e.textContent=String(v||'') };
 const sanitizeName = s => (s||'').trim().replace(/[<>"'&]/g,'').slice(0,28);
-const sanitizeRoom = s => (s||'').trim().replace(/[^a-zA-Z0-9\-_]/g,'').slice(0,50);
+const sanitizeRoom = s => { const r=(s||'').trim().replace(/[^a-zA-Z0-9\-_]/g,'').slice(0,50); return r.length>=3?r:''; };
 const sanitizeMsg  = s => (s||'').trim().slice(0,500);
 const fmtDate = d => { if(!d)return'—'; try{return new Date(d).toLocaleDateString('ar-MA',{year:'numeric',month:'long',day:'numeric'})}catch(e){return d} };
 const calcAge = dob => { const b=new Date(dob),n=new Date(); let a=n.getFullYear()-b.getFullYear(); if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--; return a };
@@ -1241,10 +1247,17 @@ async function doRegister() {
 /* ══════════════════════════════════════
    LOGIN
 ══════════════════════════════════════ */
-let _adminHash='';
-async function getAdminHash() {
-  if(!_adminHash) _adminHash=await sha256(ADMIN_PASS_RAW);
-  return _adminHash;
+/* إعداد حساب المدير الافتراضي عند أول تشغيل */
+async function initAdminIfNeeded() {
+  if(localStorage.getItem(ADM_KEY)) return; // already set
+  const adm = {
+    emailHash: await sha256(DEFAULT_ADMIN_EMAIL.toLowerCase()),
+    passHash:  await sha256(DEFAULT_ADMIN_PASS)
+  };
+  localStorage.setItem(ADM_KEY, JSON.stringify(adm));
+}
+function getAdminCreds() {
+  try { return JSON.parse(localStorage.getItem(ADM_KEY))||{} } catch(e) { return {} }
 }
 
 async function doLogin() {
@@ -1286,10 +1299,13 @@ async function doAdminLogin() {
   const email=($('a-email').value||'').trim().toLowerCase();
   const pass =$('a-pass').value||'';
   if(!email||!pass) return setErr('a-err','أدخل بيانات الإدارة');
-  if(email!==ADMIN_EMAIL.toLowerCase()) return setErr('a-err','بريد المدير غير صحيح');
+  const adm=getAdminCreds();
+  if(!adm.emailHash||!adm.passHash) return setErr('a-err','لم يتم تهيئة حساب الإدارة — أعد تحميل الصفحة');
+  const eh=await sha256(email);
   const ph=await sha256(pass);
-  if(ph!==await getAdminHash()) return setErr('a-err','كلمة مرور المدير غير صحيحة');
-  setMe({uid:'admin',fname:'المدير',lname:'',email:ADMIN_EMAIL,role:'admin',joined:new Date().toISOString().split('T')[0]});
+  if(eh!==adm.emailHash) return setErr('a-err','بريد المدير غير صحيح');
+  if(ph!==adm.passHash)  return setErr('a-err','كلمة مرور المدير غير صحيحة');
+  setMe({uid:'admin',fname:'المدير',lname:'',email,role:'admin',joined:new Date().toISOString().split('T')[0]});
   toast('أهلاً بك في لوحة الإدارة 🛡️','ok');
   setTimeout(()=>goAdmin(),400);
 }
@@ -1457,46 +1473,97 @@ function renderTeachers() {
   const db=getDB();
   const ts=Object.values(db.users).filter(u=>u.role==='teacher');
   const w=$('teachers-list'); if(!w) return;
-  if(!ts.length){w.innerHTML='<div class="empty"><span>👨‍🏫</span>لا يوجد أساتذة — أضف أستاذاً من الأعلى</div>';return}
-  let h=`<div style="overflow-x:auto"><table class="t-table"><thead><tr>
-    <th>الاسم</th><th>اسم الدخول</th><th>معرّف الغرفة</th><th>الحصص</th><th>التسجيل</th><th></th>
-  </tr></thead><tbody>`;
+  w.innerHTML='';
+  if(!ts.length){
+    const e=document.createElement('div');e.className='empty';
+    const s=document.createElement('span');s.textContent='👨‍🏫';
+    e.appendChild(s);e.appendChild(document.createTextNode('لا يوجد أساتذة — أضف أستاذاً من الأعلى'));
+    w.appendChild(e);return;
+  }
+  // Build table safely
+  const wrap=document.createElement('div');wrap.style.overflowX='auto';
+  const tbl=document.createElement('table');tbl.className='t-table';
+  // Head
+  const thead=document.createElement('thead');
+  const hr=document.createElement('tr');
+  ['الاسم','اسم الدخول','معرّف الغرفة','الحصص','التسجيل',''].forEach(h=>{
+    const th=document.createElement('th');th.textContent=h;hr.appendChild(th);
+  });
+  thead.appendChild(hr);tbl.appendChild(thead);
+  // Body
+  const tbody=document.createElement('tbody');
   ts.forEach(t=>{
     const rid=makeRoomId(t.uid);
-    h+=`<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div style="width:28px;height:28px;border-radius:50%;background:${gc(t.fname)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${esc(t.fname[0])}</div>
-        <span>${esc(t.fname+' '+t.lname)}</span></div></td>
-      <td style="font-family:var(--M);font-size:12px;color:var(--cy)">${esc(t.fname)}</td>
-      <td><span style="font-family:var(--M);font-size:11px;color:var(--cy);background:var(--cy-g);padding:3px 8px;border-radius:6px">${esc(rid)}</span></td>
-      <td style="font-family:var(--M);text-align:center">${t.sessions||0}</td>
-      <td style="font-size:11px;color:var(--tx2)">${fmtDate(t.joined)}</td>
-      <td><button class="btn-del" onclick="delTeacher('${esc(t.uid)}')">حذف</button></td>
-    </tr>`;
+    const tr=document.createElement('tr');
+    // Name cell
+    const tdName=document.createElement('td');
+    const nameWrap=document.createElement('div');
+    nameWrap.style.cssText='display:flex;align-items:center;gap:8px';
+    const av=document.createElement('div');
+    av.style.cssText=`width:28px;height:28px;border-radius:50%;background:${gc(t.fname)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0`;
+    av.textContent=t.fname[0]||'؟';
+    const nm=document.createElement('span');nm.textContent=t.fname+(t.lname?' '+t.lname:'');
+    nameWrap.appendChild(av);nameWrap.appendChild(nm);tdName.appendChild(nameWrap);
+    // Login name
+    const tdLogin=document.createElement('td');
+    tdLogin.style.cssText='font-family:var(--M);font-size:12px;color:var(--cy)';
+    tdLogin.textContent=t.fname;
+    // Room ID
+    const tdRoom=document.createElement('td');
+    const ridSpan=document.createElement('span');
+    ridSpan.style.cssText='font-family:var(--M);font-size:11px;color:var(--cy);background:var(--cy-g);padding:3px 8px;border-radius:6px';
+    ridSpan.textContent=rid;tdRoom.appendChild(ridSpan);
+    // Sessions
+    const tdSess=document.createElement('td');
+    tdSess.style.cssText='font-family:var(--M);text-align:center';
+    tdSess.textContent=String(t.sessions||0);
+    // Joined
+    const tdJoin=document.createElement('td');
+    tdJoin.style.cssText='font-size:11px;color:var(--tx2)';
+    tdJoin.textContent=fmtDate(t.joined);
+    // Delete btn
+    const tdDel=document.createElement('td');
+    const btn=document.createElement('button');btn.className='btn-del';btn.textContent='حذف';
+    btn.addEventListener('click',()=>delTeacher(t.uid));
+    tdDel.appendChild(btn);
+    [tdName,tdLogin,tdRoom,tdSess,tdJoin,tdDel].forEach(td=>tr.appendChild(td));
+    tbody.appendChild(tr);
   });
-  h+=`</tbody></table></div>`;
-  w.innerHTML=h;
+  tbl.appendChild(tbody);wrap.appendChild(tbl);w.appendChild(wrap);
 }
 function renderStudents() {
   const db=getDB();
   const ss=Object.values(db.users).filter(u=>u.role==='student');
   const w=$('students-list'); if(!w) return;
   setTxt('adm-s-label', ss.length+' طالب');
-  if(!ss.length){w.innerHTML='<div class="empty"><span>🎒</span>لا يوجد طلاب مسجلون بعد</div>';return}
   w.innerHTML='';
+  if(!ss.length){
+    const e=document.createElement('div');e.className='empty';
+    const s=document.createElement('span');s.textContent='🎒';
+    e.appendChild(s);e.appendChild(document.createTextNode('لا يوجد طلاب مسجلون بعد'));
+    w.appendChild(e);return;
+  }
   ss.forEach(s=>{
     const lv=LEVELS.find(l=>l.id===s.level);
-    const d=document.createElement('div'); d.className='s-row';
-    d.innerHTML=`
-      <div class="s-row-av" style="background:${gc(s.fname)}">${esc(s.fname[0])}</div>
-      <div class="s-row-info">
-        <div class="s-row-name">${esc(s.fname+' '+s.lname)}</div>
-        <div class="s-row-detail">${esc(s.email)} • ${lv?lv.ico+' '+lv.lbl:'—'} • ${s.dob?calcAge(s.dob)+' سنة':'—'}</div>
-      </div>
-      <div style="font-family:var(--M);font-size:11px;color:var(--tx2);text-align:center;flex-shrink:0;min-width:40px">
-        ${s.sessions||0}<div style="font-size:10px">حصة</div>
-      </div>`;
-    w.appendChild(d);
+    const row=document.createElement('div');row.className='s-row';
+    // Avatar
+    const av=document.createElement('div');av.className='s-row-av';
+    av.style.background=gc(s.fname);av.textContent=s.fname[0]||'؟';
+    // Info
+    const info=document.createElement('div');info.className='s-row-info';
+    const nm=document.createElement('div');nm.className='s-row-name';
+    nm.textContent=s.fname+(s.lname?' '+s.lname:'');
+    const det=document.createElement('div');det.className='s-row-detail';
+    det.textContent=(s.email||'—')+' • '+(lv?lv.ico+' '+lv.lbl:'—')+' • '+(s.dob?calcAge(s.dob)+' سنة':'—');
+    info.appendChild(nm);info.appendChild(det);
+    // Sessions
+    const sess=document.createElement('div');
+    sess.style.cssText='font-family:var(--M);font-size:11px;color:var(--tx2);text-align:center;flex-shrink:0;min-width:40px';
+    sess.textContent=String(s.sessions||0);
+    const sl=document.createElement('div');sl.style.fontSize='10px';sl.textContent='حصة';
+    sess.appendChild(sl);
+    row.appendChild(av);row.appendChild(info);row.appendChild(sess);
+    w.appendChild(row);
   });
 }
 function cpCred(id) {
@@ -1742,33 +1809,84 @@ function rTile(id){
   t.innerHTML=mkTile(id,p.name,p.role,false,p.mu,p.co);
   if(p.stream){const v=t.querySelector('.tv');if(v)v.srcObject=p.stream}
 }
+function mkTileDOM(id,name,role,isMe,mu=false,co=false){
+  const c=gc(name);
+  const frag=document.createDocumentFragment();
+  // Video
+  const vid=document.createElement('video');
+  vid.className='tv'+(co?' hidden':'');
+  vid.autoplay=true;vid.playsInline=true;
+  if(isMe)vid.muted=true;
+  frag.appendChild(vid);
+  // Avatar if cam off
+  if(co){
+    const av=document.createElement('div');av.className='tavtr';
+    const al=document.createElement('div');al.className='tavtr-l';
+    al.style.background=c;al.textContent=name?name[0]:'؟';
+    av.appendChild(al);frag.appendChild(av);
+  }
+  // Overlay
+  const ov=document.createElement('div');ov.className='tov';frag.appendChild(ov);
+  // Role badge
+  const rb=document.createElement('div');
+  rb.className='trole '+(role==='teacher'?'T':'S');
+  rb.textContent=role==='teacher'?'أستاذ':'طالب';
+  frag.appendChild(rb);
+  // Name row
+  const tn=document.createElement('div');tn.className='tname';
+  const ntxt=document.createElement('span');ntxt.className='tname-txt';
+  ntxt.textContent=isMe?'أنت':(name||'مشارك');
+  tn.appendChild(ntxt);
+  // Icons
+  const ticns=document.createElement('div');ticns.className='ticns';
+  const mic=document.createElement('div');mic.className='ticn mic-i'+(mu?' mu':'');
+  mic.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg>`;
+  const cam=document.createElement('div');cam.className='ticn cam-i'+(co?' co':'');
+  cam.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${co?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7"/>':'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>'}</svg>`;
+  ticns.appendChild(mic);ticns.appendChild(cam);
+  tn.appendChild(ticns);frag.appendChild(tn);
+  return frag;
+}
+// Keep mkTile as string for backward compat (used in innerHTML reset)
 function mkTile(id,name,role,isMe,mu=false,co=false){
-  const c=gc(name),i=esc(name?name[0]:'؟');
+  const c=gc(name);
   const mp=mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>';
   const cp=co?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7"/>':'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>';
-  return`<video class="tv${co?' hidden':''}" autoplay playsinline${isMe?' muted':''}></video>
-${co?`<div class="tavtr"><div class="tavtr-l" style="background:${c}">${i}</div></div>`:''}
-<div class="tov"></div>
-<div class="trole ${role==='teacher'?'T':'S'}">${role==='teacher'?'أستاذ':'طالب'}</div>
-<div class="tname"><span class="tname-txt">${isMe?'أنت':esc(name)}</span>
-<div class="ticns">
-<div class="ticn mic-i${mu?' mu':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${mp}</svg></div>
-<div class="ticn cam-i${co?' co':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${cp}</svg></div>
-</div></div>`;
+  // SVG paths are static — no user data injected here. Name is escaped via textContent below.
+  const div=document.createElement('div');
+  div.appendChild(mkTileDOM(id,name,role,isMe,mu,co));
+  return div.innerHTML;
+}
+function mkPLIdom(name,role,isMe,mu,co){
+  const c=gc(name);
+  const row=document.createElement('div');row.className='pli';
+  const av=document.createElement('div');av.className='pav';
+  av.style.background=c;av.textContent=(name||'؟')[0];
+  const pi=document.createElement('div');pi.className='pi';
+  const pn=document.createElement('div');pn.className='pn';
+  pn.textContent=(isMe?'أنت — ':'')+(name||'مشارك');
+  const pr=document.createElement('div');pr.className='pr';
+  pr.textContent=(role==='teacher'?'👨‍🏫 أستاذ':'🎒 طالب')+' • '+(mu?'🔇':'🎙️')+' • '+(co?'📵':'📹');
+  pi.appendChild(pn);pi.appendChild(pr);
+  row.appendChild(av);row.appendChild(pi);
+  if(isMe){
+    const btn=document.createElement('button');
+    btn.className='pbtn'+(mu?' on':'');
+    btn.setAttribute('aria-label',mu?'تفعيل الميكروفون':'كتم الميكروفون');
+    btn.setAttribute('title',mu?'تفعيل الميكروفون':'كتم الميكروفون');
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg>`;
+    btn.addEventListener('click',togMic);
+    row.appendChild(btn);
+  }
+  return row;
 }
 function updPList(){
   const total=PEERS.size+1;setTxt('c-pcnt',total);$('c-pcnt').classList.remove('hidden');
-  let h=mkPLI(myName,myRole,true,micMuted,camOff);
-  PEERS.forEach(p=>h+=mkPLI(p.name,p.role,false,p.mu,p.co));
-  [$('c-sp'),$('c-msp')].forEach(el=>{if(el)el.innerHTML=h});
-}
-function mkPLI(name,role,isMe,mu,co){
-  const c=gc(name);
-  return`<div class="pli"><div class="pav" style="background:${c}">${esc((name||'؟')[0])}</div>
-<div class="pi"><div class="pn">${isMe?'أنت — ':''  }${esc(name||'مشارك')}</div>
-<div class="pr">${role==='teacher'?'👨‍🏫 أستاذ':'🎒 طالب'} • ${mu?'🔇':'🎙️'} • ${co?'📵':'📹'}</div></div>
-${isMe?`<button class="pbtn${mu?' on':''}" onclick="togMic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg></button>`:''}
-</div>`;
+  [$('c-sp'),$('c-msp')].forEach(el=>{
+    if(!el)return;el.innerHTML='';
+    el.appendChild(mkPLIdom(myName,myRole,true,micMuted,camOff));
+    PEERS.forEach(p=>el.appendChild(mkPLIdom(p.name,p.role,false,p.mu,p.co)));
+  });
 }
 
 /* ─── Chat ─── */
@@ -1782,17 +1900,29 @@ async function send(src){
   renderMsg(myName,txt,true,myId);bcast({t:'chat',name:myName,txt});
 }
 function renderMsg(name,txt,isMe,from){
-  const c=gc(name),i=esc(name?name[0]:'؟');
+  const c=gc(name);
   const now=new Date(),tm=pad(now.getHours())+':'+pad(now.getMinutes());
-  const html=`<div class="cmsg${isMe?' me':''}">
-<div class="cmsg-hd"><div class="cav" style="background:${c}">${i}</div>
-<span class="cname">${isMe?'أنت':esc(name)}</span><span class="ctime">${tm}</span></div>
-<div class="cbub">${esc(txt)}</div></div>`;
-  [$('c-cwd'),$('c-cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
+  [$('c-cwd'),$('c-cwm')].forEach(el=>{
+    if(!el)return;
+    const wrap=document.createElement('div');wrap.className='cmsg'+(isMe?' me':'');
+    const hd=document.createElement('div');hd.className='cmsg-hd';
+    const av=document.createElement('div');av.className='cav';av.style.background=c;av.textContent=(name||'؟')[0];
+    const cn=document.createElement('span');cn.className='cname';cn.textContent=isMe?'أنت':(name||'مشارك');
+    const ct=document.createElement('span');ct.className='ctime';ct.textContent=tm;
+    hd.appendChild(av);hd.appendChild(cn);hd.appendChild(ct);
+    const bub=document.createElement('div');bub.className='cbub';bub.textContent=txt;
+    wrap.appendChild(hd);wrap.appendChild(bub);
+    el.appendChild(wrap);el.scrollTop=el.scrollHeight;
+  });
 }
 function sysmsg(txt){
-  const html=`<div class="cmsg sys"><div class="cbub">— ${esc(txt)} —</div></div>`;
-  [$('c-cwd'),$('c-cwm')].forEach(el=>{if(!el)return;const d=document.createElement('div');d.innerHTML=html;el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight});
+  [$('c-cwd'),$('c-cwm')].forEach(el=>{
+    if(!el)return;
+    const wrap=document.createElement('div');wrap.className='cmsg sys';
+    const bub=document.createElement('div');bub.className='cbub';
+    bub.textContent='— '+txt+' —';
+    wrap.appendChild(bub);el.appendChild(wrap);el.scrollTop=el.scrollHeight;
+  });
 }
 
 /* ─── Sidebar ─── */
