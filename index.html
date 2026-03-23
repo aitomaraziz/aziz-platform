@@ -7,404 +7,225 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="theme-color" content="#060d1c"/>
-<title>EduRoom — المنصة التعليمية</title>
-<meta name="description" content="منصة EduRoom للتعليم الافتراضي — فصول دراسية مباشرة"/>
-<meta name="robots" content="noindex,nofollow"/>
+<title>EduRoom — فصل افتراضي</title>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-/* ══════════════════════════════════════════
-   EduRoom v8 — Professional Integrated Platform
-   Pages: Auth → Profile/Dashboard → Classroom
-   Roles: admin | teacher | student
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   EduRoom v4 — Unified Desktop + Mobile
+   Strategy:
+   • Desktop (≥769px): CSS Grid with sidebar panel
+   • Mobile  (<769px): Full-screen stage + bottom
+     drawer for chat/participants + bottom nav bar
+   Safe-area, wake-lock, camera-flip all included
+══════════════════════════════════════════════ */
 :root{
-  --bg:#060d1c;--bg2:#0b1628;--bg3:#101f38;
-  --s1:#0f1c34;--s2:#162440;--s3:#1d2f50;
-  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);--b3:rgba(255,255,255,.2);
-  --cy:#00d4ff;--cy2:#0090cc;--cy-g:rgba(0,212,255,.13);
-  --go:#f0b429;--go-g:rgba(240,180,41,.13);
-  --gn:#00e676;--gn-g:rgba(0,230,118,.12);
-  --rd:#ff3d5a;--rd-g:rgba(255,61,90,.15);
-  --pu:#a78bfa;--pu-g:rgba(167,139,250,.13);
-  --or:#ff9f43;--or-g:rgba(255,159,67,.13);
-  --tx:#dde4f0;--tx2:#7a8fa8;--tx3:#3d5470;
-  --r:10px;--r2:16px;--r3:22px;
+  --bg:#060d1c; --bg2:#0b1628; --bg3:#101f38;
+  --s1:#0f1c34; --s2:#162440;
+  --b1:rgba(255,255,255,.07); --b2:rgba(255,255,255,.13);
+  --cy:#00d4ff; --cy2:#0090cc; --cy-g:rgba(0,212,255,.14);
+  --go:#f0b429; --go-g:rgba(240,180,41,.14);
+  --gn:#00e676; --gn-g:rgba(0,230,118,.13);
+  --rd:#ff3d5a; --rd-g:rgba(255,61,90,.16);
+  --pu:#a78bfa;
+  --tx:#dde4f0; --tx2:#7a8fa8; --tx3:#3d5470;
+  --r:10px; --r2:18px;
   --sh:0 8px 40px rgba(0,0,0,.7);
   --F:'IBM Plex Sans Arabic',sans-serif;
   --M:'JetBrains Mono',monospace;
-  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
-  --sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);
+  --st:env(safe-area-inset-top,0px);
+  --sb:env(safe-area-inset-bottom,0px);
+  --sl:env(safe-area-inset-left,0px);
+  --sr:env(safe-area-inset-right,0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;height:-webkit-fill-available}
-body{width:100%;height:100dvh;min-height:-webkit-fill-available;
+body{
+  width:100%;height:100dvh;min-height:-webkit-fill-available;
   background:var(--bg);color:var(--tx);font-family:var(--F);
   overflow:hidden;-webkit-font-smoothing:antialiased;
-  -webkit-user-select:none;user-select:none;overscroll-behavior:none}
+  -webkit-user-select:none;user-select:none;
+  overscroll-behavior:none;
+}
 .hidden{display:none!important}
 button{font-family:var(--F);cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent}
-input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user-select:text;user-select:text}
+input,textarea{font-family:var(--F);outline:none;border:none;-webkit-user-select:text;user-select:text}
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
 
-/* ─── Animated BG ─── */
-.pbg{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 70% 60% at 15% 35%,rgba(0,90,180,.16) 0%,transparent 70%),
-             radial-gradient(ellipse 60% 50% at 85% 70%,rgba(0,160,130,.1) 0%,transparent 70%),
-             radial-gradient(ellipse 40% 40% at 55% 20%,rgba(100,50,200,.07) 0%,transparent 70%);
+/* ══════════ LOBBY ══════════ */
+#lobby{
+  position:fixed;inset:0;
+  padding:calc(var(--st) + 16px) 16px calc(var(--sb) + 16px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:100;overflow-y:auto;
+}
+.l-bg{position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 60% at 20% 40%,rgba(0,90,170,.16) 0%,transparent 70%),
+             radial-gradient(ellipse 60% 50% at 80% 70%,rgba(0,160,130,.1) 0%,transparent 70%);
   animation:hue 22s ease-in-out infinite alternate}
-@keyframes hue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(28deg)}}
-.pgrid{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);
+@keyframes hue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(30deg)}}
+.l-grid{position:fixed;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--cy-g) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--cy-g) 1px,transparent 1px);
   background-size:52px 52px}
-
-/* ─── Card ─── */
-.card{background:rgba(10,18,36,.92);border:1px solid var(--b2);border-radius:var(--r3);
-  backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);
-  box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.06);
-  animation:cardUp .5s cubic-bezier(.22,1,.36,1) both}
-@keyframes cardUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-
-/* ─── Shared form elements ─── */
-.fl{font-family:var(--M);font-size:10px;letter-spacing:.1em;color:var(--cy);margin-bottom:7px;display:block}
-.fi{width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
-  padding:14px 15px;font-size:15px;color:var(--tx);transition:all .2s;
-  margin-bottom:13px;-webkit-appearance:none}
-.fi::placeholder{color:var(--tx3)}
-.fi:focus{border-color:rgba(0,212,255,.45);box-shadow:0 0 0 3px rgba(0,212,255,.07)}
-.fi.err-f{border-color:rgba(255,61,90,.5);box-shadow:0 0 0 3px rgba(255,61,90,.07)}
-.fi-nb{margin-bottom:0}
-/* Password wrapper */
-.pw-wrap{position:relative;margin-bottom:13px}
-.pw-wrap .fi{padding-left:46px;margin-bottom:0}
-.pw-eye{position:absolute;left:12px;top:50%;transform:translateY(-50%);
-  background:none;color:var(--tx2);padding:4px;display:flex;align-items:center}
-.pw-eye svg{width:18px;height:18px;transition:color .2s}
-.pw-eye:hover svg{color:var(--cy)}
-/* Buttons */
-.btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,var(--cy),var(--cy2));
-  border-radius:var(--r);color:#060d1c;font-size:15px;font-weight:700;
-  box-shadow:0 4px 22px rgba(0,212,255,.35);transition:all .15s}
-.btn-primary:active{transform:scale(.97);opacity:.9}
-.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.btn-sec{padding:10px 16px;background:var(--s1);border:1px solid var(--b2);
-  border-radius:var(--r);color:var(--tx2);font-size:13px;font-weight:600;transition:all .2s}
-.btn-sec:active{background:var(--s2);color:var(--tx)}
-.btn-icon{display:flex;align-items:center;gap:7px}
-.btn-icon svg{width:15px;height:15px;flex-shrink:0}
-.msg-err{font-family:var(--M);font-size:12px;color:var(--rd);text-align:center;
-  min-height:18px;margin-top:8px;letter-spacing:.02em}
-.msg-ok{font-family:var(--M);font-size:12px;color:var(--gn);text-align:center;min-height:18px;margin-top:6px}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:13px}
-.two-col .fi{margin-bottom:0}
-/* Level grid */
-.level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.lv-btn{padding:9px 5px;background:var(--s1);border:2px solid var(--b1);
-  border-radius:var(--r);color:var(--tx2);font-size:11px;font-weight:600;
-  text-align:center;transition:all .2s;cursor:pointer;line-height:1.4}
-.lv-btn .lv-i{font-size:16px;display:block;margin-bottom:3px}
-.lv-btn.sel{border-color:var(--cy);background:var(--cy-g);color:var(--cy)}
-/* Lockout */
-.lockout{display:flex;align-items:center;gap:8px;padding:10px 14px;
-  background:var(--rd-g);border:1px solid rgba(255,61,90,.3);border-radius:var(--r);
-  font-size:12px;color:var(--rd);margin-bottom:12px}
-/* Tabs row */
-.tab-row{display:flex;background:var(--s1);border-radius:var(--r);padding:4px;margin-bottom:0}
-.atab{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;
-  color:var(--tx2);transition:all .2s;background:none}
-.atab.act{background:linear-gradient(135deg,var(--cy),var(--cy2));color:#060d1c;
-  box-shadow:0 2px 12px rgba(0,212,255,.3)}
-/* Admin hint */
-.admin-hint{text-align:center;margin-top:12px}
-.admin-hint button{background:none;color:var(--tx2);font-size:12px;
-  text-decoration:none;padding:4px 8px;border-radius:6px;transition:all .2s}
-.admin-hint button:hover{color:var(--cy);background:var(--cy-g)}
-
-/* ════════════════════════════════════
-   PAGE: AUTH
-════════════════════════════════════ */
-#pg-auth{position:fixed;inset:0;padding:calc(var(--st)+16px) 16px calc(var(--sb)+16px);
-  display:flex;align-items:center;justify-content:center;z-index:10;overflow-y:auto}
-.auth-card{width:min(460px,100%);padding:36px 28px 30px}
-.brand-bar{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.l-card{
+  position:relative;z-index:1;width:min(460px,100%);
+  background:rgba(10,18,36,.9);border:1px solid var(--b2);border-radius:22px;
+  backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
+  padding:36px 28px 32px;
+  box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.05);
+  animation:up .55s cubic-bezier(.22,1,.36,1) both}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:22px}
 .brand-ico{width:40px;height:40px;background:linear-gradient(135deg,var(--cy),var(--cy2));
   border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;
-  box-shadow:0 4px 18px rgba(0,212,255,.35);flex-shrink:0}
+  box-shadow:0 4px 18px rgba(0,212,255,.35)}
 .brand-name{font-size:19px;font-weight:700}
 .brand-name span{color:var(--cy)}
 .brand-tag{font-family:var(--M);font-size:9px;letter-spacing:.1em;color:var(--go);
-  background:var(--go-g);border:1px solid rgba(240,180,41,.25);padding:3px 7px;border-radius:5px}
-.auth-head{margin-bottom:20px}
-.auth-head h2{font-size:22px;font-weight:700;margin-bottom:5px}
-.auth-head p{font-size:13px;color:var(--tx2);line-height:1.6}
-
-/* ════════════════════════════════════
-   PAGE: TEACHER DASHBOARD
-════════════════════════════════════ */
-#pg-teacher{position:fixed;inset:0;padding-top:var(--st);
-  display:flex;flex-direction:column;z-index:10;overflow:hidden}
-.dash-hdr{display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;padding-right:calc(20px + var(--sr));padding-left:calc(20px + var(--sl));
-  height:58px;background:var(--bg2);border-bottom:1px solid var(--b1);flex-shrink:0}
-.dash-brand{display:flex;align-items:center;gap:8px}
-.dash-brand-ico{width:32px;height:32px;background:linear-gradient(135deg,var(--cy),var(--cy2));
-  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
-.dash-brand-name{font-size:15px;font-weight:700}
-.dash-brand-name span{color:var(--cy)}
-.dash-body{flex:1;overflow-y:auto;padding:24px 20px;padding-bottom:calc(24px + var(--sb));
-  display:flex;flex-direction:column;gap:18px;max-width:720px;margin:0 auto;width:100%}
-/* Teacher welcome */
-.teacher-welcome{
-  background:linear-gradient(135deg,rgba(240,180,41,.12),rgba(255,159,67,.06));
-  border:1px solid rgba(240,180,41,.2);border-radius:var(--r3);padding:28px 24px;
-  display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
-.teacher-welcome::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 80% at 100% 50%,rgba(240,180,41,.06) 0%,transparent 70%)}
-.tw-avatar{width:72px;height:72px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;
-  border:3px solid rgba(240,180,41,.4);box-shadow:0 0 20px rgba(240,180,41,.2);position:relative;z-index:1}
-.tw-info{position:relative;z-index:1;flex:1;min-width:0}
-.tw-info h2{font-size:20px;font-weight:700;margin-bottom:4px}
-.tw-info p{font-size:13px;color:var(--tx2);margin-bottom:12px}
-.tw-badges{display:flex;gap:8px;flex-wrap:wrap}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;
-  border-radius:20px;font-size:12px;font-weight:600}
-.badge.go{background:var(--go-g);border:1px solid rgba(240,180,41,.3);color:var(--go)}
-.badge.cy{background:var(--cy-g);border:1px solid rgba(0,212,255,.3);color:var(--cy)}
-.badge.gn{background:var(--gn-g);border:1px solid rgba(0,230,118,.3);color:var(--gn)}
-.badge.pu{background:var(--pu-g);border:1px solid rgba(167,139,250,.3);color:var(--pu)}
-.badge.or{background:var(--or-g);border:1px solid rgba(255,159,67,.3);color:var(--or)}
-/* Room card — teacher's main action */
-.room-card{
-  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,100,180,.08));
-  border:1px solid rgba(0,212,255,.25);border-radius:var(--r3);padding:24px;
-  display:flex;flex-direction:column;gap:16px}
-.room-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.room-card-info h3{font-size:16px;font-weight:700;margin-bottom:5px;color:var(--tx)}
-.room-card-info p{font-size:13px;color:var(--tx2)}
-.room-id-display{display:flex;align-items:center;gap:10px;background:var(--s1);
-  border:1px solid var(--b2);border-radius:var(--r2);padding:14px 16px}
-.room-id-display .rid-label{font-family:var(--M);font-size:10px;letter-spacing:.08em;color:var(--tx2);white-space:nowrap}
-.room-id-display .rid-value{font-family:var(--M);font-size:15px;font-weight:700;color:var(--cy);flex:1;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btn-cp-room{display:flex;align-items:center;gap:5px;padding:8px 14px;
-  background:var(--cy-g);border:1px solid rgba(0,212,255,.3);
-  border-radius:var(--r);color:var(--cy);font-size:12px;font-weight:700;flex-shrink:0;transition:all .2s}
-.btn-cp-room:active{background:var(--cy);color:#060d1c}
-.btn-cp-room svg{width:14px;height:14px}
-.btn-enter-room{display:flex;align-items:center;justify-content:center;gap:10px;
-  width:100%;padding:16px;background:linear-gradient(135deg,var(--go),#e08000);
-  border-radius:var(--r2);color:#060d1c;font-size:16px;font-weight:700;
-  box-shadow:0 4px 20px rgba(240,180,41,.35);transition:all .15s}
-.btn-enter-room:active{transform:scale(.97);opacity:.9}
-.btn-enter-room svg{width:20px;height:20px}
-/* Stats row */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);
-  padding:16px;text-align:center}
-.stat-num{font-size:26px;font-weight:700;font-family:var(--M);line-height:1}
-.stat-lbl{font-size:11px;color:var(--tx2);margin-top:5px}
-/* Info cards */
-.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
-.info-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px}
-.info-card-label{font-family:var(--M);font-size:9px;letter-spacing:.1em;color:var(--tx2);margin-bottom:7px}
-.info-card-val{font-size:14px;font-weight:600;color:var(--tx)}
-/* Logout btn */
-.btn-logout{display:flex;align-items:center;gap:6px;padding:8px 14px;
-  background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
-  border-radius:var(--r);color:var(--rd);font-size:12px;font-weight:600;transition:all .2s}
-.btn-logout:active{background:var(--rd);color:#fff}
-.btn-logout svg{width:14px;height:14px}
-
-/* ════════════════════════════════════
-   PAGE: STUDENT PROFILE
-════════════════════════════════════ */
-#pg-student{position:fixed;inset:0;padding-top:var(--st);
-  display:flex;flex-direction:column;z-index:10;overflow:hidden}
-.prof-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + var(--sb));
-  display:flex;flex-direction:column;gap:16px;max-width:680px;margin:0 auto;width:100%}
-/* Hero */
-.student-hero{background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(100,50,200,.07));
-  border:1px solid var(--b2);border-radius:var(--r3);
-  padding:26px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.s-av{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:28px;font-weight:700;color:#fff;flex-shrink:0;
-  border:3px solid rgba(0,212,255,.4);box-shadow:0 0 20px rgba(0,212,255,.2)}
-.s-hero-info h2{font-size:20px;font-weight:700;margin-bottom:4px}
-.s-hero-info p{font-size:13px;color:var(--tx2);margin-bottom:10px}
-/* Join room */
-.join-room-card{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(0,100,180,.05));
-  border:1px solid rgba(0,212,255,.2);border-radius:var(--r2);padding:20px;
-  display:flex;flex-direction:column;gap:12px}
-.join-room-card h3{font-size:15px;font-weight:700}
-.join-room-card p{font-size:12px;color:var(--tx2)}
-.join-row{display:flex;gap:10px}
-.join-row .fi{margin-bottom:0;flex:1}
-.btn-join-cls{display:flex;align-items:center;gap:7px;padding:14px 20px;
+  background:var(--go-g);border:1px solid rgba(240,180,41,.25);padding:3px 8px;border-radius:5px}
+.l-title{font-size:clamp(22px,7vw,34px);font-weight:700;line-height:1.1;letter-spacing:-.02em;
+  margin-bottom:6px;background:linear-gradient(135deg,#dde4f0,#6ea8d4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.l-sub{font-size:13px;color:var(--tx2);margin-bottom:22px;line-height:1.6}
+.role-row{display:flex;gap:10px;margin-bottom:18px}
+.role-btn{flex:1;padding:13px 8px;background:var(--s1);border:2px solid var(--b1);
+  border-radius:var(--r);color:var(--tx2);font-size:13px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .2s}
+.role-btn .re{font-size:20px}
+.role-btn.sel{border-color:var(--cy);background:var(--cy-g);color:var(--cy)}
+.fl{font-family:var(--M);font-size:10px;letter-spacing:.1em;color:var(--cy);margin-bottom:7px;display:block}
+.fi{width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
+  padding:14px 15px;font-size:15px;color:var(--tx);transition:border-color .2s;margin-bottom:13px}
+.fi::placeholder{color:var(--tx3)}
+.fi:focus{border-color:rgba(0,212,255,.4);box-shadow:0 0 0 3px rgba(0,212,255,.07)}
+.room-row{display:flex;gap:8px;margin-bottom:18px}
+.room-row .fi{margin-bottom:0}
+.btn-gen{padding:14px 15px;background:var(--s1);border:1px solid var(--b2);
+  border-radius:var(--r);color:var(--tx2);font-size:13px;font-weight:600;white-space:nowrap;transition:all .2s}
+.btn-gen:active{background:var(--s2);color:var(--tx)}
+.btn-join{width:100%;padding:15px;
   background:linear-gradient(135deg,var(--cy),var(--cy2));
-  border-radius:var(--r);color:#060d1c;font-size:14px;font-weight:700;
-  box-shadow:0 4px 18px rgba(0,212,255,.3);white-space:nowrap;transition:all .15s}
-.btn-join-cls:active{transform:scale(.96)}
-.btn-join-cls svg{width:17px;height:17px}
-/* Edit section */
-.edit-sec{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px}
-.edit-sec h3{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.edit-sec h3 svg{width:15px;height:15px;color:var(--cy)}
-.btn-save{padding:12px 18px;background:linear-gradient(135deg,var(--cy),var(--cy2));
-  border-radius:var(--r);color:#060d1c;font-size:13px;font-weight:700}
+  border-radius:var(--r);color:#060d1c;font-size:15px;font-weight:700;
+  box-shadow:0 4px 22px rgba(0,212,255,.35);transition:all .15s}
+.btn-join:active{transform:scale(.97);opacity:.9}
+#ls{min-height:18px;margin-top:10px;font-family:var(--M);font-size:12px;
+  color:var(--rd);letter-spacing:.02em;text-align:center}
+#ls.ok{color:var(--cy)}
 
-/* ════════════════════════════════════
-   PAGE: ADMIN
-════════════════════════════════════ */
-#pg-admin{position:fixed;inset:0;padding-top:var(--st);
-  display:flex;flex-direction:column;z-index:10;overflow:hidden}
-.admin-hdr{height:58px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;padding-right:calc(20px + var(--sr));padding-left:calc(20px + var(--sl));
-  background:var(--bg2);border-bottom:1px solid var(--b1);flex-shrink:0}
-.admin-badge-hdr{font-family:var(--M);font-size:9px;letter-spacing:.1em;padding:3px 9px;
-  background:var(--or-g);border:1px solid rgba(255,159,67,.3);border-radius:5px;color:var(--or)}
-.admin-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + var(--sb));
-  display:flex;flex-direction:column;gap:16px;max-width:820px;margin:0 auto;width:100%}
-.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
-.admin-stat{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px;text-align:center}
-.admin-stat-n{font-size:28px;font-weight:700;font-family:var(--M);line-height:1}
-.admin-stat-l{font-size:11px;color:var(--tx2);margin-top:5px}
-.admin-tabs{display:flex;background:var(--s1);border-radius:var(--r);padding:4px;gap:0}
-.adm-tab{flex:1;padding:9px;border-radius:7px;font-size:12px;font-weight:600;
-  color:var(--tx2);background:none;transition:all .2s}
-.adm-tab.act{background:var(--s2);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.admin-sec{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:20px}
-.admin-sec-title{font-size:14px;font-weight:700;margin-bottom:16px;
-  display:flex;align-items:center;justify-content:space-between;gap:10px}
-.admin-sec-title span{display:flex;align-items:center;gap:7px;color:var(--tx)}
-.admin-sec-title span svg{width:16px;height:16px;color:var(--cy)}
-.add-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-@media(max-width:540px){.add-form-grid{grid-template-columns:1fr}}
-.add-form-grid .fi,.add-form-grid .pw-wrap{margin-bottom:0}
-.add-form-grid .pw-wrap{margin-bottom:0}
-/* Teachers table */
-.t-table{width:100%;border-collapse:collapse}
-.t-table th{font-family:var(--M);font-size:10px;letter-spacing:.06em;color:var(--tx2);
-  padding:8px 10px;text-align:right;border-bottom:1px solid var(--b1);font-weight:500}
-.t-table td{padding:12px 10px;font-size:13px;color:var(--tx);
-  border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
-.t-table tr:last-child td{border-bottom:none}
-.t-table tr:hover td{background:rgba(255,255,255,.015)}
-.btn-del{padding:5px 10px;background:var(--rd-g);border:1px solid rgba(255,61,90,.2);
-  border-radius:7px;color:var(--rd);font-size:11px;font-weight:600}
-.btn-del:active{background:var(--rd);color:#fff}
-/* Credentials card */
-.cred-card{background:rgba(0,230,118,.05);border:1px solid rgba(0,230,118,.2);
-  border-radius:var(--r2);padding:16px;margin-top:14px}
-.cred-card h4{font-size:13px;font-weight:700;color:var(--gn);margin-bottom:12px;
-  display:flex;align-items:center;gap:7px}
-.cred-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.cred-lbl{font-family:var(--M);font-size:10px;color:var(--tx2);width:90px;flex-shrink:0}
-.cred-val{font-family:var(--M);font-size:13px;color:var(--cy);background:var(--s1);
-  padding:7px 12px;border-radius:8px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  user-select:text;-webkit-user-select:text}
-.btn-cpcred{padding:6px 10px;background:var(--s2);border:1px solid var(--b2);
-  border-radius:7px;color:var(--tx2);font-size:11px;flex-shrink:0}
-.btn-cpcred:active{background:var(--cy-g);color:var(--cy)}
-/* Student rows */
-.s-rows{display:flex;flex-direction:column;gap:6px}
-.s-row{display:flex;align-items:center;gap:10px;padding:10px 12px;
-  background:var(--bg2);border:1px solid var(--b1);border-radius:var(--r)}
-.s-row-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
-.s-row-info{flex:1;min-width:0}
-.s-row-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.s-row-detail{font-size:11px;color:var(--tx2);margin-top:2px}
-.empty{text-align:center;padding:28px;color:var(--tx3);font-size:13px}
-.empty span{font-size:26px;display:block;margin-bottom:8px;opacity:.5}
+/* ══════════ CLASSROOM ══════════ */
+#cls{
+  position:fixed;inset:0;
+  padding-top:var(--st);
+  background:var(--bg);
+  display:flex;flex-direction:column;
+}
 
-/* ════════════════════════════════════
-   PAGE: CLASSROOM
-════════════════════════════════════ */
-#cls{position:fixed;inset:0;padding-top:var(--st);background:var(--bg);display:flex;flex-direction:column}
-/* Header */
-.c-hdr{height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;padding-right:calc(16px + var(--sr));padding-left:calc(16px + var(--sl));
-  background:var(--bg2);border-bottom:1px solid var(--b1);z-index:40}
-.c-hdr-l{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.c-hdr-brand{display:flex;align-items:center;gap:7px;flex-shrink:0}
-.c-hdr-ico{width:28px;height:28px;background:linear-gradient(135deg,var(--cy),var(--cy2));
+/* ── HEADER (shared) ── */
+.hdr{
+  height:52px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+  padding-right:calc(16px + var(--sr));
+  padding-left:calc(16px + var(--sl));
+  background:var(--bg2);border-bottom:1px solid var(--b1);
+  z-index:40;
+}
+.hdr-l{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.hdr-brand{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.hdr-ico{width:28px;height:28px;background:linear-gradient(135deg,var(--cy),var(--cy2));
   border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
-.c-hdr-name{font-size:14px;font-weight:700}
-.c-hdr-name span{color:var(--cy)}
-.c-rid{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--b1);
-  border-radius:8px;padding:5px 10px;cursor:pointer;transition:border-color .2s}
-.c-rid:hover{border-color:rgba(0,212,255,.3)}
-.c-rid-lbl{font-family:var(--M);font-size:9px;color:var(--tx2);flex-shrink:0}
-.c-rid-val{font-family:var(--M);font-size:11px;color:var(--cy);font-weight:600;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px}
-.c-rid-ico{color:var(--tx2)}
-.c-rid-ico svg{width:12px;height:12px}
-.c-hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.c-uname{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
-.c-dot{width:7px;height:7px;border-radius:50%;background:var(--cy);box-shadow:0 0 6px var(--cy);flex-shrink:0}
-.c-dot.T{background:var(--go);box-shadow:0 0 6px var(--go)}
-.c-uname-txt{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.c-timer{font-family:var(--M);font-size:11px;color:var(--tx2);background:var(--s1);
+.hdr-name{font-size:14px;font-weight:700;white-space:nowrap}
+.hdr-name span{color:var(--cy)}
+.rid{display:flex;align-items:center;gap:6px;background:var(--s1);
+  border:1px solid var(--b1);border-radius:8px;padding:5px 10px;
+  max-width:200px;overflow:hidden;flex-shrink:0}
+.rid-lbl{font-family:var(--M);font-size:9px;letter-spacing:.08em;color:var(--tx2);flex-shrink:0}
+.rid-val{font-family:var(--M);font-size:11px;color:var(--tx);font-weight:500;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-cpid{background:none;color:var(--tx2);padding:2px;display:flex;align-items:center;flex-shrink:0}
+.btn-cpid svg{width:13px;height:13px}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mbd{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.mbd-dot{width:7px;height:7px;border-radius:50%;background:var(--cy);box-shadow:0 0 7px var(--cy);flex-shrink:0}
+.mbd-dot.T{background:var(--go);box-shadow:0 0 7px var(--go)}
+.mbd-txt{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbadge{font-family:var(--M);font-size:11px;color:var(--tx2);background:var(--s1);
   border:1px solid var(--b1);border-radius:6px;padding:3px 8px;white-space:nowrap}
-.c-leave{display:flex;align-items:center;gap:5px;padding:6px 12px;
+.btn-leave{display:flex;align-items:center;gap:5px;padding:6px 12px;
   background:var(--rd-g);border:1px solid rgba(255,61,90,.3);
-  border-radius:8px;color:var(--rd);font-size:12px;font-weight:600}
-.c-leave svg{width:13px;height:13px}
-.c-leave:active{background:var(--rd);color:#fff}
-/* Body */
-.c-body{flex:1;display:flex;overflow:hidden}
-/* Stage */
-.c-stage{flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden}
-.c-scr{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+  border-radius:8px;color:var(--rd);font-size:12px;font-weight:600;white-space:nowrap}
+.btn-leave svg{width:14px;height:14px}
+.btn-leave:active{background:var(--rd);color:#fff}
+
+/* ── BODY (flex row on desktop, flex col on mobile) ── */
+.cls-body{
+  flex:1;display:flex;overflow:hidden;
+}
+
+/* ── STAGE ── */
+.stage{
+  flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden;
+}
+/* Screen area */
+.scr-area{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:var(--bg)}
 #scr-vid{width:100%;height:100%;object-fit:contain;background:#000}
-.c-scr-ph{position:absolute;inset:0;display:flex;flex-direction:column;
+.scr-ph{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:12px;pointer-events:none}
-.c-scr-ph-ico{font-size:48px;opacity:.4;animation:flt 3s ease-in-out infinite}
+.scr-ph-ico{font-size:44px;opacity:.45;animation:flt 3s ease-in-out infinite}
 @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.c-scr-ph p{font-size:14px;color:var(--tx2);text-align:center;padding:0 24px}
-.c-scr-ph small{font-size:12px;color:var(--tx3);text-align:center}
+.scr-ph p{font-size:14px;color:var(--tx2);text-align:center;padding:0 24px}
+.scr-ph small{font-size:12px;color:var(--tx3);text-align:center;padding:0 24px}
 /* Share banner */
-.c-shr-bn{position:absolute;top:10px;left:50%;transform:translateX(-50%);
-  display:flex;align-items:center;gap:8px;background:rgba(0,230,118,.1);
-  border:1px solid rgba(0,230,118,.3);border-radius:40px;padding:6px 14px;
-  font-size:12px;color:var(--gn);z-index:20;backdrop-filter:blur(10px);white-space:nowrap}
-.c-shr-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);animation:blk 1.4s infinite}
+.shr-banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);
+  border-radius:40px;padding:6px 14px;font-size:12px;color:var(--gn);
+  z-index:20;backdrop-filter:blur(10px);white-space:nowrap}
+.shr-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);animation:blk 1.4s infinite}
 @keyframes blk{0%,100%{opacity:1}50%{opacity:.3}}
-.btn-stop-shr{background:var(--gn);color:#060d1c;border:none;border-radius:20px;
+.btn-stp-shr{background:var(--gn);color:#060d1c;border:none;border-radius:20px;
   padding:3px 10px;font-size:11px;font-weight:700}
-/* Controls */
-.c-ctrl{position:absolute;z-index:20;left:50%;transform:translateX(-50%);
-  bottom:calc(112px + 12px);
-  display:flex;align-items:center;gap:5px;background:rgba(6,13,28,.9);
-  border:1px solid rgba(255,255,255,.1);border-radius:50px;
-  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
-  padding:8px 14px;box-shadow:0 8px 36px rgba(0,0,0,.65)}
-.c-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+/* Controls bar */
+.ctrl-bar{
+  position:absolute;z-index:20;
+  bottom:calc(var(--tile-h, 110px) + 12px);
+  left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:5px;
+  background:rgba(6,13,28,.88);border:1px solid rgba(255,255,255,.1);
+  border-radius:50px;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  padding:8px 14px;
+  box-shadow:0 8px 36px rgba(0,0,0,.65);
+}
+.cb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   border-radius:50%;background:rgba(255,255,255,.06);border:1px solid transparent;
-  color:var(--tx);transition:all .15s;width:56px;height:56px;padding:0}
-.c-btn:active{transform:scale(.9)}
-.c-btn.off{background:var(--rd-g);border-color:rgba(255,61,90,.4);color:var(--rd)}
-.c-btn.on{background:var(--gn-g);border-color:rgba(0,230,118,.4);color:var(--gn)}
-.c-btn svg{width:19px;height:19px}
-.c-btn-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
-.c-div{width:1px;height:32px;background:rgba(255,255,255,.1);margin:0 3px}
-.c-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--tx);transition:all .15s;padding:0;width:54px;height:54px}
+.cb:active{transform:scale(.9)}
+.cb.off{background:var(--rd-g);border-color:rgba(255,61,90,.4);color:var(--rd)}
+.cb.on{background:var(--gn-g);border-color:rgba(0,230,118,.4);color:var(--gn)}
+.cb svg{width:19px;height:19px}
+.cb-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
+.cb-div{width:1px;height:32px;background:rgba(255,255,255,.1);margin:0 3px}
+.cb-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   border-radius:50%;background:var(--rd-g);border:1px solid rgba(255,61,90,.45);
-  color:var(--rd);width:56px;height:56px;padding:0;transition:all .15s}
-.c-end:active{background:var(--rd);color:#fff;transform:scale(.9)}
-.c-end svg{width:19px;height:19px}
-.c-end-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
+  color:var(--rd);transition:all .15s;width:54px;height:54px;padding:0}
+.cb-end:active{background:var(--rd);color:#fff;transform:scale(.9)}
+.cb-end svg{width:19px;height:19px}
+.cb-end-lbl{font-size:9px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;opacity:.7;color:inherit}
 /* Tile strip */
-.c-tiles{display:flex;gap:7px;padding:8px 10px;background:var(--bg2);border-top:1px solid var(--b1);
-  overflow-x:auto;flex-shrink:0;align-items:center;height:112px;
+.tile-strip{
+  display:flex;gap:7px;padding:8px 10px;
+  background:var(--bg2);border-top:1px solid var(--b1);
+  overflow-x:auto;flex-shrink:0;align-items:center;
+  height:110px;
   -webkit-overflow-scrolling:touch;scrollbar-width:none}
-.c-tiles::-webkit-scrollbar{display:none}
-.ptile{position:relative;flex-shrink:0;width:150px;height:96px;
+.tile-strip::-webkit-scrollbar{display:none}
+.ptile{position:relative;flex-shrink:0;width:148px;height:94px;
   border-radius:11px;overflow:hidden;background:var(--s1);border:2px solid transparent;transition:border-color .2s}
-.ptile.me{border-color:var(--pu)}.ptile.tea{border-color:var(--go)}
+.ptile.me{border-color:var(--pu)}
+.ptile.tea{border-color:var(--go)}
+.ptile.spk{border-color:var(--cy);box-shadow:0 0 14px rgba(0,212,255,.3)}
 .tv{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .tov{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,13,28,.86) 0%,transparent 50%)}
 .tname{position:absolute;bottom:5px;right:6px;left:6px;font-size:10px;font-weight:600;color:#fff;
@@ -412,489 +233,245 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
 .tname-txt{background:rgba(0,0,0,.4);padding:2px 6px;border-radius:4px;
   max-width:75px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ticns{display:flex;gap:3px}
-.ticn{width:17px;height:17px;border-radius:4px;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
+.ticn{width:17px;height:17px;border-radius:4px;background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center}
 .ticn svg{width:9px;height:9px}
 .ticn.mu{background:rgba(255,61,90,.45);color:var(--rd)}
 .ticn.co{background:rgba(255,61,90,.45);color:var(--rd)}
-.trole{position:absolute;top:5px;right:5px;font-family:var(--M);font-size:9px;font-weight:600;padding:2px 5px;border-radius:4px}
+.trole{position:absolute;top:5px;right:5px;font-family:var(--M);font-size:9px;font-weight:600;
+  padding:2px 5px;border-radius:4px}
 .trole.T{background:rgba(240,180,41,.22);color:var(--go);border:1px solid rgba(240,180,41,.28)}
 .trole.S{background:rgba(0,212,255,.13);color:var(--cy);border:1px solid rgba(0,212,255,.18)}
 .tavtr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--s2)}
-.tavtr-l{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
-/* Sidebar */
-.c-sidebar{width:292px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg2);border-right:1px solid var(--b1);overflow:hidden}
-.c-stabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0}
-.c-stab{flex:1;padding:12px 6px;background:none;border:none;font-size:12px;font-weight:600;
-  color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
-.c-stab.act{color:var(--cy);border-bottom-color:var(--cy)}
-.c-stab svg{width:13px;height:13px;flex-shrink:0}
-.c-sbadge{background:var(--rd);color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700}
-#c-sp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
-#c-sc{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.c-chat{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;-webkit-overflow-scrolling:touch}
+.tavtr-l{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:16px;font-weight:700;color:#fff}
+
+/* ── SIDEBAR (desktop ≥769px) ── */
+.sidebar{
+  width:290px;flex-shrink:0;
+  display:flex;flex-direction:column;
+  background:var(--bg2);border-right:1px solid var(--b1);
+  overflow:hidden;
+}
+.stabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0}
+.stab{flex:1;padding:12px 6px;background:none;border:none;font-size:12px;font-weight:600;
+  color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:5px}
+.stab.act{color:var(--cy);border-bottom-color:var(--cy)}
+.stab svg{width:13px;height:13px;flex-shrink:0}
+.sbadge{background:var(--rd);color:#fff;border-radius:10px;
+  padding:1px 5px;font-size:10px;font-weight:700;min-width:16px;text-align:center}
+#sp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
+#sc{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-wrap{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;
+  -webkit-overflow-scrolling:touch}
 .cmsg{display:flex;flex-direction:column;gap:3px;animation:min .22s ease}
 @keyframes min{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .cmsg.me{align-items:flex-end}
 .cmsg-hd{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);padding:0 3px}
 .cmsg.me .cmsg-hd{flex-direction:row-reverse}
-.cav{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.cav{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
 .cname{font-weight:600}
 .ctime{font-family:var(--M);font-size:9px;color:var(--tx3)}
 .cbub{max-width:88%;padding:8px 12px;background:var(--s2);border:1px solid var(--b1);
   border-radius:12px 12px 4px 12px;font-size:13px;line-height:1.5;color:var(--tx);word-break:break-word}
 .cmsg.me .cbub{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.2);border-radius:12px 12px 12px 4px}
-.cmsg.sys .cbub{background:rgba(255,255,255,.04);border-color:transparent;font-size:11px;color:var(--tx2);text-align:center;width:100%;border-radius:8px}
-.c-cinp-wrap{padding:8px 10px 10px;border-top:1px solid var(--b1);flex-shrink:0;padding-bottom:calc(10px + var(--sb))}
-.c-cinp-row{display:flex;gap:7px}
-.c-cinp{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:10px;
-  padding:10px 12px;font-size:14px;color:var(--tx);resize:none;max-height:80px;min-height:40px;transition:border-color .2s}
-.c-cinp::placeholder{color:var(--tx3)}
-.c-cinp:focus{border-color:rgba(0,212,255,.4)}
-.c-snd{width:40px;height:40px;border-radius:10px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--cy),var(--cy2));display:flex;align-items:center;justify-content:center;color:#060d1c}
-.c-snd:active{transform:scale(.9)}
-.c-snd svg{width:16px;height:16px}
-/* Participant list item */
-.pli{display:flex;align-items:center;gap:9px;padding:9px 10px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r)}
-.pav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.cmsg.sys .cbub{background:rgba(255,255,255,.04);border-color:transparent;
+  font-size:11px;color:var(--tx2);text-align:center;width:100%;border-radius:8px}
+.cinp-wrap{padding:8px 10px 10px;border-top:1px solid var(--b1);flex-shrink:0;
+  padding-bottom:calc(10px + var(--sb))}
+.cinp-row{display:flex;gap:7px}
+.cinp{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:10px;
+  padding:10px 12px;font-size:14px;color:var(--tx);resize:none;
+  max-height:80px;min-height:40px;transition:border-color .2s}
+.cinp::placeholder{color:var(--tx3)}
+.cinp:focus{border-color:rgba(0,212,255,.4)}
+.btn-snd{width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--cy),var(--cy2));
+  display:flex;align-items:center;justify-content:center;color:#060d1c}
+.btn-snd:active{transform:scale(.9)}
+.btn-snd svg{width:16px;height:16px}
+/* Participant list items */
+.pli{display:flex;align-items:center;gap:9px;padding:9px 10px;
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r)}
+.pav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 .pi{flex:1;min-width:0}
 .pn{font-size:12px;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pr{font-size:10px;color:var(--tx2);margin-top:1px}
-.pbtn{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid var(--b1);color:var(--tx2);display:flex;align-items:center;justify-content:center}
+.pbtn{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);
+  border:1px solid var(--b1);color:var(--tx2);display:flex;align-items:center;justify-content:center}
 .pbtn svg{width:12px;height:12px}
 .pbtn.on{background:var(--rd-g);border-color:rgba(255,61,90,.3);color:var(--rd)}
-/* Mobile nav */
-.c-mnav{position:fixed;bottom:0;left:0;right:0;padding-bottom:var(--sb);
-  background:var(--bg2);border-top:1px solid var(--b2);z-index:50;display:none}
-.c-mnav-in{display:flex;align-items:center;justify-content:space-around;padding:7px 6px}
-.c-mnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:7px 10px;border-radius:10px;background:none;
-  color:var(--tx2);font-size:10px;font-weight:600;min-width:50px;position:relative}
-.c-mnav-btn svg{width:20px;height:20px}
-.c-mnav-btn.act{background:var(--cy-g);color:var(--cy)}
-.c-mnav-btn.off{background:var(--rd-g);color:var(--rd)}
-.c-mnav-btn.danger{color:var(--rd)}
-.c-mbadge{position:absolute;top:4px;right:6px;background:var(--rd);color:#fff;border-radius:10px;padding:1px 4px;font-size:9px;font-weight:700}
-/* Drawer */
-.c-bdrawer{display:none;position:fixed;bottom:0;left:0;right:0;height:66vh;max-height:520px;
-  background:var(--bg2);border-top:2px solid var(--b2);border-radius:18px 18px 0 0;
-  z-index:60;flex-direction:column;transform:translateY(100%);
-  transition:transform .3s cubic-bezier(.32,1,.55,1)}
-.c-bdrawer.open{transform:translateY(0)}
-.c-bd-handle{width:36px;height:4px;background:var(--b2);border-radius:2px;margin:10px auto}
-.c-bd-tabs{display:flex;border-bottom:1px solid var(--b1);padding:0 14px;flex-shrink:0}
-.c-bdtab{flex:1;padding:10px 5px;background:none;border:none;font-size:12px;font-weight:600;
-  color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:5px}
-.c-bdtab.act{color:var(--cy);border-bottom-color:var(--cy)}
-.c-bdtab svg{width:13px;height:13px}
-.c-bdtab-badge{background:var(--rd);color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;font-weight:700}
-.c-bd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
-.c-bd-overlay.open{display:block}
-#c-msp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
-#c-msc{flex:1;display:flex;flex-direction:column;overflow:hidden}
 
-/* ─── Responsive ─── */
+/* ══════════ MOBILE ONLY (< 769px) ══════════ */
 @media(max-width:768px){
-  .c-sidebar{display:none}.c-mnav{display:block}.c-bdrawer{display:flex}
-  .c-ctrl{bottom:calc(var(--sb)+66px+112px+10px);padding:7px 10px;gap:4px}
-  .c-btn{width:50px;height:50px}.c-btn svg{width:17px;height:17px}
-  .c-btn-lbl,.c-end-lbl{font-size:8px}.c-end{width:50px;height:50px}.c-end svg{width:17px;height:17px}
-  .c-tiles{height:108px;padding-bottom:calc(8px + var(--sb) + 66px)}
-  .ptile{width:134px;height:88px}
-  #c-scr-btn{display:none!important}
-  .c-timer,.c-uname{display:none}
-  .c-rid-val{max-width:80px}
-  .two-col{grid-template-columns:1fr}
-  .student-hero{flex-direction:column;text-align:center;align-items:center}
-  .join-row{flex-direction:column}
-  .teacher-welcome{flex-direction:column;text-align:center;align-items:center}
-  .tw-badges{justify-content:center}
-  .stats-row{grid-template-columns:repeat(3,1fr)}
-  .room-card-top{flex-direction:column}
-}
-@media(min-width:769px){.c-mnav,.c-bdrawer,.c-bd-overlay{display:none!important}.c-sidebar{display:flex}}
+  .sidebar{display:none}   /* hide desktop sidebar */
 
-/* ─── Toast ─── */
-.toast{position:fixed;left:50%;transform:translateX(-50%);
-  background:var(--s2);border:1px solid var(--b2);border-radius:10px;
-  padding:10px 18px;font-size:13px;color:var(--tx);z-index:300;
-  box-shadow:var(--sh);animation:tai .3s ease;pointer-events:none;
+  /* Controls lower — above mobile nav */
+  .ctrl-bar{
+    bottom:calc(var(--sb) + 66px + 108px + 12px);
+    padding:7px 10px;gap:4px;
+  }
+  .cb{width:50px;height:50px}
+  .cb svg{width:17px;height:17px}
+  .cb-lbl,.cb-end-lbl{font-size:8px}
+  .cb-end{width:50px;height:50px}
+  .cb-end svg{width:17px;height:17px}
+
+  /* Tile strip shorter */
+  .tile-strip{
+    height:108px;
+    padding-bottom:calc(8px + var(--sb) + 66px);
+  }
+  .ptile{width:134px;height:88px}
+
+  /* Screen share button hidden on mobile */
+  #cb-scr{display:none!important}
+
+  /* Header: hide name+timer */
+  .tbadge,.mbd{display:none}
+  .rid-val{max-width:90px}
+
+  /* Mobile nav bar */
+  .mnav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;
+    padding-bottom:var(--sb);
+    background:var(--bg2);border-top:1px solid var(--b2);
+    z-index:50;
+  }
+  .mnav-in{display:flex;align-items:center;justify-content:space-around;padding:7px 8px}
+  .mnav-btn{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:7px 10px;border-radius:10px;background:none;
+    color:var(--tx2);font-size:10px;font-weight:600;min-width:50px;
+    position:relative;transition:all .15s;
+  }
+  .mnav-btn svg{width:20px;height:20px}
+  .mnav-btn.act{background:var(--cy-g);color:var(--cy)}
+  .mnav-btn.off{background:var(--rd-g);color:var(--rd)}
+  .mnav-btn.danger{color:var(--rd)}
+  .mnav-btn.danger:active{background:var(--rd-g)}
+  .mbadge{position:absolute;top:4px;right:6px;background:var(--rd);color:#fff;
+    border-radius:10px;padding:1px 4px;font-size:9px;font-weight:700}
+
+  /* Bottom drawer */
+  .bdrawer{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;
+    height:66vh;max-height:520px;
+    background:var(--bg2);border-top:2px solid var(--b2);
+    border-radius:18px 18px 0 0;
+    z-index:60;flex-direction:column;
+    transform:translateY(100%);
+    transition:transform .3s cubic-bezier(.32,1,.55,1);
+  }
+  .bdrawer.open{transform:translateY(0)}
+  .bd-handle{width:36px;height:4px;background:var(--b2);border-radius:2px;margin:10px auto}
+  .bd-tabs{display:flex;border-bottom:1px solid var(--b1);padding:0 14px;flex-shrink:0}
+  .bdtab{flex:1;padding:10px 5px;background:none;border:none;font-size:12px;font-weight:600;
+    color:var(--tx2);border-bottom:2px solid transparent;transition:all .2s;
+    display:flex;align-items:center;justify-content:center;gap:5px}
+  .bdtab.act{color:var(--cy);border-bottom-color:var(--cy)}
+  .bdtab svg{width:13px;height:13px}
+  .bdtab-badge{background:var(--rd);color:#fff;border-radius:10px;
+    padding:1px 5px;font-size:10px;font-weight:700}
+  .bd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
+  .bd-overlay.open{display:block}
+
+  /* mobile participants / chat panels inside drawer */
+  #msp{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
+  #msc{flex:1;display:flex;flex-direction:column;overflow:hidden}
+}
+
+/* ══════════ DESKTOP ONLY (≥769px) ══════════ */
+@media(min-width:769px){
+  .mnav,.bdrawer,.bd-overlay{display:none!important}
+  .sidebar{display:flex}
+}
+
+/* ══════════ LANDSCAPE MOBILE ══════════ */
+@media(max-height:480px) and (orientation:landscape){
+  .tile-strip{height:82px;padding-bottom:calc(6px + var(--sb) + 52px)}
+  .ptile{width:112px;height:70px}
+  .ctrl-bar{bottom:calc(var(--sb) + 52px + 82px + 8px);padding:5px 9px;gap:3px}
+  .cb,.cb-end{width:44px;height:44px}
+  .mnav-in{padding:4px 8px}
+  .mnav-btn{padding:4px 8px}
+}
+
+/* Toast */
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);
+  background:var(--s2);border:1px solid var(--b2);
+  border-radius:10px;padding:10px 18px;font-size:13px;color:var(--tx);
+  z-index:300;box-shadow:var(--sh);animation:tai .3s ease;pointer-events:none;
   white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;
-  bottom:calc(80px + var(--sb))}
+  /* Default position above mobile nav; JS adjusts for desktop */
+  bottom:calc(80px + var(--sb));
+}
 @media(min-width:769px){.toast{bottom:24px}}
 .toast.err{border-color:rgba(255,61,90,.4);color:var(--rd)}
 .toast.ok{border-color:rgba(0,230,118,.4);color:var(--gn)}
-.toast.info{border-color:rgba(0,212,255,.4);color:var(--cy)}
 @keyframes tai{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
 </head>
 <body>
-<div class="pbg"></div><div class="pgrid"></div>
 
-<!-- ══════════════════════════════════════
-     PAGE 1: AUTH
-══════════════════════════════════════ -->
-<div id="pg-auth" role="main">
-  <div class="auth-card card">
-    <div class="brand-bar">
+<!-- ════════ LOBBY ════════ -->
+<div id="lobby">
+  <div class="l-bg"></div><div class="l-grid"></div>
+  <div class="l-card">
+    <div class="brand">
       <div class="brand-ico">🎓</div>
       <div class="brand-name">Edu<span>Room</span></div>
-      <div class="brand-tag">v8</div>
+      <div class="brand-tag">v4</div>
     </div>
-
-    <!-- Tabs: Login | Register -->
-    <div class="tab-row" style="margin-bottom:24px">
-      <button class="atab act" id="at-login" onclick="authTab('login')">تسجيل الدخول</button>
-      <button class="atab" id="at-reg" onclick="authTab('reg')">حساب طالب جديد</button>
+    <h1 class="l-title">الفصل الافتراضي<br/>التفاعلي</h1>
+    <p class="l-sub">يعمل على الكمبيوتر والهاتف في نفس الغرفة 🖥️📱</p>
+    <div class="role-row">
+      <button class="role-btn sel" id="rb-T" onclick="selRole('teacher')"><span class="re">👨‍🏫</span><span>معلم</span></button>
+      <button class="role-btn"     id="rb-S" onclick="selRole('student')"><span class="re">🎒</span><span>طالب</span></button>
     </div>
-
-    <!-- ─── LOGIN ─── -->
-    <div id="form-login">
-      <div class="auth-head">
-        <h2>أهلاً بك 👋</h2>
-        <p>سجّل دخولك — الأساتذة والطلاب من هنا</p>
-      </div>
-      <div id="lockout-warn" class="lockout hidden">🔒 <span id="lockout-msg">الحساب مؤقتاً محظور.</span></div>
-      <label class="fl">الاسم (للأستاذ) أو البريد الإلكتروني (للطالب)</label>
-      <input id="l-email" class="fi" type="text" placeholder="اسمك أو بريدك الإلكتروني…" autocomplete="off"/>
-      <label class="fl">كلمة المرور</label>
-      <div class="pw-wrap">
-        <input id="l-pass" class="fi" type="password" placeholder="••••••••" autocomplete="current-password"/>
-        <button class="pw-eye" onclick="togPw('l-pass',this)" tabindex="-1" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-      <button class="btn-primary" id="btn-login" onclick="doLogin()" aria-label="تسجيل الدخول">دخول ←</button>
-      <div id="l-err" class="msg-err"></div>
-      <div class="admin-hint">
-        <button onclick="authTab('admin')">🛡️ دخول لوحة الإدارة</button>
-      </div>
+    <label class="fl">اسمك</label>
+    <input id="in-name" class="fi" placeholder="أدخل اسمك…" maxlength="28" autocomplete="off"/>
+    <label class="fl">معرّف الغرفة</label>
+    <div class="room-row">
+      <input id="in-room" class="fi" placeholder="أدخل معرّف الغرفة…" maxlength="40" autocomplete="off"/>
+      <button class="btn-gen" onclick="genRoom()">إنشاء</button>
     </div>
-
-    <!-- ─── ADMIN LOGIN ─── -->
-    <div id="form-admin" class="hidden">
-      <div class="auth-head">
-        <h2>لوحة الإدارة 🛡️</h2>
-        <p>خاص بمدير المنصة فقط</p>
-      </div>
-      <label class="fl">بريد المدير</label>
-      <input id="a-email" class="fi" type="email" placeholder="admin@email.com" autocomplete="off"/>
-      <label class="fl">كلمة مرور المدير</label>
-      <div class="pw-wrap">
-        <input id="a-pass" class="fi" type="password" placeholder="••••••••" autocomplete="off"/>
-        <button class="pw-eye" onclick="togPw('a-pass',this)" tabindex="-1" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-      <button class="btn-primary" onclick="doAdminLogin()">دخول لوحة الإدارة ←</button>
-      <div id="a-err" class="msg-err"></div>
-      <div class="admin-hint"><button onclick="authTab('login')">← رجوع</button></div>
-    </div>
-
-    <!-- ─── STUDENT REGISTER ─── -->
-    <div id="form-reg" class="hidden">
-      <div class="auth-head">
-        <h2>إنشاء حساب طالب 🎒</h2>
-        <p>سجّل بياناتك للانضمام إلى فصلك</p>
-      </div>
-      <div class="two-col">
-        <div><label class="fl">الاسم الأول</label><input id="r-fn" class="fi" placeholder="محمد" maxlength="20" autocomplete="off"/></div>
-        <div><label class="fl">اسم العائلة</label><input id="r-ln" class="fi" placeholder="الأمين" maxlength="20" autocomplete="off"/></div>
-      </div>
-      <label class="fl">تاريخ الازدياد</label>
-      <input id="r-dob" class="fi" type="date"/>
-      <label class="fl">المستوى الدراسي</label>
-      <div class="level-grid" id="reg-levels"></div>
-      <label class="fl">البريد الإلكتروني</label>
-      <input id="r-email" class="fi" type="email" placeholder="example@email.com" autocomplete="off"/>
-      <label class="fl">كلمة المرور</label>
-      <div class="pw-wrap">
-        <input id="r-pass" class="fi" type="password" placeholder="8 أحرف على الأقل" autocomplete="new-password"/>
-        <button class="pw-eye" onclick="togPw('r-pass',this)" tabindex="-1" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-      <button class="btn-primary" id="btn-reg" onclick="doRegister()">إنشاء الحساب ←</button>
-      <div id="r-err" class="msg-err"></div>
-    </div>
+    <button class="btn-join" onclick="join()">الدخول إلى الغرفة ←</button>
+    <div id="ls"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     PAGE 2: TEACHER DASHBOARD
-══════════════════════════════════════ -->
-<div id="pg-teacher" role="main" class="hidden">
-  <header class="dash-hdr">
-    <div class="dash-brand">
-      <div class="dash-brand-ico">🎓</div>
-      <div class="dash-brand-name">Edu<span>Room</span></div>
-    </div>
-    <button class="btn-logout" onclick="logout()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>خروج
-    </button>
-  </header>
-  <div class="dash-body">
+<!-- ════════ CLASSROOM ════════ -->
+<div id="cls" class="hidden">
 
-    <!-- Welcome -->
-    <div class="teacher-welcome">
-      <div class="tw-avatar" id="t-av"></div>
-      <div class="tw-info">
-        <h2 id="t-name">—</h2>
-        <p id="t-email">—</p>
-        <div class="tw-badges">
-          <span class="badge go">👨‍🏫 معلم</span>
-          <span class="badge cy" id="t-join-badge">—</span>
-        </div>
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-brand">
+        <div class="hdr-ico">🎓</div>
+        <div class="hdr-name">Edu<span>Room</span></div>
       </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="t-sessions" style="color:var(--go)">0</div><div class="stat-lbl">حصص أجريتها</div></div>
-      <div class="stat-card"><div class="stat-num" id="t-days" style="color:var(--cy)">0</div><div class="stat-lbl">أيام في المنصة</div></div>
-      <div class="stat-card"><div class="stat-num" id="t-msgs" style="color:var(--pu)">0</div><div class="stat-lbl">رسائل أرسلتها</div></div>
-    </div>
-
-    <!-- Room card — teacher enters directly -->
-    <div class="room-card">
-      <div class="room-card-top">
-        <div class="room-card-info">
-          <h3>🚪 غرفتك الخاصة</h3>
-          <p>هذا هو معرّف غرفتك — شاركه مع طلابك للانضمام</p>
-        </div>
-      </div>
-      <div class="room-id-display">
-        <span class="rid-label">ROOM ID</span>
-        <span class="rid-value" id="t-room-id">—</span>
-        <button class="btn-cp-room" onclick="cpTeacherRoom()">
+      <div class="rid">
+        <span class="rid-lbl">ROOM</span>
+        <span class="rid-val" id="h-rid">—</span>
+        <button class="btn-cpid" onclick="cpRoom()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>نسخ المعرّف
+          </svg>
         </button>
       </div>
-      <button class="btn-enter-room" onclick="teacherEnterRoom()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px">
-          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-          <polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
-        </svg>
-        ابدأ الحصة — ادخل غرفتك الآن
-      </button>
     </div>
-
-    <!-- Info -->
-    <div class="info-grid">
-      <div class="info-card"><div class="info-card-label">الاسم الكامل</div><div class="info-card-val">👤 <span id="t-ic-name">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">تاريخ التسجيل</div><div class="info-card-val">📅 <span id="t-ic-joined">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">الدور</div><div class="info-card-val">👨‍🏫 معلم</div></div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     PAGE 3: STUDENT PROFILE
-══════════════════════════════════════ -->
-<div id="pg-student" role="main" class="hidden">
-  <header class="dash-hdr">
-    <div class="dash-brand">
-      <div class="dash-brand-ico">🎓</div>
-      <div class="dash-brand-name">Edu<span>Room</span></div>
-    </div>
-    <button class="btn-logout" onclick="logout()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>خروج
-    </button>
-  </header>
-  <div class="prof-body">
-    <!-- Hero -->
-    <div class="student-hero">
-      <div class="s-av" id="s-av"></div>
-      <div class="s-hero-info">
-        <h2 id="s-name">—</h2>
-        <p id="s-email-d">—</p>
-        <div class="tw-badges">
-          <span class="badge cy" id="s-lvl-badge">—</span>
-          <span class="badge pu" id="s-join-badge">—</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="s-sessions" style="color:var(--cy)">0</div><div class="stat-lbl">حصص حضرتها</div></div>
-      <div class="stat-card"><div class="stat-num" id="s-days" style="color:var(--go)">0</div><div class="stat-lbl">أيام في المنصة</div></div>
-      <div class="stat-card"><div class="stat-num" id="s-msgs" style="color:var(--pu)">0</div><div class="stat-lbl">رسائل أرسلتها</div></div>
-    </div>
-
-    <!-- Join room -->
-    <div class="join-room-card">
-      <div>
-        <h3>🚀 الدخول إلى حصة</h3>
-        <p>أدخل معرّف الغرفة الذي أرسله لك أستاذك</p>
-      </div>
-      <div class="join-row">
-        <input id="s-room-id" class="fi" placeholder="معرّف الغرفة…" maxlength="60" autocomplete="off"/>
-        <button class="btn-join-cls" onclick="studentEnterRoom()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
-          </svg>دخول
-        </button>
-      </div>
-      <div id="s-err" class="msg-err"></div>
-    </div>
-
-    <!-- Info -->
-    <div class="info-grid">
-      <div class="info-card"><div class="info-card-label">الاسم الكامل</div><div class="info-card-val">👤 <span id="s-ic-name">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">تاريخ الازدياد</div><div class="info-card-val">🎂 <span id="s-ic-dob">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">تاريخ التسجيل</div><div class="info-card-val">📅 <span id="s-ic-joined">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">المستوى</div><div class="info-card-val">📚 <span id="s-ic-level">—</span></div></div>
-      <div class="info-card"><div class="info-card-label">العمر</div><div class="info-card-val">⏳ <span id="s-ic-age">—</span></div></div>
-    </div>
-
-    <!-- Edit level -->
-    <div class="edit-sec">
-      <h3>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>تعديل المستوى الدراسي
-      </h3>
-      <div class="level-grid" id="edit-levels"></div>
-      <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
-        <button class="btn-save" onclick="saveLevel()">حفظ</button>
-        <span id="save-msg" class="msg-ok" style="margin-top:0;line-height:1"></span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     PAGE 4: ADMIN PANEL
-══════════════════════════════════════ -->
-<div id="pg-admin" role="main" class="hidden">
-  <header class="admin-hdr">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--or),#d07000);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px">🛡️</div>
-      <div>
-        <div class="dash-brand-name" style="font-size:15px">لوحة الإدارة</div>
-        <div class="admin-badge-hdr">EduRoom Admin</div>
-      </div>
-    </div>
-    <button class="btn-logout" onclick="logout()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>خروج
-    </button>
-  </header>
-  <div class="admin-body">
-    <!-- Stats -->
-    <div class="admin-stats">
-      <div class="admin-stat"><div class="admin-stat-n" id="adm-t-count" style="color:var(--go)">0</div><div class="admin-stat-l">👨‍🏫 أساتذة</div></div>
-      <div class="admin-stat"><div class="admin-stat-n" id="adm-s-count" style="color:var(--cy)">0</div><div class="admin-stat-l">🎒 طلاب</div></div>
-      <div class="admin-stat"><div class="admin-stat-n" id="adm-total" style="color:var(--pu)">0</div><div class="admin-stat-l">👥 المجموع</div></div>
-    </div>
-    <!-- Tabs -->
-    <div class="admin-tabs">
-      <button class="adm-tab act" id="adm-tab-t" onclick="admTab('teachers')">👨‍🏫 الأساتذة</button>
-      <button class="adm-tab" id="adm-tab-s" onclick="admTab('students')">🎒 الطلاب</button>
-    </div>
-    <!-- Teachers -->
-    <div id="adm-teachers-sec">
-      <div class="admin-sec">
-        <div class="admin-sec-title">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--cy)"><path d="M12 5v14M5 12h14"/></svg>إضافة أستاذ جديد</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px">
-          <div>
-            <label class="fl">اسم الأستاذ الكامل</label>
-            <input id="t-fn" class="fi fi-nb" placeholder="مثال: محمد الأمين" maxlength="40" autocomplete="off"/>
-          </div>
-          <div>
-            <label class="fl">الرقم السري</label>
-            <div class="pw-wrap" style="margin-bottom:0">
-              <input id="t-pass" class="fi fi-nb" type="password" placeholder="اختر رقماً سرياً للأستاذ" autocomplete="new-password"/>
-              <button class="pw-eye" onclick="togPw('t-pass',this)" tabindex="-1" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <button class="btn-primary" onclick="addTeacher()" style="margin-top:8px">إضافة الأستاذ ←</button>
-        <div id="t-err" class="msg-err"></div>
-        <!-- Credentials -->
-        <div class="cred-card hidden" id="cred-card">
-          <h4>✅ تم إنشاء الحساب — أعطِ هذه البيانات للأستاذ</h4>
-          <div class="cred-row">
-            <span class="cred-lbl">اسم الدخول</span>
-            <span class="cred-val" id="cred-email">—</span>
-            <button class="btn-cpcred" onclick="cpCred('cred-email')">نسخ</button>
-          </div>
-          <div class="cred-row">
-            <span class="cred-lbl">كلمة المرور</span>
-            <span class="cred-val" id="cred-pass">—</span>
-            <button class="btn-cpcred" onclick="cpCred('cred-pass')">نسخ</button>
-          </div>
-          <div class="cred-row">
-            <span class="cred-lbl">معرّف الغرفة</span>
-            <span class="cred-val" id="cred-room">—</span>
-            <button class="btn-cpcred" onclick="cpCred('cred-room')">نسخ</button>
-          </div>
-          <div style="font-size:11px;color:var(--tx3);margin-top:8px">⚠️ احتفظ بهذه البيانات — لن تظهر مرة أخرى</div>
-        </div>
-      </div>
-      <!-- Teachers list -->
-      <div class="admin-sec" style="margin-top:0">
-        <div class="admin-sec-title">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--cy)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>قائمة الأساتذة</span>
-        </div>
-        <div id="teachers-list"></div>
-      </div>
-    </div>
-    <!-- Students -->
-    <div id="adm-students-sec" class="hidden">
-      <div class="admin-sec">
-        <div class="admin-sec-title">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--cy)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>قائمة الطلاب</span>
-          <span id="adm-s-label" style="font-family:var(--M);font-size:12px;color:var(--tx2)">0 طالب</span>
-        </div>
-        <div class="s-rows" id="students-list"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     PAGE 5: CLASSROOM
-══════════════════════════════════════ -->
-<div id="cls" class="hidden">
-  <!-- Header -->
-  <header class="c-hdr">
-    <div class="c-hdr-l">
-      <div class="c-hdr-brand">
-        <div class="c-hdr-ico">🎓</div>
-        <div class="c-hdr-name">Edu<span>Room</span></div>
-      </div>
-      <!-- Room ID — clickable to copy -->
-      <div class="c-rid" onclick="cpRoom()" title="اضغط لنسخ معرّف الغرفة">
-        <span class="c-rid-lbl">ROOM</span>
-        <span class="c-rid-val" id="h-rid">—</span>
-        <span class="c-rid-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
-      </div>
-    </div>
-    <div class="c-hdr-r">
-      <div class="c-uname"><div class="c-dot" id="c-dot"></div><span class="c-uname-txt" id="c-uname">—</span></div>
-      <div class="c-timer" id="c-timer">00:00</div>
-      <button class="c-leave" onclick="leaveRoom()">
+    <div class="hdr-r">
+      <div class="mbd"><div class="mbd-dot" id="h-dot"></div><span class="mbd-txt" id="h-name">—</span></div>
+      <div class="tbadge" id="h-timer">00:00</div>
+      <button class="btn-leave" onclick="leave()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -904,28 +481,31 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
   </header>
 
   <!-- Body -->
-  <div class="c-body">
+  <div class="cls-body">
+
     <!-- Stage -->
-    <div class="c-stage">
+    <div class="stage">
       <!-- Screen area -->
-      <div class="c-scr">
+      <div class="scr-area">
         <video id="scr-vid" class="hidden" autoplay playsinline></video>
-        <div id="c-scr-ph" class="c-scr-ph">
-          <div class="c-scr-ph-ico">🖥️</div>
-          <p>لا توجد مشاركة شاشة نشطة</p>
-          <small id="c-scr-hint">المعلم يمكنه مشاركة شاشته من أزرار التحكم</small>
+        <div id="scr-ph" class="scr-ph">
+          <div class="scr-ph-ico">🖥️</div>
+          <p>لا توجد مشاركة شاشة</p>
+          <small id="scr-hint">المعلم يمكنه مشاركة شاشته من أزرار التحكم</small>
         </div>
       </div>
+
       <!-- Share banner -->
-      <div id="c-shr-bn" class="c-shr-bn hidden">
-        <div class="c-shr-dot"></div>
-        <span>أنت تشارك شاشتك الآن</span>
-        <button class="btn-stop-shr" onclick="stopScr()">إيقاف</button>
+      <div id="shr-bn" class="shr-banner hidden">
+        <div class="shr-dot"></div>
+        <span id="shr-bn-txt">أنت تشارك شاشتك</span>
+        <button class="btn-stp-shr" onclick="stopScr()">إيقاف</button>
       </div>
-      <!-- Controls -->
-      <div class="c-ctrl">
+
+      <!-- Controls bar -->
+      <div class="ctrl-bar">
         <!-- Mic -->
-        <button class="c-btn" id="cb-mic" onclick="togMic()" aria-label="تشغيل/إيقاف الميكروفون">
+        <button class="cb" id="cb-mic" onclick="togMic()">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -937,10 +517,10 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
             <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
             <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
           </svg>
-          <span class="c-btn-lbl">ميك</span>
+          <span class="cb-lbl">ميك</span>
         </button>
-        <!-- Camera -->
-        <button class="c-btn" id="cb-cam" onclick="togCam()" aria-label="تشغيل/إيقاف الكاميرا">
+        <!-- Cam -->
+        <button class="cb" id="cb-cam" onclick="togCam()">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="23 7 16 12 23 17 23 7"/>
             <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
@@ -949,10 +529,10 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
             <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/>
             <line x1="1" y1="1" x2="23" y2="23"/>
           </svg>
-          <span class="c-btn-lbl">كام</span>
+          <span class="cb-lbl">كام</span>
         </button>
-        <!-- Screen share — teacher only, desktop only -->
-        <button class="c-btn" id="c-scr-btn" onclick="togScr()" aria-label="مشاركة الشاشة" style="display:none">
+        <!-- Screen share (desktop/teacher only, hidden on mobile via CSS) -->
+        <button class="cb" id="cb-scr" onclick="togScr()" style="display:none">
           <svg class="ico-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="3" width="20" height="14" rx="2"/>
             <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
@@ -962,831 +542,413 @@ input,select,textarea{font-family:var(--F);outline:none;border:none;-webkit-user
             <polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="21"/>
             <line x1="15" y1="3" x2="21" y2="3"/><line x1="21" y1="3" x2="21" y2="9"/><line x1="15" y1="9" x2="21" y2="3"/>
           </svg>
-          <span class="c-btn-lbl">شاشة</span>
+          <span class="cb-lbl">شاشة</span>
         </button>
-        <div class="c-div"></div>
+        <div class="cb-div"></div>
         <!-- End -->
-        <button class="c-end" onclick="leaveRoom()" aria-label="مغادرة الغرفة">
+        <button class="cb-end" onclick="leave()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          <span class="c-end-lbl">خروج</span>
+          <span class="cb-end-lbl">خروج</span>
         </button>
       </div>
-      <!-- Tile strip -->
-      <div class="c-tiles" id="tiles"></div>
-    </div>
 
-    <!-- Sidebar (desktop) -->
-    <aside class="c-sidebar">
-      <div class="c-stabs">
-        <button class="c-stab act" id="c-st-p" onclick="cStab('p')">
+      <!-- Tile strip -->
+      <div class="tile-strip" id="tiles"></div>
+    </div><!-- /stage -->
+
+    <!-- Desktop sidebar -->
+    <aside class="sidebar">
+      <div class="stabs">
+        <button class="stab act" id="st-p" onclick="stab('p')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>المشاركون
-          <span class="c-sbadge hidden" id="c-pcnt">0</span>
+          <span class="sbadge hidden" id="pcnt">0</span>
         </button>
-        <button class="c-stab" id="c-st-c" onclick="cStab('c')">
+        <button class="stab" id="st-c" onclick="stab('c')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>الدردشة
-          <span class="c-sbadge hidden" id="c-cbadge">0</span>
+          <span class="sbadge hidden" id="cbadge">0</span>
         </button>
       </div>
-      <div id="c-sp"></div>
-      <div id="c-sc" class="hidden">
-        <div class="c-chat" id="c-cwd"></div>
-        <div class="c-cinp-wrap">
-          <div class="c-cinp-row">
-            <textarea class="c-cinp" id="c-ci-d" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'d')"></textarea>
-            <button class="c-snd" onclick="send('d')">
+      <div id="sp"></div>
+      <div id="sc" class="hidden">
+        <div class="chat-wrap" id="cwd"></div>
+        <div class="cinp-wrap">
+          <div class="cinp-row">
+            <textarea class="cinp" id="ci-d" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'d')"></textarea>
+            <button class="btn-snd" onclick="send('d')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
             </button>
           </div>
         </div>
       </div>
     </aside>
-  </div>
 
-  <!-- Mobile nav -->
-  <nav class="c-mnav">
-    <div class="c-mnav-in">
-      <button class="c-mnav-btn" id="m-mic" onclick="togMic()">
-        <svg id="m-mic-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  </div><!-- /cls-body -->
+
+  <!-- Mobile nav bar -->
+  <nav class="mnav">
+    <div class="mnav-in">
+      <button class="mnav-btn" id="mn-mic" onclick="togMic()">
+        <svg id="mn-mic-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
           <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
           <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-        </svg><span>ميك</span>
+        </svg>
+        <span>ميك</span>
       </button>
-      <button class="c-mnav-btn" id="m-cam" onclick="togCam()">
-        <svg id="m-cam-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button class="mnav-btn" id="mn-cam" onclick="togCam()">
+        <svg id="mn-cam-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="23 7 16 12 23 17 23 7"/>
           <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-        </svg><span>كام</span>
+        </svg>
+        <span>كام</span>
       </button>
-      <button class="c-mnav-btn" id="m-flip" onclick="flipCam()">
+      <button class="mnav-btn" id="mn-flip" onclick="flip()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
           <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
-        </svg><span>قلب</span>
+        </svg>
+        <span>قلب</span>
       </button>
-      <button class="c-mnav-btn" id="m-room" onclick="togDrawer()">
+      <button class="mnav-btn" id="mn-room" onclick="togDrawer()">
         <div style="position:relative;display:inline-flex">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          <span class="c-mbadge hidden" id="m-ubadge">0</span>
-        </div><span>الغرفة</span>
+          <span class="mbadge hidden" id="m-ubadge">0</span>
+        </div>
+        <span>الغرفة</span>
       </button>
-      <button class="c-mnav-btn danger" onclick="leaveRoom()">
+      <button class="mnav-btn danger" onclick="leave()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-        </svg><span>خروج</span>
+          <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.34 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.27 19a19.45 19.45 0 0 1-2.59-1.69M6.69 6.69A19.5 19.5 0 0 0 2.12 4.18 2 2 0 0 0 .12 6.18v3A2 2 0 0 0 2 11c.96.127 1.903.361 2.81.7"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+        <span>خروج</span>
       </button>
     </div>
   </nav>
 
-  <!-- Drawer overlay -->
-  <div class="c-bd-overlay" id="c-bd-ov" onclick="closeDrawer()"></div>
-  <div class="c-bdrawer" id="c-bdrawer">
-    <div class="c-bd-handle"></div>
-    <div class="c-bd-tabs">
-      <button class="c-bdtab act" id="c-bdt-p" onclick="cBdTab('p')">
+  <!-- Mobile bottom drawer -->
+  <div class="bd-overlay" id="bd-ov" onclick="closeDrawer()"></div>
+  <div class="bdrawer" id="bdrawer">
+    <div class="bd-handle"></div>
+    <div class="bd-tabs">
+      <button class="bdtab act" id="bdt-p" onclick="bdTab('p')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
         </svg>المشاركون
       </button>
-      <button class="c-bdtab" id="c-bdt-c" onclick="cBdTab('c')">
+      <button class="bdtab" id="bdt-c" onclick="bdTab('c')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>الدردشة
-        <span class="c-bdtab-badge hidden" id="c-bd-cbadge">0</span>
+        <span class="bdtab-badge hidden" id="bd-cbadge">0</span>
       </button>
     </div>
-    <div id="c-msp"></div>
-    <div id="c-msc" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
-      <div class="c-chat" id="c-cwm"></div>
-      <div class="c-cinp-wrap">
-        <div class="c-cinp-row">
-          <textarea class="c-cinp" id="c-ci-m" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'m')"></textarea>
-          <button class="c-snd" onclick="send('m')">
+    <div id="msp"></div>
+    <div id="msc" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="chat-wrap" id="cwm"></div>
+      <div class="cinp-wrap">
+        <div class="cinp-row">
+          <textarea class="cinp" id="ci-m" placeholder="اكتب رسالة…" rows="1" onkeydown="ck(event,'m')"></textarea>
+          <button class="btn-snd" onclick="send('m')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
           </button>
         </div>
       </div>
     </div>
   </div>
-</div>
 
+</div><!-- /cls -->
 <div id="toast" class="toast hidden"></div>
 
 <script>
-'use strict';
-/* ═══════════════════════════════════════════════════════
-   EduRoom v8 — Full Integrated Platform
-   
-   Flow:
-   ┌─────────┐    ┌──────────────────┐    ┌──────────┐
-   │  Login  │───▶│ Teacher Dashboard│───▶│Classroom │
-   │  /Reg   │    │ (auto room ID)   │    │(teacher) │
-   └─────────┘    └──────────────────┘    └──────────┘
-        │         ┌──────────────────┐    ┌──────────┐
-        └────────▶│ Student Profile  │───▶│Classroom │
-                  │ (enter room ID)  │    │(student) │
-                  └──────────────────┘    └──────────┘
-        │         ┌──────────────────┐
-        └────────▶│  Admin Panel     │
-                  │ (manage teachers)│
-                  └──────────────────┘
-═══════════════════════════════════════════════════════ */
-
-/* ─── Config ─── */
-// بيانات المدير تُحفظ مشفّرة في localStorage عند أول تشغيل
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_MS   = 30 * 60 * 1000;
-const DB_KEY       = 'eduroom_db_v8';
-const ME_KEY       = 'eduroom_me_v8';
-const ADM_KEY      = 'eduroom_adm_v8'; // {emailHash, passHash}
-
-/* تهيئة حساب المدير الافتراضي عند أول تشغيل فقط */
-const DEFAULT_ADMIN_EMAIL = 'aitomaraziz@gmail.com';
-const DEFAULT_ADMIN_PASS  = 'AZIZ@2026';
-
-const LEVELS = [
-  {id:'ps1',ico:'🌱',lbl:'السنة 1 ابتدائي'},
-  {id:'ps2',ico:'🌿',lbl:'السنة 2 ابتدائي'},
-  {id:'ps3',ico:'🍀',lbl:'السنة 3 ابتدائي'},
-  {id:'ps4',ico:'🌲',lbl:'السنة 4 ابتدائي'},
-  {id:'ps5',ico:'🌳',lbl:'السنة 5 ابتدائي'},
-  {id:'ps6',ico:'🎋',lbl:'السنة 6 ابتدائي'},
-  {id:'cm1',ico:'📖',lbl:'السنة 1 إعدادي'},
-  {id:'cm2',ico:'📗',lbl:'السنة 2 إعدادي'},
-  {id:'cm3',ico:'📘',lbl:'السنة 3 إعدادي'},
-  {id:'ly1',ico:'🎯',lbl:'السنة 1 ثانوي'},
-  {id:'ly2',ico:'🏆',lbl:'السنة 2 ثانوي'},
-  {id:'bac',ico:'🎓',lbl:'الباكالوريا'},
-];
-const COLORS = ['#00d4ff','#f0b429','#a78bfa','#00e676','#ff6b9d','#ff9f43','#54a0ff','#e17055'];
-const MSG_TYPES = new Set(['hello','state','chat','mu','co','scr:on','scr:off']);
-
-/* ─── Crypto ─── */
-async function sha256(s) {
-  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
-}
-function randId(n=8) {
-  const a = new Uint8Array(n); crypto.getRandomValues(a);
-  return Array.from(a).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,n);
-}
-/* Generate a stable room ID from teacher's uid */
-function makeRoomId(uid) {
-  // Take last 8 chars of uid + fixed prefix = consistent, unique per teacher
-  return 'room-' + uid.slice(-8).toUpperCase();
-}
-
-/* ─── Storage ─── */
-function getDB() { try{return JSON.parse(localStorage.getItem(DB_KEY))||{users:{},fails:{}}}catch(e){return{users:{},fails:{}}} }
-async function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)) }
-function getMe() { try{return JSON.parse(localStorage.getItem(ME_KEY))||null}catch(e){return null} }
-function setMe(u) { localStorage.setItem(ME_KEY, JSON.stringify(u)) }
-function clearMe() { localStorage.removeItem(ME_KEY) }
-
-/* ─── Utils ─── */
-const $ = id => document.getElementById(id);
-const pad = n => String(n).padStart(2,'0');
-const gc = n => { let h=0; for(let c of(n||'?')) h=(h*31+c.charCodeAt(0))%COLORS.length; return COLORS[h] };
-const esc = s => { const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML };
-const setTxt = (id,v) => { const e=$(id); if(e) e.textContent=String(v||'') };
-const sanitizeName = s => (s||'').trim().replace(/[<>"'&]/g,'').slice(0,28);
-const sanitizeRoom = s => { const r=(s||'').trim().replace(/[^a-zA-Z0-9\-_]/g,'').slice(0,50); return r.length>=3?r:''; };
-const sanitizeMsg  = s => (s||'').trim().slice(0,500);
-const fmtDate = d => { if(!d)return'—'; try{return new Date(d).toLocaleDateString('ar-MA',{year:'numeric',month:'long',day:'numeric'})}catch(e){return d} };
-const calcAge = dob => { const b=new Date(dob),n=new Date(); let a=n.getFullYear()-b.getFullYear(); if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--; return a };
-const setErr = (id,m) => { const e=$(id); if(!e)return; e.textContent=m; setTimeout(()=>{if(e)e.textContent=''},5000) };
-
-function showPage(pg) {
-  ['pg-auth','pg-teacher','pg-student','pg-admin','cls'].forEach(id=>$(id)?.classList.add('hidden'));
-  if(pg==='cls') $('cls')?.classList.remove('hidden');
-  else $('pg-'+pg)?.classList.remove('hidden');
-}
-
-/* ─── Password toggle ─── */
-function togPw(id, btn) {
-  const inp = $(id); if(!inp) return;
-  const show = inp.type==='password';
-  inp.type = show ? 'text' : 'password';
-  btn.innerHTML = show
-    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-}
-
-/* ─── Auth tabs ─── */
-function authTab(t) {
-  $('at-login').classList.toggle('act', t==='login');
-  $('at-reg').classList.toggle('act', t==='reg');
-  ['form-login','form-admin','form-reg'].forEach(id => $(id)?.classList.add('hidden'));
-  if(t==='login')       $('form-login')?.classList.remove('hidden');
-  else if(t==='admin')  $('form-admin')?.classList.remove('hidden');
-  else if(t==='reg')    $('form-reg')?.classList.remove('hidden');
-}
-
-/* ─── Level grids ─── */
-let regSelLvl='', editSelLvl='';
-function buildLevels(cid, onSel) {
-  const el=$(cid); if(!el) return; el.innerHTML='';
-  LEVELS.forEach(lv => {
-    const btn = document.createElement('button');
-    btn.className='lv-btn'; btn.type='button'; btn.id='lv-'+cid+'-'+lv.id;
-    const ico=document.createElement('span'); ico.className='lv-i'; ico.textContent=lv.ico;
-    btn.appendChild(ico);
-    const short=lv.lbl.replace('السنة ','').replace(' ابتدائي','↑').replace(' إعدادي','↑↑').replace(' ثانوي','↑↑↑').replace('الباكالوريا','باك');
-    btn.appendChild(document.createTextNode(short));
-    btn.addEventListener('click', ()=>onSel(lv.id));
-    el.appendChild(btn);
-  });
-}
-function selRegLvl(id) { regSelLvl=id; LEVELS.forEach(l=>$('lv-reg-levels-'+l.id)?.classList.toggle('sel',l.id===id)) }
-function selEditLvl(id) { editSelLvl=id; LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===id)) }
-
-/* ══════════════════════════════════════
-   STUDENT REGISTER
-══════════════════════════════════════ */
-async function doRegister() {
-  const fn   = sanitizeName($('r-fn').value);
-  const ln   = sanitizeName($('r-ln').value);
-  const email= ($('r-email').value||'').trim().toLowerCase();
-  const pass = $('r-pass').value||'';
-  const dob  = $('r-dob').value||'';
-  if(!fn||!ln) return setErr('r-err','أدخل الاسم الأول واسم العائلة');
-  if(!email) return setErr('r-err','أدخل البريد الإلكتروني');
-  if(!email.includes('@')||!email.includes('.')) return setErr('r-err','البريد يجب أن يحتوي على @ ونقطة');
-  if(pass.length<8) return setErr('r-err','كلمة المرور يجب أن تكون 8 أحرف على الأقل');
-  if(!dob) return setErr('r-err','أدخل تاريخ ازديادك');
-  const dAge=(Date.now()-new Date(dob).getTime())/(365.25*24*3600*1000);
-  if(new Date(dob)>=new Date()||dAge<4||dAge>100) return setErr('r-err','تاريخ ازدياد غير صحيح');
-  if(!regSelLvl) return setErr('r-err','اختر مستواك الدراسي');
-  const db = getDB();
-  if(Object.values(db.users).some(u=>u.email===email)) return setErr('r-err','هذا البريد مسجّل مسبقاً');
-  const uid='s_'+randId(10);
-  const user={uid,fname:fn,lname:ln,email,passHash:await sha256(pass),
-    role:'student',dob,level:regSelLvl,
-    joined:new Date().toISOString().split('T')[0],sessions:0,msgs:0};
-  db.users[uid]=user; await saveDB(db);
-  setMe({uid,fname:fn,lname:ln,email,role:'student',dob,level:regSelLvl,joined:user.joined,sessions:0,msgs:0});
-  toast('تم إنشاء حسابك 🎉','ok');
-  setTimeout(()=>goProfile(),500);
-}
-
-/* ══════════════════════════════════════
-   LOGIN
-══════════════════════════════════════ */
-/* إعداد حساب المدير الافتراضي عند أول تشغيل */
-async function initAdminIfNeeded() {
-  if(localStorage.getItem(ADM_KEY)) return; // already set
-  const adm = {
-    emailHash: await sha256(DEFAULT_ADMIN_EMAIL.toLowerCase()),
-    passHash:  await sha256(DEFAULT_ADMIN_PASS)
-  };
-  localStorage.setItem(ADM_KEY, JSON.stringify(adm));
-}
-function getAdminCreds() {
-  try { return JSON.parse(localStorage.getItem(ADM_KEY))||{} } catch(e) { return {} }
-}
-
-async function doLogin() {
-  const input=($('l-email').value||'').trim();
-  const pass =$('l-pass').value||'';
-  if(!input||!pass) return setErr('l-err','أدخل اسمك أو بريدك وكلمة المرور');
-  const inputLow=input.toLowerCase();
-  const db=getDB(); const now=Date.now();
-  const fi=db.fails?.[inputLow]||{count:0,until:0};
-  if(fi.count>=MAX_ATTEMPTS&&fi.until>now) {
-    $('lockout-warn').classList.remove('hidden');
-    setTxt('lockout-msg','الحساب محظور — انتظر '+Math.ceil((fi.until-now)/60000)+' دقيقة');
-    $('btn-login').disabled=true; return;
-  }
-  // Match teacher by name OR student by email
-  const found=Object.values(db.users).find(u=>
-    (u.role==='teacher' && u.fname.toLowerCase()===inputLow) ||
-    (u.role==='student' && u.email.toLowerCase()===inputLow)
-  );
-  if(!found) { recordFail(db,inputLow,now); await saveDB(db); return setErr('l-err','الاسم أو البريد أو كلمة المرور غير صحيحة') }
-  const ph=await sha256(pass);
-  if(found.passHash!==ph) {
-    recordFail(db,inputLow,now); await saveDB(db);
-    const rem=MAX_ATTEMPTS-(db.fails[inputLow]?.count||0);
-    return setErr('l-err', rem>0?'كلمة مرور خاطئة — متبقي '+rem+' محاولة':'تم قفل الحساب مؤقتاً');
-  }
-  if(db.fails) delete db.fails[inputLow];
-  await saveDB(db);
-  $('lockout-warn').classList.add('hidden'); $('btn-login').disabled=false;
-  const session={uid:found.uid,fname:found.fname,lname:found.lname,email:found.email,
-    role:found.role,dob:found.dob||'',level:found.level||'',
-    joined:found.joined,sessions:found.sessions||0,msgs:found.msgs||0};
-  setMe(session);
-  toast('أهلاً بك '+found.fname+' 👋','ok');
-  setTimeout(()=>goProfile(),400);
-}
-
-async function doAdminLogin() {
-  const email=($('a-email').value||'').trim().toLowerCase();
-  const pass =$('a-pass').value||'';
-  if(!email||!pass) return setErr('a-err','أدخل بيانات الإدارة');
-  const adm=getAdminCreds();
-  if(!adm.emailHash||!adm.passHash) return setErr('a-err','لم يتم تهيئة حساب الإدارة — أعد تحميل الصفحة');
-  const eh=await sha256(email);
-  const ph=await sha256(pass);
-  if(eh!==adm.emailHash) return setErr('a-err','بريد المدير غير صحيح');
-  if(ph!==adm.passHash)  return setErr('a-err','كلمة مرور المدير غير صحيحة');
-  setMe({uid:'admin',fname:'المدير',lname:'',email,role:'admin',joined:new Date().toISOString().split('T')[0]});
-  toast('أهلاً بك في لوحة الإدارة 🛡️','ok');
-  setTimeout(()=>goAdmin(),400);
-}
-
-function recordFail(db,email,now) {
-  if(!db.fails) db.fails={};
-  const f=db.fails[email]||{count:0,until:0};
-  f.count++; if(f.count>=MAX_ATTEMPTS) f.until=now+LOCKOUT_MS;
-  db.fails[email]=f;
-}
-
-/* ══════════════════════════════════════
-   PROFILE ROUTING
-══════════════════════════════════════ */
-function goProfile() {
-  const me=getMe(); if(!me){showPage('auth');return}
-  if(me.role==='admin')   { goAdmin(); return }
-  if(me.role==='teacher') { goTeacher(); return }
-  goStudent();
-}
-
-/* ══════════════════════════════════════
-   TEACHER DASHBOARD
-══════════════════════════════════════ */
-function goTeacher() {
-  const me=getMe(); if(!me){showPage('auth');return}
-  showPage('teacher');
-  const c=gc(me.fname);
-  const av=$('t-av'); if(av){av.style.background=c;av.textContent=me.fname[0]||'؟'}
-  setTxt('t-name', me.fname+' '+me.lname);
-  setTxt('t-email', me.email);
-  setTxt('t-join-badge', '📅 منذ '+fmtDate(me.joined));
-  setTxt('t-ic-name', me.fname+' '+me.lname);
-  setTxt('t-ic-joined', fmtDate(me.joined));
-  setTxt('t-sessions', me.sessions||0);
-  setTxt('t-days', Math.floor((Date.now()-new Date(me.joined).getTime())/86400000));
-  setTxt('t-msgs', me.msgs||0);
-  // Teacher's room ID is derived from their uid — permanent & unique
-  const roomId = makeRoomId(me.uid);
-  setTxt('t-room-id', roomId);
-}
-
-function cpTeacherRoom() {
-  const me=getMe(); if(!me) return;
-  const roomId=makeRoomId(me.uid);
-  navigator.clipboard?.writeText(roomId).then(()=>toast('تم نسخ معرّف الغرفة ✓ — شاركه مع طلابك','ok')).catch(()=>{});
-}
-
-async function teacherEnterRoom() {
-  const me=getMe(); if(!me) return;
-  // Update session count
-  me.sessions=(me.sessions||0)+1; setMe(me);
-  const db=getDB(); if(db.users[me.uid]){db.users[me.uid].sessions=me.sessions;await saveDB(db)}
-  const roomId=makeRoomId(me.uid);
-  startClassroom(me.fname+' '+me.lname,'teacher',roomId);
-}
-
-/* ══════════════════════════════════════
-   STUDENT PROFILE
-══════════════════════════════════════ */
-function goStudent() {
-  const me=getMe(); if(!me){showPage('auth');return}
-  showPage('student');
-  const c=gc(me.fname);
-  const av=$('s-av'); if(av){av.style.background=c;av.textContent=me.fname[0]||'؟'}
-  setTxt('s-name', me.fname+' '+me.lname);
-  setTxt('s-email-d', me.email);
-  const lv=LEVELS.find(l=>l.id===me.level);
-  setTxt('s-lvl-badge', lv?lv.ico+' '+lv.lbl:'—');
-  setTxt('s-join-badge', '📅 منذ '+fmtDate(me.joined));
-  setTxt('s-sessions', me.sessions||0);
-  setTxt('s-days', Math.floor((Date.now()-new Date(me.joined).getTime())/86400000));
-  setTxt('s-msgs', me.msgs||0);
-  setTxt('s-ic-name', me.fname+' '+me.lname);
-  setTxt('s-ic-dob', me.dob?fmtDate(me.dob):'—');
-  setTxt('s-ic-joined', fmtDate(me.joined));
-  setTxt('s-ic-level', lv?lv.lbl:'—');
-  setTxt('s-ic-age', me.dob?calcAge(me.dob)+' سنة':'—');
-  buildLevels('edit-levels', selEditLvl);
-  editSelLvl=me.level;
-  LEVELS.forEach(l=>$('lv-edit-levels-'+l.id)?.classList.toggle('sel',l.id===me.level));
-}
-
-async function studentEnterRoom() {
-  const raw=$('s-room-id')?.value||'';
-  const roomId=sanitizeRoom(raw);
-  if(!roomId) return setErr('s-err','أدخل معرّف الغرفة الذي أرسله لك أستاذك');
-  const me=getMe(); if(!me) return;
-  me.sessions=(me.sessions||0)+1; setMe(me);
-  const db=getDB(); if(db.users[me.uid]){db.users[me.uid].sessions=me.sessions;await saveDB(db)}
-  startClassroom(me.fname+' '+me.lname,'student',roomId);
-}
-
-async function saveLevel() {
-  if(!editSelLvl) return toast('اختر مستوى أولاً','err');
-  const me=getMe(); if(!me) return;
-  me.level=editSelLvl; setMe(me);
-  const db=getDB(); if(db.users[me.uid]) db.users[me.uid].level=editSelLvl;
-  await saveDB(db);
-  const lv=LEVELS.find(l=>l.id===editSelLvl);
-  setTxt('s-ic-level', lv?lv.lbl:'—');
-  setTxt('s-lvl-badge', lv?lv.ico+' '+lv.lbl:'—');
-  setTxt('save-msg','✓ تم الحفظ');
-  toast('تم حفظ المستوى','ok');
-  setTimeout(()=>setTxt('save-msg',''),3000);
-}
-
-/* ══════════════════════════════════════
-   ADMIN PANEL
-══════════════════════════════════════ */
-let admTab_='teachers';
-function goAdmin() {
-  showPage('admin');
-  renderAdminStats(); renderTeachers(); renderStudents();
-}
-function admTab(t) {
-  admTab_=t;
-  $('adm-tab-t').classList.toggle('act',t==='teachers');
-  $('adm-tab-s').classList.toggle('act',t==='students');
-  $('adm-teachers-sec').classList.toggle('hidden',t!=='teachers');
-  $('adm-students-sec').classList.toggle('hidden',t!=='students');
-  if(t==='students') renderStudents();
-}
-function renderAdminStats() {
-  const db=getDB();
-  const ts=Object.values(db.users).filter(u=>u.role==='teacher');
-  const ss=Object.values(db.users).filter(u=>u.role==='student');
-  setTxt('adm-t-count',ts.length); setTxt('adm-s-count',ss.length);
-  setTxt('adm-total',ts.length+ss.length);
-}
-async function addTeacher() {
-  const name = sanitizeName($('t-fn').value);
-  const pass = $('t-pass').value||'';
-  if(!name) return setErr('t-err','أدخل اسم الأستاذ');
-  if(pass.length<4) return setErr('t-err','الرقم السري يجب أن يكون 4 أحرف على الأقل');
-  const db=getDB();
-  // Check no duplicate name
-  if(Object.values(db.users).some(u=>u.role==='teacher'&&u.fname===name))
-    return setErr('t-err','يوجد أستاذ بهذا الاسم مسبقاً — اختر اسماً مختلفاً');
-  const uid='t_'+randId(10);
-  const roomId=makeRoomId(uid);
-  // Use name as login username (no email needed)
-  const user={uid, fname:name, lname:'', email:'', passHash:await sha256(pass),
-    role:'teacher', dob:'', level:'',
-    joined:new Date().toISOString().split('T')[0], sessions:0, msgs:0};
-  db.users[uid]=user; await saveDB(db);
-  // Show credentials
-  setTxt('cred-email', name);
-  setTxt('cred-pass', pass);
-  setTxt('cred-room', roomId);
-  $('cred-card').classList.remove('hidden');
-  // Clear form
-  $('t-fn').value=''; $('t-pass').value='';
-  toast('تم إضافة الأستاذ '+name+' ✅','ok');
-  renderAdminStats(); renderTeachers();
-}
-function delTeacher(uid) {
-  if(!confirm('هل أنت متأكد من حذف هذا الحساب؟')) return;
-  const db=getDB(); delete db.users[uid]; saveDB(db);
-  $('cred-card').classList.add('hidden');
-  renderAdminStats(); renderTeachers();
-  toast('تم حذف الحساب','');
-}
-function renderTeachers() {
-  const db=getDB();
-  const ts=Object.values(db.users).filter(u=>u.role==='teacher');
-  const w=$('teachers-list'); if(!w) return;
-  w.innerHTML='';
-  if(!ts.length){
-    const e=document.createElement('div');e.className='empty';
-    const s=document.createElement('span');s.textContent='👨‍🏫';
-    e.appendChild(s);e.appendChild(document.createTextNode('لا يوجد أساتذة — أضف أستاذاً من الأعلى'));
-    w.appendChild(e);return;
-  }
-  // Build table safely
-  const wrap=document.createElement('div');wrap.style.overflowX='auto';
-  const tbl=document.createElement('table');tbl.className='t-table';
-  // Head
-  const thead=document.createElement('thead');
-  const hr=document.createElement('tr');
-  ['الاسم','اسم الدخول','معرّف الغرفة','الحصص','التسجيل',''].forEach(h=>{
-    const th=document.createElement('th');th.textContent=h;hr.appendChild(th);
-  });
-  thead.appendChild(hr);tbl.appendChild(thead);
-  // Body
-  const tbody=document.createElement('tbody');
-  ts.forEach(t=>{
-    const rid=makeRoomId(t.uid);
-    const tr=document.createElement('tr');
-    // Name cell
-    const tdName=document.createElement('td');
-    const nameWrap=document.createElement('div');
-    nameWrap.style.cssText='display:flex;align-items:center;gap:8px';
-    const av=document.createElement('div');
-    av.style.cssText=`width:28px;height:28px;border-radius:50%;background:${gc(t.fname)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0`;
-    av.textContent=t.fname[0]||'؟';
-    const nm=document.createElement('span');nm.textContent=t.fname+(t.lname?' '+t.lname:'');
-    nameWrap.appendChild(av);nameWrap.appendChild(nm);tdName.appendChild(nameWrap);
-    // Login name
-    const tdLogin=document.createElement('td');
-    tdLogin.style.cssText='font-family:var(--M);font-size:12px;color:var(--cy)';
-    tdLogin.textContent=t.fname;
-    // Room ID
-    const tdRoom=document.createElement('td');
-    const ridSpan=document.createElement('span');
-    ridSpan.style.cssText='font-family:var(--M);font-size:11px;color:var(--cy);background:var(--cy-g);padding:3px 8px;border-radius:6px';
-    ridSpan.textContent=rid;tdRoom.appendChild(ridSpan);
-    // Sessions
-    const tdSess=document.createElement('td');
-    tdSess.style.cssText='font-family:var(--M);text-align:center';
-    tdSess.textContent=String(t.sessions||0);
-    // Joined
-    const tdJoin=document.createElement('td');
-    tdJoin.style.cssText='font-size:11px;color:var(--tx2)';
-    tdJoin.textContent=fmtDate(t.joined);
-    // Delete btn
-    const tdDel=document.createElement('td');
-    const btn=document.createElement('button');btn.className='btn-del';btn.textContent='حذف';
-    btn.addEventListener('click',()=>delTeacher(t.uid));
-    tdDel.appendChild(btn);
-    [tdName,tdLogin,tdRoom,tdSess,tdJoin,tdDel].forEach(td=>tr.appendChild(td));
-    tbody.appendChild(tr);
-  });
-  tbl.appendChild(tbody);wrap.appendChild(tbl);w.appendChild(wrap);
-}
-function renderStudents() {
-  const db=getDB();
-  const ss=Object.values(db.users).filter(u=>u.role==='student');
-  const w=$('students-list'); if(!w) return;
-  setTxt('adm-s-label', ss.length+' طالب');
-  w.innerHTML='';
-  if(!ss.length){
-    const e=document.createElement('div');e.className='empty';
-    const s=document.createElement('span');s.textContent='🎒';
-    e.appendChild(s);e.appendChild(document.createTextNode('لا يوجد طلاب مسجلون بعد'));
-    w.appendChild(e);return;
-  }
-  ss.forEach(s=>{
-    const lv=LEVELS.find(l=>l.id===s.level);
-    const row=document.createElement('div');row.className='s-row';
-    // Avatar
-    const av=document.createElement('div');av.className='s-row-av';
-    av.style.background=gc(s.fname);av.textContent=s.fname[0]||'؟';
-    // Info
-    const info=document.createElement('div');info.className='s-row-info';
-    const nm=document.createElement('div');nm.className='s-row-name';
-    nm.textContent=s.fname+(s.lname?' '+s.lname:'');
-    const det=document.createElement('div');det.className='s-row-detail';
-    det.textContent=(s.email||'—')+' • '+(lv?lv.ico+' '+lv.lbl:'—')+' • '+(s.dob?calcAge(s.dob)+' سنة':'—');
-    info.appendChild(nm);info.appendChild(det);
-    // Sessions
-    const sess=document.createElement('div');
-    sess.style.cssText='font-family:var(--M);font-size:11px;color:var(--tx2);text-align:center;flex-shrink:0;min-width:40px';
-    sess.textContent=String(s.sessions||0);
-    const sl=document.createElement('div');sl.style.fontSize='10px';sl.textContent='حصة';
-    sess.appendChild(sl);
-    row.appendChild(av);row.appendChild(info);row.appendChild(sess);
-    w.appendChild(row);
-  });
-}
-function cpCred(id) {
-  const e=$(id); if(!e) return;
-  navigator.clipboard?.writeText(e.textContent).then(()=>toast('تم النسخ ✓','ok')).catch(()=>{});
-}
-
-/* ══════════════════════════════════════
-   LOGOUT
-══════════════════════════════════════ */
-function logout() {
-  clearMe(); showPage('auth'); authTab('login');
-  $('l-email').value=''; $('l-pass').value='';
-  $('lockout-warn')?.classList.add('hidden');
-  $('btn-login').disabled=false;
-  $('cred-card')?.classList.add('hidden');
-  toast('تم تسجيل الخروج','');
-}
-
-/* ══════════════════════════════════════
-   CLASSROOM ENGINE
-══════════════════════════════════════ */
-let peer=null,myId='',myName='',myRole='student',roomId='';
-let LS=null,SS=null,micMuted=false,camOff=false,sharing=false,faceMode='user';
-const PEERS=new Map();
+/* ═══════════════════════════════════════════════════
+   EduRoom v4 — Unified Desktop + Mobile
+   Architecture: full-mesh PeerJS
+   Teacher  → roomId+"_host" (fixed ID, findable)
+   Students → roomId+"_"+random4
+═══════════════════════════════════════════════════ */
+let peer=null,myId='',myName='',myRole='teacher',roomId='';
+let LS=null,SS=null; // local stream, screen stream
+let micMuted=false,camOff=false,sharing=false,faceMode='user';
+const PEERS=new Map(); // id→{name,role,dc,mc,stream,mu,co}
 let sesStart=null,timerIv=null,unread=0,ctab='p',bdtab='p',bdOpen=false,sharerId=null;
 
-async function startClassroom(name, role, room) {
-  myName=sanitizeName(name); myRole=role; roomId=sanitizeRoom(room);
-  setTxt('h-rid', roomId);
-  setTxt('c-uname', myName);
-  if(role==='teacher'){$('c-dot').classList.add('T');$('c-scr-btn').style.display='flex'}
-  else {$('c-dot').classList.remove('T');$('c-scr-btn').style.display='none'}
-  if(navigator.wakeLock) navigator.wakeLock.request('screen').catch(()=>{});
-  try {
+const C=['#00d4ff','#f0b429','#a78bfa','#00e676','#ff6b9d','#ff9f43','#54a0ff','#e17055'];
+const gc=n=>{let h=0;for(let c of(n||'?'))h=(h*31+c.charCodeAt(0))%C.length;return C[h]};
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+
+/* ── Lobby ─────────────────────────────────────── */
+function selRole(r){
+  myRole=r;
+  $('rb-T').classList.toggle('sel',r==='teacher');
+  $('rb-S').classList.toggle('sel',r==='student');
+}
+function genRoom(){$('in-room').value='room-'+Math.random().toString(36).substr(2,8).toUpperCase()}
+
+async function join(){
+  myName=$('in-name').value.trim();
+  roomId=$('in-room').value.trim();
+  if(!myName)return st('أدخل اسمك أولاً','err');
+  if(!roomId)return st('أدخل معرّف الغرفة','err');
+  st('جاري الاتصال…','ok');
+  try{
     LS=await navigator.mediaDevices.getUserMedia({
       video:{width:{ideal:640},height:{ideal:480},facingMode:faceMode},
       audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
     });
-  } catch(e){toast('تعذّر الكاميرا: '+e.message,'err');return}
-  myId=myRole==='teacher'?roomId+'_host':roomId+'_'+randId(4);
+  }catch(e){return st('تعذّر الكاميرا: '+e.message,'err')}
+
+  myId=myRole==='teacher'?roomId+'_host':roomId+'_'+Math.random().toString(36).substr(2,4);
   peer=new Peer(myId,{debug:0});
-  peer.on('open',()=>{
-    showPage('cls');
-    selfTile(); updPList();
-    sesStart=Date.now();
-    timerIv=setInterval(()=>{
-      const s=Math.floor((Date.now()-sesStart)/1000);
-      setTxt('c-timer',pad(Math.floor(s/60))+':'+pad(s%60));
-    },1000);
-    sysmsg('أهلاً '+myName+'! دخلت الغرفة — المعرّف: '+roomId);
-    if(myRole==='student') connTeacher();
-    else toast('🚀 الغرفة مفتوحة — شارك المعرّف '+roomId+' مع طلابك','info');
-  });
+  peer.on('open',()=>{st('متصل ✓','ok');initCls();if(myRole==='student')connTeacher()});
   peer.on('error',e=>{
-    const m={'peer-unavailable':'الغرفة غير موجودة أو الأستاذ لم يفتحها بعد.','network':'خطأ في الشبكة','unavailable-id':'المعرّف مستخدم — حاول مجدداً'};
-    toast(m[e.type]||'خطأ: '+e.message,'err');
-    goProfile();
+    const m={'peer-unavailable':'الغرفة غير موجودة أو المعلم لم يدخل بعد.',
+             'network':'خطأ في الشبكة','unavailable-id':'معرّف مستخدم، أعد المحاولة'};
+    st(m[e.type]||'خطأ: '+e.message,'err');toast(m[e.type]||'خطأ','err');
   });
   peer.on('call',call=>{
     call.answer(LS);
-    call.on('stream',s=>{const m=call.metadata||{};upPeer(call.peer,sanitizeName(m.name||'؟'),m.role==='teacher'?'teacher':'student',s,call)});
-    call.on('close',()=>delPeer(call.peer));call.on('error',()=>delPeer(call.peer));
+    call.on('stream',s=>{const m=call.metadata||{};upPeer(call.peer,m.name||'?',m.role||'student',s,call)});
+    call.on('close',()=>delPeer(call.peer));
+    call.on('error',()=>delPeer(call.peer));
   });
   peer.on('connection',conn=>setupDC(conn));
 }
 
-function connTeacher() {
+/* ── Classroom init ────────────────────────────── */
+function initCls(){
+  $('lobby').classList.add('hidden');
+  $('cls').classList.remove('hidden');
+  $('h-rid').textContent=roomId;
+  $('h-name').textContent=myName;
+  if(myRole==='teacher'){
+    $('h-dot').classList.add('T');
+    $('cb-scr').style.display='flex'; // desktop controls (hidden on mobile by CSS)
+  }
+  if(navigator.wakeLock)navigator.wakeLock.request('screen').catch(()=>{});
+  selfTile();updPList();
+  sesStart=Date.now();
+  timerIv=setInterval(()=>{
+    const s=Math.floor((Date.now()-sesStart)/1000);
+    $('h-timer').textContent=pad(Math.floor(s/60))+':'+pad(s%60);
+  },1000);
+  sysmsg('أهلاً '+myName+'! دخلت الغرفة');
+}
+
+/* ── Peer connections ──────────────────────────── */
+function connTeacher(){
   const tid=roomId+'_host';
   const dc=peer.connect(tid,{metadata:{name:myName,role:myRole}});
   dc.on('open',()=>{
     dc.send({t:'hello',name:myName,role:myRole,id:myId});
-    if(!PEERS.has(tid)) PEERS.set(tid,{name:'الأستاذ',role:'teacher',dc,mc:null,stream:null,mu:false,co:false});
+    if(!PEERS.has(tid))PEERS.set(tid,{name:'المعلم',role:'teacher',dc,mc:null,stream:null,mu:false,co:false});
     else PEERS.get(tid).dc=dc;
-    setupDC(dc); updPList(); sysmsg('تواصلت مع الأستاذ');
+    setupDC(dc);updPList();sysmsg('تواصلت مع المعلم');
   });
   const mc=peer.call(tid,LS,{metadata:{name:myName,role:myRole}});
-  mc.on('stream',s=>upPeer(tid,'...','teacher',s,mc));
+  mc.on('stream',s=>upPeer(tid,'...',  'teacher',s,mc));
   mc.on('close',()=>delPeer(tid));
 }
 
-function setupDC(conn) {
+function setupDC(conn){
   const pid=conn.peer;
-  if(!/^[a-zA-Z0-9\-_]+$/.test(pid)){conn.close();return}
   conn.on('open',()=>{
-    if(!PEERS.has(pid)){const m=conn.metadata||{};PEERS.set(pid,{name:sanitizeName(m.name||'مشارك'),role:m.role==='teacher'?'teacher':'student',dc:conn,mc:null,stream:null,mu:false,co:false})}
+    if(!PEERS.has(pid)){const m=conn.metadata||{};PEERS.set(pid,{name:m.name||'مشارك',role:m.role||'student',dc:conn,mc:null,stream:null,mu:false,co:false})}
     else PEERS.get(pid).dc=conn;
     updPList();
   });
   conn.on('data',d=>onMsg(pid,d));
-  conn.on('close',()=>delPeer(pid));conn.on('error',()=>delPeer(pid));
+  conn.on('close',()=>delPeer(pid));
+  conn.on('error',()=>delPeer(pid));
 }
 
-function onMsg(from,d) {
-  if(!d||typeof d!=='object') return;
-  if(!MSG_TYPES.has(d.t)) return;
-  try{if(JSON.stringify(d).length>4096)return}catch(e){return}
+function onMsg(from,d){
+  if(!d||!d.t)return;
   switch(d.t){
     case 'hello':{
-      const sn=sanitizeName(d.name||'مشارك'),sr=d.role==='teacher'?'teacher':'student';
-      if(!PEERS.has(from)) PEERS.set(from,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
-      else{PEERS.get(from).name=sn;PEERS.get(from).role=sr}
-      sysmsg(sn+' دخل الغرفة');toast(sn+' انضم 👋','ok');
+      if(!PEERS.has(from))PEERS.set(from,{name:d.name,role:d.role,dc:null,mc:null,stream:null,mu:false,co:false});
+      else{PEERS.get(from).name=d.name;PEERS.get(from).role=d.role}
+      sysmsg(d.name+' دخل الغرفة');toast(d.name+' انضم 👋','ok');
       if(myRole==='teacher'){
         const mc=peer.call(from,LS,{metadata:{name:myName,role:myRole}});
-        mc.on('stream',s=>upPeer(from,sn,sr,s,mc));mc.on('close',()=>delPeer(from));
+        mc.on('stream',s=>upPeer(from,d.name,d.role,s,mc));
+        mc.on('close',()=>delPeer(from));
         if(PEERS.get(from))PEERS.get(from).mc=mc;
       }
       const cn=PEERS.get(from)?.dc;
       if(cn&&cn.open){
-        const pl=[];PEERS.forEach((p,id)=>{if(id!==from)pl.push({id,name:p.name,role:p.role})});
+        const pl=[];
+        PEERS.forEach((p,id)=>{if(id!==from)pl.push({id,name:p.name,role:p.role})});
         pl.push({id:myId,name:myName,role:myRole});
         cn.send({t:'state',peers:pl,sharer:sharerId});
       }
       updPList();break;
     }
     case 'state':{
-      if(!Array.isArray(d.peers)) return;
-      d.peers.slice(0,100).forEach(p=>{
-        if(!p.id||p.id===myId||!/^[a-zA-Z0-9\-_]+$/.test(p.id)) return;
-        const sn=sanitizeName(p.name||'مشارك'),sr=p.role==='teacher'?'teacher':'student';
-        if(!PEERS.has(p.id)) PEERS.set(p.id,{name:sn,role:sr,dc:null,mc:null,stream:null,mu:false,co:false});
-        if(p.id!==roomId+'_host') connPeer(p.id,sn,sr);
+      d.peers.forEach(p=>{
+        if(p.id===myId)return;
+        if(!PEERS.has(p.id))PEERS.set(p.id,{name:p.name,role:p.role,dc:null,mc:null,stream:null,mu:false,co:false});
+        if(p.id!==roomId+'_host')connPeer(p.id,p.name,p.role);
       });
-      if(d.sharer&&d.sharer!==myId){sharerId=d.sharer;toast('الأستاذ يشارك الشاشة 🖥️','ok')}
+      if(d.sharer&&d.sharer!==myId){sharerId=d.sharer;toast('المعلم يشارك الشاشة 🖥️','ok')}
       updPList();break;
     }
     case 'chat':{
       const p=PEERS.get(from);
-      const txt=sanitizeMsg(String(d.txt||'')); if(!txt) return;
-      renderMsg(p?.name||sanitizeName(d.name||'مشارك'),txt,false,from);
+      renderMsg(p?.name||d.name||'مشارك',d.txt,false,from);
       if(ctab!=='c'||!bdOpen){unread++;updBadges()}
       break;
     }
-    case 'mu':{const p=PEERS.get(from);if(p){p.mu=!!d.v;rTile(from);updPList()}break}
-    case 'co':{const p=PEERS.get(from);if(p){p.co=!!d.v;rTile(from);updPList()}break}
-    case 'scr:on':{sharerId=from;const sh=PEERS.get(from);showScr(null);toast((sh?.name||'الأستاذ')+' يشارك الشاشة 🖥️','ok');break}
+    case 'mu':{const p=PEERS.get(from);if(p){p.mu=d.v;rTile(from);updPList()}break}
+    case 'co':{const p=PEERS.get(from);if(p){p.co=d.v;rTile(from);updPList()}break}
+    case 'scr:on':{sharerId=from;const sh=PEERS.get(from);showScr(null);toast((sh?.name||'المعلم')+' يشارك الشاشة 🖥️','ok');break}
     case 'scr:off':{sharerId=null;hideScr();break}
   }
 }
 
 function connPeer(pid,name,role){
-  if(pid===myId||!/^[a-zA-Z0-9\-_]+$/.test(pid))return;
+  if(pid===myId)return;
   const dc=peer.connect(pid,{metadata:{name:myName,role:myRole}});
   dc.on('open',()=>{dc.send({t:'hello',name:myName,role:myRole,id:myId});if(PEERS.has(pid))PEERS.get(pid).dc=dc;setupDC(dc)});
   const mc=peer.call(pid,LS,{metadata:{name:myName,role:myRole}});
-  mc.on('stream',s=>upPeer(pid,name,role,s,mc));mc.on('close',()=>delPeer(pid));
+  mc.on('stream',s=>upPeer(pid,name,role,s,mc));
+  mc.on('close',()=>delPeer(pid));
 }
+
 function upPeer(id,name,role,stream,mc){
   if(id===myId)return;
   if(!PEERS.has(id))PEERS.set(id,{name,role,dc:null,mc,stream,mu:false,co:false});
-  else{const p=PEERS.get(id);if(name&&name!=='...')p.name=sanitizeName(name);p.role=role;p.stream=stream;p.mc=mc}
+  else{const p=PEERS.get(id);if(name&&name!=='...'&&name!=='?')p.name=name;p.role=role;p.stream=stream;p.mc=mc}
   if(id===sharerId)$('scr-vid').srcObject=stream;
   rTile(id);updPList();
 }
+
 function delPeer(id){
   if(!PEERS.has(id))return;
-  const p=PEERS.get(id);sysmsg((p.name||'مشارك')+' غادر الغرفة');toast((p.name||'مشارك')+' غادر','');
-  PEERS.delete(id);const t=$('t-'+id);if(t)t.remove();
-  if(id===sharerId){sharerId=null;hideScr()}updPList();
+  const p=PEERS.get(id);
+  sysmsg((p.name||'مشارك')+' غادر');toast((p.name||'مشارك')+' غادر','');
+  PEERS.delete(id);
+  const t=$('t-'+id);if(t)t.remove();
+  if(id===sharerId){sharerId=null;hideScr()}
+  updPList();
 }
-function bcast(d){PEERS.forEach(p=>{if(p.dc&&p.dc.open)try{p.dc.send(d)}catch(e){}})}
 
-/* ─── Media ─── */
+function bcast(d){PEERS.forEach(p=>{if(p.dc&&p.dc.open)p.dc.send(d)})}
+
+/* ── Media controls ────────────────────────────── */
 function togMic(){
-  micMuted=!micMuted;LS?.getAudioTracks().forEach(t=>t.enabled=!micMuted);
+  micMuted=!micMuted;
+  LS?.getAudioTracks().forEach(t=>t.enabled=!micMuted);
+  // Desktop control btn
   const b=$('cb-mic');b.classList.toggle('off',micMuted);
   b.querySelector('.ico-on').classList.toggle('hidden',micMuted);
   b.querySelector('.ico-off').classList.toggle('hidden',!micMuted);
-  $('m-mic').classList.toggle('off',micMuted);
-  $('m-mic-i').innerHTML=micMuted
+  // Mobile nav btn
+  $('mn-mic').classList.toggle('off',micMuted);
+  $('mn-mic-ico').innerHTML=micMuted
     ?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>'
     :'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>';
   bcast({t:'mu',v:micMuted});updSelfTile();
 }
+
 function togCam(){
-  camOff=!camOff;LS?.getVideoTracks().forEach(t=>t.enabled=!camOff);
+  camOff=!camOff;
+  LS?.getVideoTracks().forEach(t=>t.enabled=!camOff);
   const b=$('cb-cam');b.classList.toggle('off',camOff);
   b.querySelector('.ico-on').classList.toggle('hidden',camOff);
   b.querySelector('.ico-off').classList.toggle('hidden',!camOff);
-  $('m-cam').classList.toggle('off',camOff);
-  $('m-cam-i').innerHTML=camOff
+  $('mn-cam').classList.toggle('off',camOff);
+  $('mn-cam-ico').innerHTML=camOff
     ?'<path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/><line x1="1" y1="1" x2="23" y2="23"/>'
     :'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>';
   bcast({t:'co',v:camOff});updSelfTile();
 }
-async function flipCam(){
+
+async function flip(){
   faceMode=faceMode==='user'?'environment':'user';
   try{
     LS.getVideoTracks().forEach(t=>t.stop());
     const ns=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},facingMode:faceMode},audio:false});
-    const nt=ns.getVideoTracks()[0];LS.removeTrack(LS.getVideoTracks()[0]);LS.addTrack(nt);
+    const nt=ns.getVideoTracks()[0];
+    LS.removeTrack(LS.getVideoTracks()[0]);
+    LS.addTrack(nt);
     const sv=$('t-self')?.querySelector('.tv');
     if(sv){sv.srcObject=LS;sv.style.transform=faceMode==='user'?'scaleX(-1)':'scaleX(1)'}
-    PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(nt).catch(()=>{})}});
+    PEERS.forEach(p=>{
+      if(p.mc&&p.mc.peerConnection){
+        const s=p.mc.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');
+        if(s)s.replaceTrack(nt);
+      }
+    });
     toast(faceMode==='user'?'كاميرا أمامية 📷':'كاميرا خلفية 🔭','ok');
   }catch(e){faceMode=faceMode==='user'?'environment':'user';toast('تعذّر التبديل','err')}
 }
+
 async function togScr(){if(sharing)await stopScr();else await startScr()}
 async function startScr(){
   try{
     SS=await navigator.mediaDevices.getDisplayMedia({video:{cursor:'always'},audio:false});
     const st=SS.getVideoTracks()[0];
-    PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(st).catch(()=>{})}});
-    st.onended=()=>stopScr();sharing=true;sharerId=myId;
-    $('scr-vid').srcObject=SS;showScr(SS);$('c-shr-bn').classList.remove('hidden');
-    const b=$('c-scr-btn');b.classList.add('on');
-    b.querySelector('.ico-on').classList.add('hidden');b.querySelector('.ico-off').classList.remove('hidden');
+    PEERS.forEach(p=>{
+      if(p.mc&&p.mc.peerConnection){
+        const s=p.mc.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');
+        if(s)s.replaceTrack(st);
+      }
+    });
+    st.onended=()=>stopScr();
+    sharing=true;sharerId=myId;
+    $('scr-vid').srcObject=SS;showScr(SS);
+    $('shr-bn').classList.remove('hidden');
+    $('shr-bn-txt').textContent='أنت تشارك شاشتك';
+    const b=$('cb-scr');b.classList.add('on');
+    b.querySelector('.ico-on').classList.add('hidden');
+    b.querySelector('.ico-off').classList.remove('hidden');
     bcast({t:'scr:on',name:myName});toast('بدأت مشاركة الشاشة 🖥️','ok');
   }catch(e){if(e.name!=='NotAllowedError')toast('خطأ: '+e.message,'err')}
 }
 async function stopScr(){
-  if(!sharing)return;SS?.getTracks().forEach(t=>t.stop());SS=null;sharing=false;sharerId=null;
-  if(LS){const ct=LS.getVideoTracks()[0];if(ct)PEERS.forEach(p=>{if(p.mc?.peerConnection){const s=p.mc.peerConnection.getSenders().find(s=>s.track?.kind==='video');if(s)s.replaceTrack(ct).catch(()=>{})}})}
-  hideScr();$('c-shr-bn').classList.add('hidden');
-  const b=$('c-scr-btn');b.classList.remove('on');
-  b.querySelector('.ico-on').classList.remove('hidden');b.querySelector('.ico-off').classList.add('hidden');
-  bcast({t:'scr:off'});toast('أوقفت مشاركة الشاشة','');
+  if(!sharing)return;
+  SS?.getTracks().forEach(t=>t.stop());SS=null;sharing=false;sharerId=null;
+  if(LS){
+    const ct=LS.getVideoTracks()[0];
+    PEERS.forEach(p=>{
+      if(p.mc&&p.mc.peerConnection&&ct){
+        const s=p.mc.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');
+        if(s)s.replaceTrack(ct);
+      }
+    });
+  }
+  hideScr();
+  $('shr-bn').classList.add('hidden');
+  const b=$('cb-scr');b.classList.remove('on');
+  b.querySelector('.ico-on').classList.remove('hidden');
+  b.querySelector('.ico-off').classList.add('hidden');
+  bcast({t:'scr:off'});toast('أوقفت المشاركة','');
 }
-function showScr(s){if(s)$('scr-vid').srcObject=s;$('scr-vid').classList.remove('hidden');$('c-scr-ph').classList.add('hidden')}
-function hideScr(){$('scr-vid').srcObject=null;$('scr-vid').classList.add('hidden');$('c-scr-ph').classList.remove('hidden')}
+function showScr(s){if(s)$('scr-vid').srcObject=s;$('scr-vid').classList.remove('hidden');$('scr-ph').classList.add('hidden')}
+function hideScr(){$('scr-vid').srcObject=null;$('scr-vid').classList.add('hidden');$('scr-ph').classList.remove('hidden')}
 
-/* ─── Tiles ─── */
+/* ── Tiles ─────────────────────────────────────── */
 function selfTile(){
   let t=$('t-self');
   if(!t){t=document.createElement('div');t.id='t-self';t.className='ptile me';$('tiles').prepend(t)}
@@ -1799,7 +961,7 @@ function updSelfTile(){
   if(mi)mi.className='ticn mic-i'+(micMuted?' mu':'');
   if(ci)ci.className='ticn cam-i'+(camOff?' co':'');
   let av=t.querySelector('.tavtr');
-  if(camOff){if(!av){av=document.createElement('div');av.className='tavtr';const l=document.createElement('div');l.className='tavtr-l';l.style.background=gc(myName);l.textContent=myName[0];av.appendChild(l);t.appendChild(av)}}
+  if(camOff){if(!av){av=document.createElement('div');av.className='tavtr';av.innerHTML=`<div class="tavtr-l" style="background:${gc(myName)}">${myName[0]}</div>`;t.appendChild(av)}}
   else{if(av)av.remove()}
 }
 function rTile(id){
@@ -1809,184 +971,143 @@ function rTile(id){
   t.innerHTML=mkTile(id,p.name,p.role,false,p.mu,p.co);
   if(p.stream){const v=t.querySelector('.tv');if(v)v.srcObject=p.stream}
 }
-function mkTileDOM(id,name,role,isMe,mu=false,co=false){
-  const c=gc(name);
-  const frag=document.createDocumentFragment();
-  // Video
-  const vid=document.createElement('video');
-  vid.className='tv'+(co?' hidden':'');
-  vid.autoplay=true;vid.playsInline=true;
-  if(isMe)vid.muted=true;
-  frag.appendChild(vid);
-  // Avatar if cam off
-  if(co){
-    const av=document.createElement('div');av.className='tavtr';
-    const al=document.createElement('div');al.className='tavtr-l';
-    al.style.background=c;al.textContent=name?name[0]:'؟';
-    av.appendChild(al);frag.appendChild(av);
-  }
-  // Overlay
-  const ov=document.createElement('div');ov.className='tov';frag.appendChild(ov);
-  // Role badge
-  const rb=document.createElement('div');
-  rb.className='trole '+(role==='teacher'?'T':'S');
-  rb.textContent=role==='teacher'?'أستاذ':'طالب';
-  frag.appendChild(rb);
-  // Name row
-  const tn=document.createElement('div');tn.className='tname';
-  const ntxt=document.createElement('span');ntxt.className='tname-txt';
-  ntxt.textContent=isMe?'أنت':(name||'مشارك');
-  tn.appendChild(ntxt);
-  // Icons
-  const ticns=document.createElement('div');ticns.className='ticns';
-  const mic=document.createElement('div');mic.className='ticn mic-i'+(mu?' mu':'');
-  mic.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg>`;
-  const cam=document.createElement('div');cam.className='ticn cam-i'+(co?' co':'');
-  cam.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${co?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7"/>':'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>'}</svg>`;
-  ticns.appendChild(mic);ticns.appendChild(cam);
-  tn.appendChild(ticns);frag.appendChild(tn);
-  return frag;
-}
-// Keep mkTile as string for backward compat (used in innerHTML reset)
 function mkTile(id,name,role,isMe,mu=false,co=false){
-  const c=gc(name);
-  const mp=mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>';
-  const cp=co?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7"/>':'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>';
-  // SVG paths are static — no user data injected here. Name is escaped via textContent below.
-  const div=document.createElement('div');
-  div.appendChild(mkTileDOM(id,name,role,isMe,mu,co));
-  return div.innerHTML;
-}
-function mkPLIdom(name,role,isMe,mu,co){
-  const c=gc(name);
-  const row=document.createElement('div');row.className='pli';
-  const av=document.createElement('div');av.className='pav';
-  av.style.background=c;av.textContent=(name||'؟')[0];
-  const pi=document.createElement('div');pi.className='pi';
-  const pn=document.createElement('div');pn.className='pn';
-  pn.textContent=(isMe?'أنت — ':'')+(name||'مشارك');
-  const pr=document.createElement('div');pr.className='pr';
-  pr.textContent=(role==='teacher'?'👨‍🏫 أستاذ':'🎒 طالب')+' • '+(mu?'🔇':'🎙️')+' • '+(co?'📵':'📹');
-  pi.appendChild(pn);pi.appendChild(pr);
-  row.appendChild(av);row.appendChild(pi);
-  if(isMe){
-    const btn=document.createElement('button');
-    btn.className='pbtn'+(mu?' on':'');
-    btn.setAttribute('aria-label',mu?'تفعيل الميكروفون':'كتم الميكروفون');
-    btn.setAttribute('title',mu?'تفعيل الميكروفون':'كتم الميكروفون');
-    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg>`;
-    btn.addEventListener('click',togMic);
-    row.appendChild(btn);
-  }
-  return row;
-}
-function updPList(){
-  const total=PEERS.size+1;setTxt('c-pcnt',total);$('c-pcnt').classList.remove('hidden');
-  [$('c-sp'),$('c-msp')].forEach(el=>{
-    if(!el)return;el.innerHTML='';
-    el.appendChild(mkPLIdom(myName,myRole,true,micMuted,camOff));
-    PEERS.forEach(p=>el.appendChild(mkPLIdom(p.name,p.role,false,p.mu,p.co)));
-  });
+  const c=gc(name),i=name?name[0]:'?';
+  const muSvg=mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>';
+  const coSvg=co?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7"/>':'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>';
+  return`<video class="tv${co?' hidden':''}" autoplay playsinline${isMe?' muted':''}></video>
+${co?`<div class="tavtr"><div class="tavtr-l" style="background:${c}">${i}</div></div>`:''}
+<div class="tov"></div>
+<div class="trole ${role==='teacher'?'T':'S'}">${role==='teacher'?'معلم':'طالب'}</div>
+<div class="tname">
+  <span class="tname-txt">${isMe?'أنت':esc(name)}</span>
+  <div class="ticns">
+    <div class="ticn mic-i${mu?' mu':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${muSvg}</svg></div>
+    <div class="ticn cam-i${co?' co':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${coSvg}</svg></div>
+  </div>
+</div>`;
 }
 
-/* ─── Chat ─── */
+/* ── Participants list ──────────────────────────── */
+function updPList(){
+  const total=PEERS.size+1;
+  $('pcnt').textContent=total;$('pcnt').classList.remove('hidden');
+  let h=mkPLI(myName,myRole,true,micMuted,camOff);
+  PEERS.forEach((p)=>{h+=mkPLI(p.name,p.role,false,p.mu,p.co)});
+  $('sp').innerHTML=h;$('msp').innerHTML=h;
+}
+function mkPLI(name,role,isMe,mu,co){
+  const c=gc(name);
+  return`<div class="pli">
+  <div class="pav" style="background:${c}">${(name||'?')[0]}</div>
+  <div class="pi">
+    <div class="pn">${isMe?'أنت — ':''  }${esc(name||'مشارك')}</div>
+    <div class="pr">${role==='teacher'?'👨‍🏫 معلم':'🎒 طالب'} • ${mu?'🔇 مكتوم':'🎙️ مفعّل'} • ${co?'📵 كام مغلقة':'📹 كام مفعّلة'}</div>
+  </div>
+  ${isMe?`<button class="pbtn${mu?' on':''}" onclick="togMic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${mu?'<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>'}</svg></button>`:''}
+</div>`;
+}
+
+/* ── Chat ───────────────────────────────────────── */
 function ck(e,src){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(src)}}
-async function send(src){
-  const inp=$('c-ci-'+(src||'d'));
-  const txt=sanitizeMsg(inp.value);if(!txt)return;
+function send(src){
+  const inp=$('ci-'+(src||'d'));
+  const txt=inp.value.trim();if(!txt)return;
   inp.value='';inp.style.height='auto';
-  const me=getMe();
-  if(me&&me.uid!=='admin'){me.msgs=(me.msgs||0)+1;setMe(me);const db=getDB();if(db.users[me.uid]){db.users[me.uid].msgs=me.msgs;await saveDB(db)}}
-  renderMsg(myName,txt,true,myId);bcast({t:'chat',name:myName,txt});
+  renderMsg(myName,txt,true,myId);
+  bcast({t:'chat',name:myName,role:myRole,txt});
 }
 function renderMsg(name,txt,isMe,from){
-  const c=gc(name);
+  const c=gc(name),i=name?name[0]:'?';
   const now=new Date(),tm=pad(now.getHours())+':'+pad(now.getMinutes());
-  [$('c-cwd'),$('c-cwm')].forEach(el=>{
+  const html=`<div class="cmsg${isMe?' me':''}">
+  <div class="cmsg-hd"><div class="cav" style="background:${c}">${i}</div>
+  <span class="cname">${isMe?'أنت':esc(name)}</span>
+  <span class="ctime">${tm}</span></div>
+  <div class="cbub">${esc(txt)}</div></div>`;
+  [$('cwd'),$('cwm')].forEach(el=>{
     if(!el)return;
-    const wrap=document.createElement('div');wrap.className='cmsg'+(isMe?' me':'');
-    const hd=document.createElement('div');hd.className='cmsg-hd';
-    const av=document.createElement('div');av.className='cav';av.style.background=c;av.textContent=(name||'؟')[0];
-    const cn=document.createElement('span');cn.className='cname';cn.textContent=isMe?'أنت':(name||'مشارك');
-    const ct=document.createElement('span');ct.className='ctime';ct.textContent=tm;
-    hd.appendChild(av);hd.appendChild(cn);hd.appendChild(ct);
-    const bub=document.createElement('div');bub.className='cbub';bub.textContent=txt;
-    wrap.appendChild(hd);wrap.appendChild(bub);
-    el.appendChild(wrap);el.scrollTop=el.scrollHeight;
+    const d=document.createElement('div');d.innerHTML=html;
+    el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight;
   });
 }
 function sysmsg(txt){
-  [$('c-cwd'),$('c-cwm')].forEach(el=>{
+  const html=`<div class="cmsg sys"><div class="cbub">— ${esc(txt)} —</div></div>`;
+  [$('cwd'),$('cwm')].forEach(el=>{
     if(!el)return;
-    const wrap=document.createElement('div');wrap.className='cmsg sys';
-    const bub=document.createElement('div');bub.className='cbub';
-    bub.textContent='— '+txt+' —';
-    wrap.appendChild(bub);el.appendChild(wrap);el.scrollTop=el.scrollHeight;
+    const d=document.createElement('div');d.innerHTML=html;
+    el.appendChild(d.firstElementChild);el.scrollTop=el.scrollHeight;
   });
 }
 
-/* ─── Sidebar ─── */
-function cStab(t){
-  ctab=t;$('c-st-p').classList.toggle('act',t==='p');$('c-st-c').classList.toggle('act',t==='c');
-  $('c-sp').classList.toggle('hidden',t!=='p');$('c-sc').classList.toggle('hidden',t!=='c');
-  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('c-ci-d')?.focus(),80)}
+/* ── Desktop sidebar tabs ───────────────────────── */
+function stab(t){
+  ctab=t;
+  $('st-p').classList.toggle('act',t==='p');$('st-c').classList.toggle('act',t==='c');
+  $('sp').classList.toggle('hidden',t!=='p');$('sc').classList.toggle('hidden',t!=='c');
+  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('ci-d').focus(),80)}
 }
+
+/* ── Mobile drawer ──────────────────────────────── */
 function togDrawer(){bdOpen?closeDrawer():openDrawer()}
-function openDrawer(){bdOpen=true;$('c-bdrawer').classList.add('open');$('c-bd-ov').classList.add('open');$('m-room').classList.add('act');if(bdtab==='c'){unread=0;updBadges()}}
-function closeDrawer(){bdOpen=false;$('c-bdrawer').classList.remove('open');$('c-bd-ov').classList.remove('open');$('m-room').classList.remove('act')}
-function cBdTab(t){
-  bdtab=t;$('c-bdt-p').classList.toggle('act',t==='p');$('c-bdt-c').classList.toggle('act',t==='c');
-  $('c-msp').classList.toggle('hidden',t!=='p');$('c-msc').classList.toggle('hidden',t!=='c');
-  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('c-ci-m')?.focus(),80)}
+function openDrawer(){
+  bdOpen=true;
+  $('bdrawer').classList.add('open');
+  $('bd-ov').classList.add('open');
+  $('mn-room').classList.add('act');
+  if(bdtab==='c'){unread=0;updBadges()}
 }
-function updBadges(){[$('c-cbadge'),$('c-bd-cbadge'),$('m-ubadge')].forEach(el=>{if(!el)return;el.textContent=unread;el.classList.toggle('hidden',unread===0)})}
-
-/* ─── Leave ─── */
-function leaveRoom(){
-  clearInterval(timerIv);timerIv=null;
-  LS?.getTracks().forEach(t=>t.stop());LS=null;
-  SS?.getTracks().forEach(t=>t.stop());SS=null;
-  PEERS.forEach(p=>{try{p.dc?.close()}catch(e){}try{p.mc?.close()}catch(e){}});PEERS.clear();
-  try{peer?.destroy()}catch(e){}peer=null;
-  micMuted=false;camOff=false;sharing=false;sharerId=null;
-  $('tiles').innerHTML='';$('c-sp').innerHTML='';$('c-msp').innerHTML='';
-  $('c-cwd').innerHTML='';$('c-cwm').innerHTML='';
-  closeDrawer();
-  goProfile();
-  toast('غادرت الغرفة','');
+function closeDrawer(){
+  bdOpen=false;
+  $('bdrawer').classList.remove('open');
+  $('bd-ov').classList.remove('open');
+  $('mn-room').classList.remove('act');
 }
-function cpRoom(){
-  navigator.clipboard?.writeText(roomId)
-    .then(()=>toast('تم نسخ معرّف الغرفة: '+roomId+' ✓','ok'))
-    .catch(()=>{});
+function bdTab(t){
+  bdtab=t;
+  $('bdt-p').classList.toggle('act',t==='p');$('bdt-c').classList.toggle('act',t==='c');
+  $('msp').classList.toggle('hidden',t!=='p');$('msc').classList.toggle('hidden',t!=='c');
+  if(t==='c'){unread=0;updBadges();setTimeout(()=>$('ci-m').focus(),80)}
+}
+function updBadges(){
+  [$('cbadge'),$('bd-cbadge'),$('m-ubadge')].forEach(el=>{
+    if(!el)return;
+    el.textContent=unread;el.classList.toggle('hidden',unread===0);
+  });
 }
 
-/* ─── Toast ─── */
+/* ── Leave ──────────────────────────────────────── */
+function leave(){
+  clearInterval(timerIv);
+  bcast({t:'chat',name:myName,role:myRole,txt:'[غادر الغرفة]'});
+  LS?.getTracks().forEach(t=>t.stop());
+  SS?.getTracks().forEach(t=>t.stop());
+  peer?.destroy();PEERS.clear();
+  $('cls').classList.add('hidden');$('lobby').classList.remove('hidden');
+  $('tiles').innerHTML='';$('sp').innerHTML='';$('msp').innerHTML='';
+  $('cwd').innerHTML='';$('cwm').innerHTML='';
+  closeDrawer();st('','');
+}
+
+function cpRoom(){navigator.clipboard.writeText(roomId).then(()=>toast('تم نسخ معرّف الغرفة ✓','ok'))}
+
+/* ── Helpers ────────────────────────────────────── */
+function st(m,t){const el=$('ls');el.textContent=m;el.className=t==='ok'?'ok':''}
 let toastT=null;
 function toast(msg,type=''){
-  const t=$('toast');t.textContent=String(msg||'');
+  const t=$('toast');t.textContent=msg;
   t.className='toast'+(type?' '+type:'');t.classList.remove('hidden');
-  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add('hidden'),4000);
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add('hidden'),3200);
 }
-
-/* ─── Init ─── */
-['c-ci-d','c-ci-m'].forEach(id=>{
+// Auto-resize textareas
+['ci-d','ci-m'].forEach(id=>{
   const el=$(id);if(!el)return;
   el.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'});
 });
+// Swipe drawer down to close
 let ty0=0;
-const bdEl=$('c-bdrawer');
-if(bdEl){
-  bdEl.addEventListener('touchstart',e=>ty0=e.touches[0].clientY,{passive:true});
-  bdEl.addEventListener('touchmove',e=>{if(e.touches[0].clientY-ty0>60)closeDrawer()},{passive:true});
-}
-
-window.addEventListener('DOMContentLoaded',()=>{
-  buildLevels('reg-levels', selRegLvl);
-  const me=getMe();
-  if(me?.uid) goProfile();
-  else showPage('auth');
-});
+$('bdrawer').addEventListener('touchstart',e=>ty0=e.touches[0].clientY,{passive:true});
+$('bdrawer').addEventListener('touchmove',e=>{if(e.touches[0].clientY-ty0>60)closeDrawer()},{passive:true});
 </script>
 </body>
 </html>
