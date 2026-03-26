@@ -106,11 +106,16 @@ let clickCount = 0;
 // --- Admin Logic ---
 function openAdminCheck() {
     clickCount++;
+    // تفتح اللوحة بعد 5 نقرات متتالية على عنوان EduRoom
     if(clickCount >= 5) {
-        let p = prompt("أدخل كلمة مرور الإدارة:");
-        if(p === "admin123") {
+        let p = prompt("أدخل كلمة مرور الإدارة الجديدة:");
+        // تم تغيير كلمة المرور هنا إلى AZIZ2026
+        if(p === "AZIZ2026") {
             $('admin-panel').classList.remove('hidden');
             renderUsers();
+            showToast("تم الدخول بصلاحيات الإدارة", "ok");
+        } else if (p !== null) {
+            showToast("كلمة المرور خاطئة!");
         }
         clickCount = 0;
     }
