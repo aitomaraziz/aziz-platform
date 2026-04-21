@@ -1,229 +1,202 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"/>
-<title>EduRoom Pro — نظام الإدارة الذكي</title>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet"/>
-<style>
-  :root { --primary: #3b82f6; --bg: #060d1c; --card: #111827; }
-  body { margin:0; font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); color: white; overflow: hidden; }
-  .hidden { display: none !important; }
-  
-  /* UI Elements */
-  .lobby-container { height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .card { background: var(--card); padding: 2rem; border-radius: 1rem; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-  input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #374151; background: #1f2937; color: white; box-sizing: border-box; }
-  button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary); color: white; font-weight: 600; cursor: pointer; margin-top: 10px; }
-  
-  /* Admin Panel */
-  #admin-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; padding: 20px; overflow-y: auto; }
-  .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  .user-item { background: #1f2937; padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between; font-size: 0.8rem; }
-  
-  /* Toast */
-  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #ef4444; padding: 10px 20px; border-radius: 5px; z-index: 1000; transition: 0.3s; }
-  
-  /* Room Info Bar */
-  .room-info { background: #1e293b; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الكريستال برو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link id="manifest-link" rel="manifest" href="">
+    <meta name="theme-color" content="#003c78">
+    <style>
+        body {
+            margin: 0; padding: 0; font-family: 'Cairo', sans-serif;
+            background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover; display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; color: #fff;
+        }
+        .app-container {
+            background: rgba(0, 60, 120, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 20px;
+            width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); text-align: center;
+        }
+        .counter-container {
+            background-color: #081b33; background-image: url('https://www.transparenttextures.com/patterns/arabesque.png');
+            border: 2px solid #00d2ff; border-radius: 15px; padding: 15px; margin-bottom: 15px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        .timer { font-size: 3rem; font-weight: bold; color: #00ffff; text-shadow: 0 0 15px #00ffff; font-family: monospace; direction: ltr;}
+        .controls button, .radio-controls button, #installBtn {
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%); border: none; border-radius: 10px;
+            color: white; padding: 10px 15px; font-size: 0.95rem; font-family: 'Cairo', sans-serif; cursor: pointer; margin: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s; width: 45%;
+        }
+        #installBtn { width: 93%; background: linear-gradient(135deg, #f5af19 0%, #f12711 100%); display: none; margin: 10px auto; font-weight: bold;}
+        .controls button:disabled { background: #555; opacity: 0.6; }
+        .radio-section { background: rgba(0, 0, 0, 0.4); border-radius: 15px; padding: 10px; margin: 15px 0; border: 1px solid rgba(0, 210, 255, 0.3); }
+        select { background: rgba(0, 30, 60, 0.8); color: #00ffff; border: 1px solid #00d2ff; padding: 8px; border-radius: 8px; width: 90%; font-family: inherit; margin-bottom: 10px; }
+        .library { max-height: 150px; overflow-y: auto; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 10px; text-align: right; }
+        .track { background: rgba(255, 255, 255, 0.1); margin: 5px 0; padding: 10px; border-radius: 8px; border-right: 4px solid #00d2ff; font-size: 0.85rem;}
+        .track audio { width: 100%; height: 30px; margin: 5px 0; }
+        .track-links a { color: #00ffff; text-decoration: none; margin-left: 10px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 5px;}
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #00d2ff; border-radius: 10px; }
+    </style>
 </head>
 <body>
 
-<div id="toast" class="hidden"></div>
-
-<div id="lobby" class="lobby-container">
-  <div class="card">
-    <h2 onclick="openAdminCheck()" style="cursor:pointer; text-align:center; margin-bottom:20px;">EduRoom <span style="font-size:0.7rem; color:var(--primary)">v4 Pro</span></h2>
+<div class="app-container">
+    <h2 style="margin: 0 0 10px 0;">🎙️ الكريستال برو</h2>
     
-    <label>أنا:</label>
-    <select id="role" onchange="toggleFields()">
-      <option value="student">تلميذ</option>
-      <option value="host">أستاذ</option>
-    </select>
+    <button id="installBtn">📲 تثبيت التطبيق على الشاشة الرئيسية</button>
 
-    <input type="text" id="u-name" placeholder="اسم المستخدم (التسجيل)">
-    <input type="password" id="u-pass" placeholder="كلمة المرور">
-    
-    <div id="student-only-fields">
-      <input type="text" id="r-id" placeholder="معرّف الغرفة (من الأستاذ)">
+    <div class="counter-container">
+        <div class="timer" id="display">00:00</div>
     </div>
 
-    <button onclick="login()">دخول الغرفة</button>
-    <p style="font-size: 0.7rem; color: #6b7280; margin-top: 15px; text-align: center;">ملاحظة: الإدارة فقط هي من تمنح حسابات الدخول.</p>
-  </div>
-</div>
-
-<div id="admin-panel" class="hidden">
-  <div style="max-width: 600px; margin: 0 auto;">
-    <div style="display:flex; justify-content: space-between; align-items:center;">
-      <h3>لوحة الإدارة - تسجيل المستخدمين</h3>
-      <button onclick="$('admin-panel').classList.add('hidden')" style="width:auto; padding:5px 15px; background:#4b5563;">إغلاق</button>
+    <div class="controls">
+        <button id="startBtn">🔴 بدء التسجيل</button>
+        <button id="stopBtn" disabled>⏹️ حفظ المقطع</button>
     </div>
-    <hr style="border-color:#374151">
-    
-    <div class="admin-grid">
-      <div>
-        <h4>إضافة مستخدم</h4>
-        <input type="text" id="adm-user" placeholder="اسم المستخدم">
-        <input type="text" id="adm-pass" placeholder="كلمة المرور">
-        <select id="adm-role">
-          <option value="host">أستاذ</option>
-          <option value="student">تلميذ</option>
+
+    <div class="radio-section">
+        <h4 style="margin: 5px 0;">📻 الراديو العالمي</h4>
+        <select id="stationSelect">
+            <option value="https://stream.radiojar.com/8s9u5p3y40zuv">بي بي سي العربية</option>
+            <option value="https://live.mc-doualiya.com/mc-doualiya.mp3">مونت كارلو الدولية</option>
+            <option value="https://pub0101.nw.scas.bt.com/aljazeera_ar">الجزيرة الإخبارية</option>
         </select>
-        <button onclick="addUser()">حفظ المستخدم</button>
-      </div>
-      <div>
-        <h4>قائمة المسجلين</h4>
-        <div id="users-list"></div>
-      </div>
+        <div class="radio-controls">
+            <button id="playRadio">▶️ تشغيل</button>
+            <button id="pauseRadio">⏸️ إيقاف</button>
+        </div>
+        <audio id="mainRadio" style="display:none;"></audio>
     </div>
-  </div>
-</div>
 
-<div id="cls" class="hidden" style="height:100vh; display:flex; flex-direction:column;">
-  <div class="room-info">
-    <div>مرحباً: <span id="display-name" style="font-weight:bold; color:var(--primary)"></span></div>
-    <div id="room-display-area" class="hidden">
-      معرف الغرفة: <code id="room-code" style="background:#000; padding:3px 8px; border-radius:4px; color:#10b981"></code>
-      <button onclick="copyID()" style="width:auto; display:inline; margin:0 5px; padding:2px 10px; font-size:0.7rem;">نسخ</button>
+    <div class="library">
+        <h4 style="margin: 0 0 5px 0;">📁 المكتبة الصوتية</h4>
+        <div id="recordingsList"><p style="color: #aaa; font-size: 0.8rem;">لا توجد ملفات</p></div>
     </div>
-    <button onclick="location.reload()" style="width:auto; background:#ef4444; padding:5px 15px;">خروج</button>
-  </div>
-  <div style="flex:1; display:flex; align-items:center; justify-content:center; background:#000;">
-    <p id="status-msg">جاري الاتصال بالشبكة...</p>
-    <div id="video-grid"></div>
-  </div>
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
-let db = JSON.parse(localStorage.getItem('edu_db') || '{"users":[]}');
-let myData = null;
-let clickCount = 0;
+    // --- تفعيل ميزة التثبيت كبرنامج PWA ---
+    const manifest = {
+        "name": "المسجل الكريستالي", "short_name": "الكريستال", "start_url": ".", "display": "standalone",
+        "background_color": "#081b33", "theme_color": "#00d2ff",
+        "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3669/3669483.png", "sizes": "512x512", "type": "image/png"}]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+    document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
 
-// --- Admin Logic ---
-function openAdminCheck() {
-    clickCount++;
-    // تفتح اللوحة بعد 5 نقرات متتالية على عنوان EduRoom
-    if(clickCount >= 5) {
-        let p = prompt("أدخل كلمة مرور الإدارة الجديدة:");
-        // تم تغيير كلمة المرور هنا إلى AZIZ2026
-        if(p === "AZIZ2026") {
-            $('admin-panel').classList.remove('hidden');
-            renderUsers();
-            showToast("تم الدخول بصلاحيات الإدارة", "ok");
-        } else if (p !== null) {
-            showToast("كلمة المرور خاطئة!");
-        }
-        clickCount = 0;
-    }
-}
-
-function addUser() {
-    const user = $('adm-user').value.trim();
-    const pass = $('adm-pass').value.trim();
-    const role = $('adm-role').value;
-    if(!user || !pass) return alert("اكمل البيانات");
-    db.users.push({user, pass, role});
-    localStorage.setItem('edu_db', JSON.stringify(db));
-    renderUsers();
-    $('adm-user').value = ''; $('adm-pass').value = '';
-}
-
-function renderUsers() {
-    $('users-list').innerHTML = db.users.map((u, i) => `
-        <div class="user-item">
-            <span>${u.role==='host'?'👨‍🏫':'🎓'} ${u.user} (${u.pass})</span>
-            <button onclick="deleteUser(${i})" style="width:auto; background:red; margin:0; padding:2px 5px;">حذف</button>
-        </div>
-    `).join('');
-}
-
-function deleteUser(i) {
-    db.users.splice(i, 1);
-    localStorage.setItem('edu_db', JSON.stringify(db));
-    renderUsers();
-}
-
-// --- App Logic ---
-function toggleFields() {
-    $('student-only-fields').classList.toggle('hidden', $('role').value === 'host');
-}
-
-function login() {
-    const user = $('u-name').value.trim();
-    const pass = $('u-pass').value.trim();
-    const role = $('role').value;
-    const room = $('r-id').value.trim();
-
-    // 1. التحقق من الهوية في قاعدة البيانات
-    const found = db.users.find(u => u.user === user && u.pass === pass && u.role === role);
-    
-    if(!found) {
-        return showToast("بيانات الدخول غير صحيحة أو غير مسجلة لدى الإدارة");
+    const swCode = `self.addEventListener('fetch', (e) => {});`;
+    const swBlob = new Blob([swCode], {type: 'application/javascript'});
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
     }
 
-    myData = found;
-
-    if(role === 'host') {
-        // الأستاذ: يتم توليد معرف الغرفة من اسمه (لجعل المعرف ثابت وسهل)
-        startRoom(user + "_room"); 
-    } else {
-        // التلميذ: يجب أن يدخل معرف الغرفة الذي أرسله الأستاذ
-        if(!room) return showToast("يرجى إدخال معرف الغرفة المستلم من الأستاذ");
-        startRoom(room);
-    }
-}
-
-function startRoom(roomID) {
-    $('lobby').classList.add('hidden');
-    $('cls').classList.remove('hidden');
-    $('display-name').textContent = myData.user;
-    
-    if(myData.role === 'host') {
-        $('room-display-area').classList.remove('hidden');
-        $('room-code').textContent = roomID;
-    }
-
-    // هنا يتم ربط مكتبة PeerJS (تم تبسيطها للعرض)
-    $('status-msg').textContent = `متصل الآن في الغرفة: ${roomID}`;
-    initPeerConnection(roomID);
-}
-
-function initPeerConnection(roomID) {
-    const peerPrefix = myData.role === 'host' ? '_host' : '_std_' + Math.random().toString(36).substr(2,4);
-    const peer = new Peer(roomID + peerPrefix);
-    
-    peer.on('open', id => {
-        console.log("My Peer ID:", id);
-        showToast("تم تفعيل نظام الاتصال المباشر", "ok");
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault(); deferredPrompt = e;
+        document.getElementById('installBtn').style.display = 'block';
     });
-
-    peer.on('error', err => {
-        if(err.type === 'unavailable-id') {
-            showToast("هذه الغرفة مفتوحة بالفعل من قبل الأستاذ");
-            setTimeout(()=>location.reload(), 2000);
+    document.getElementById('installBtn').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            document.getElementById('installBtn').style.display = 'none';
         }
     });
-}
 
-function copyID() {
-    const code = $('room-code').textContent;
-    navigator.clipboard.writeText(code);
-    showToast("تم نسخ المعرف بنجاح", "ok");
-}
+    // --- وظائف الراديو والتسجيل (النسخة المتوافقة مع الهواتف) ---
+    let mediaRecorder; let audioChunks = []; let startTime; let timerInterval; let currentStream;
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const display = document.getElementById('display');
+    const radio = document.getElementById('mainRadio');
+    const recordingsList = document.getElementById('recordingsList');
 
-function showToast(m, type="") {
-    const t = $('toast');
-    t.textContent = m;
-    t.style.background = type === "ok" ? "#10b981" : "#ef4444";
-    t.classList.remove('hidden');
-    setTimeout(() => t.classList.add('hidden'), 3000);
-}
+    document.getElementById('playRadio').addEventListener('click', () => {
+        radio.src = document.getElementById('stationSelect').value;
+        radio.play();
+    });
+    document.getElementById('pauseRadio').addEventListener('click', () => radio.pause());
+    document.getElementById('stationSelect').addEventListener('change', () => { if (!radio.paused) { radio.src = document.getElementById('stationSelect').value; radio.play(); }});
 
-toggleFields(); // Initial state
+    function updateTimer() {
+        const diff = Date.now() - startTime;
+        const m = Math.floor(diff / 60000).toString().padStart(2, '0');
+        const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        display.textContent = `${m}:${s}`;
+    }
+
+    startBtn.addEventListener('click', async () => {
+        try {
+            radio.pause(); 
+            
+            currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            let options = {};
+            if (MediaRecorder.isTypeSupported('audio/webm')) {
+                options = { mimeType: 'audio/webm' }; 
+            } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                options = { mimeType: 'audio/mp4' }; 
+            }
+            
+            mediaRecorder = new MediaRecorder(currentStream, options);
+            
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) audioChunks.push(e.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                const audioType = mediaRecorder.mimeType || 'audio/webm';
+                const blob = new Blob(audioChunks, { type: audioType });
+                const fileName = prompt("أدخل اسماً لمقطعك:", "تسجيل_" + Math.floor(Math.random()*1000));
+                
+                if (fileName) {
+                    const url = URL.createObjectURL(blob);
+                    addTrackToLibrary(fileName, url, audioType);
+                }
+                
+                currentStream.getTracks().forEach(track => track.stop());
+            };
+
+            audioChunks = []; 
+            mediaRecorder.start(); 
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            startBtn.disabled = true; stopBtn.disabled = false; display.style.color = "#ff3333";
+        } catch (err) {
+            alert("حدث خطأ! تأكد أنك تستخدم رابط آمن (يبدأ بـ HTTPS) وأنك وافقت على صلاحية الميكروفون.");
+            console.error(err);
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        mediaRecorder.stop(); clearInterval(timerInterval);
+        display.textContent = "00:00"; display.style.color = "#00ffff";
+        startBtn.disabled = false; stopBtn.disabled = true;
+    });
+
+    function addTrackToLibrary(name, url, type) {
+        if (recordingsList.querySelector('p')) recordingsList.innerHTML = '';
+        const div = document.createElement('div'); div.className = 'track';
+        const waMsg = encodeURIComponent("استمع إلى هذا المقطع: " + name);
+        
+        const ext = type.includes('mp4') ? '.mp4' : '.webm';
+        
+        div.innerHTML = `
+            <strong>${name}</strong>
+            <audio src="${url}" controls></audio>
+            <div class="track-links">
+                <a href="${url}" target="_blank">🌐 رابط</a>
+                <a href="${url}" download="${name}${ext}">💾 حفظ</a>
+                <a href="https://wa.me/?text=${waMsg}" target="_blank">💬 واتساب</a>
+            </div>
+        `;
+        recordingsList.prepend(div);
+    }
 </script>
+
 </body>
 </html>
