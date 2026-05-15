@@ -1,201 +1,763 @@
-<!DOCTYPE html>
+
+# Let's create a robust voice recorder HTML file
+html_content = '''<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تسجيلات ايت عمر</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <link id="manifest-link" rel="manifest" href="">
-    <meta name="theme-color" content="#003c78">
+    <title>مسجل الصوت الذكي</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
         body {
-            margin: 0; padding: 0; font-family: 'Cairo', sans-serif;
-            background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover; display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            padding-bottom: 30px;
         }
-        .app-container {
-            background: rgba(0, 60, 120, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 20px;
-            width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); text-align: center;
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .counter-container {
-            background-color: #081b33; background-image: url('https://www.transparenttextures.com/patterns/arabesque.png');
-            border: 2px solid #00d2ff; border-radius: 15px; padding: 15px; margin-bottom: 15px;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
         }
-        .timer { font-size: 3rem; font-weight: bold; color: #00ffff; text-shadow: 0 0 15px #00ffff; font-family: monospace; direction: ltr;}
-        .controls button, .radio-controls button, #installBtn {
-            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%); border: none; border-radius: 10px;
-            color: white; padding: 10px 15px; font-size: 0.95rem; font-family: 'Cairo', sans-serif; cursor: pointer; margin: 4px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s; width: 45%;
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        #installBtn { width: 93%; background: linear-gradient(135deg, #f5af19 0%, #f12711 100%); display: none; margin: 10px auto; font-weight: bold;}
-        .controls button:disabled { background: #555; opacity: 0.6; }
-        .radio-section { background: rgba(0, 0, 0, 0.4); border-radius: 15px; padding: 10px; margin: 15px 0; border: 1px solid rgba(0, 210, 255, 0.3); }
-        select { background: rgba(0, 30, 60, 0.8); color: #00ffff; border: 1px solid #00d2ff; padding: 8px; border-radius: 8px; width: 90%; font-family: inherit; margin-bottom: 10px; }
-        .library { max-height: 150px; overflow-y: auto; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 10px; text-align: right; }
-        .track { background: rgba(255, 255, 255, 0.1); margin: 5px 0; padding: 10px; border-radius: 8px; border-right: 4px solid #00d2ff; font-size: 0.85rem;}
-        .track audio { width: 100%; height: 30px; margin: 5px 0; }
-        .track-links a { color: #00ffff; text-decoration: none; margin-left: 10px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 5px;}
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #00d2ff; border-radius: 10px; }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .mic-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .mic-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(238, 90, 90, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .mic-button:active {
+            transform: scale(0.95);
+        }
+
+        .mic-button.recording {
+            background: linear-gradient(145deg, #ff4757, #ff3838);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+            70% { box-shadow: 0 0 0 30px rgba(255, 71, 87, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+        }
+
+        .mic-waves {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            animation: wave 2s infinite;
+            opacity: 0;
+        }
+
+        .mic-button.recording ~ .mic-waves {
+            opacity: 1;
+        }
+
+        @keyframes wave {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .status-bar {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 1rem;
+            min-height: 30px;
+            font-weight: 600;
+        }
+
+        .status-bar.recording {
+            color: #ff6b6b;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .transcript-box {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            min-height: 200px;
+            color: #333;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .transcript-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .transcript-content {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #2d3748;
+            min-height: 100px;
+            word-wrap: break-word;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 140px;
+            justify-content: center;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-success {
+            background: #00b894;
+            color: white;
+        }
+
+        .audio-visualizer {
+            height: 60px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .bar {
+            width: 4px;
+            background: #fff;
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        .settings-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            color: #333;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .settings-panel h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .language-select {
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #2d3436;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .interim-text {
+            color: #999;
+            font-style: italic;
+        }
+
+        .error-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            .mic-button {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+            .transcript-content {
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <h2 style="margin: 0 0 10px 0;">🎙️ تسجيلات أيت عمر عزيز</h2>
-    
-    <button id="installBtn">📲 تثبيت التطبيق على الشاشة الرئيسية</button>
+<div class="container">
+    <div class="header">
+        <h1>🎙️ مسجل الصوت الذكي</h1>
+        <p>اضغط على الميكروفون وتحدث لتحويل صوتك إلى نص</p>
+    </div>
 
-    <div class="counter-container">
-        <div class="timer" id="display">00:00</div>
+    <div class="error-message" id="errorMessage">
+        متصفحك لا يدعم التعرف على الصوت. استخدم Chrome أو Safari على هاتفك.
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <div class="stat-value" id="wordCount">0</div>
+            <div class="stat-label">كلمات</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="charCount">0</div>
+            <div class="stat-label">حروف</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="duration">0s</div>
+            <div class="stat-label">المدة</div>
+        </div>
+    </div>
+
+    <div class="mic-container">
+        <button class="mic-button" id="micBtn">🎤</button>
+        <div class="mic-waves"></div>
+    </div>
+
+    <div class="status-bar" id="status">اضغط على الميكروفون للبدء</div>
+
+    <div class="audio-visualizer" id="visualizer">
     </div>
 
     <div class="controls">
-        <button id="startBtn">🔴 بدء التسجيل</button>
-        <button id="stopBtn" disabled>⏹️ حفظ المقطع</button>
+        <button class="btn btn-primary" id="clearBtn">🗑️ مسح</button>
+        <button class="btn btn-success" id="copyBtn">📋 نسخ</button>
+        <button class="btn btn-danger" id="downloadBtn">💾 حفظ</button>
     </div>
 
-    <div class="radio-section">
-        <h4 style="margin: 5px 0;">📻 القرءان والسنة </h4>
-        <select id="stationSelect">
-            <option value="https://qurango.net/radio/tarateel">اذاعة القرءان الكريم</option>
-             <option value="https://radio.alhuwayni.com/listen/alhuwayni/radio.mp3">اذاعة ابي اسحاق الحويني</option>
-        </select>
-        <div class="radio-controls">
-            <button id="playRadio">▶️ تشغيل</button>
-            <button id="pauseRadio">⏸️ إيقاف</button>
+    <div class="transcript-box">
+        <h3>📝 النص المكتوب:</h3>
+        <div class="transcript-content" id="transcript">
+            <span style="color: #999; font-style: italic;">سيظهر النص هنا بعد التسجيل...</span>
         </div>
-        <audio id="mainRadio" style="display:none;"></audio>
     </div>
 
-    <div class="library">
-        <h4 style="margin: 0 0 5px 0;">📁 المكتبة الصوتية</h4>
-        <div id="recordingsList"><p style="color: #aaa; font-size: 0.8rem;">لا توجد ملفات</p></div>
+    <div class="settings-panel">
+        <h3>⚙️ الإعدادات</h3>
+        <div class="setting-item">
+            <span>اللغة</span>
+            <select class="language-select" id="languageSelect">
+                <option value="ar-SA">العربية</option>
+                <option value="en-US">English</option>
+                <option value="fr-FR">Français</option>
+                <option value="es-ES">Español</option>
+                <option value="de-DE">Deutsch</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <span>عرض النص المؤقت</span>
+            <div class="toggle active" id="interimToggle"></div>
+        </div>
     </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-    // --- تفعيل ميزة التثبيت كبرنامج PWA ---
-    const manifest = {
-        "name": "المسجل الكريستالي", "short_name": "الكريستال", "start_url": ".", "display": "standalone",
-        "background_color": "#081b33", "theme_color": "#00d2ff",
-        "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3669/3669483.png", "sizes": "512x512", "type": "image/png"}]
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-    document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+(function() {
+    'use strict';
 
-    const swCode = `self.addEventListener('fetch', (e) => {});`;
-    const swBlob = new Blob([swCode], {type: 'application/javascript'});
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+    // Check for Speech Recognition support
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        document.getElementById('errorMessage').classList.add('show');
+        document.getElementById('micBtn').disabled = true;
+        document.getElementById('micBtn').style.opacity = '0.5';
+        return;
     }
 
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault(); deferredPrompt = e;
-        document.getElementById('installBtn').style.display = 'block';
-    });
-    document.getElementById('installBtn').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            await deferredPrompt.userChoice;
-            deferredPrompt = null;
-            document.getElementById('installBtn').style.display = 'none';
-        }
-    });
+    // Variables
+    var recognition = null;
+    var isRecording = false;
+    var finalTranscript = '';
+    var interimTranscript = '';
+    var startTime = null;
+    var timerInterval = null;
+    var showInterim = true;
+    var currentLanguage = 'ar-SA';
 
-    // --- وظائف الراديو والتسجيل (النسخة المتوافقة مع الهواتف) ---
-    let mediaRecorder; let audioChunks = []; let startTime; let timerInterval; let currentStream;
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const display = document.getElementById('display');
-    const radio = document.getElementById('mainRadio');
-    const recordingsList = document.getElementById('recordingsList');
+    // DOM Elements
+    var micBtn = document.getElementById('micBtn');
+    var statusBar = document.getElementById('status');
+    var transcriptDiv = document.getElementById('transcript');
+    var visualizer = document.getElementById('visualizer');
+    var toast = document.getElementById('toast');
+    var wordCountEl = document.getElementById('wordCount');
+    var charCountEl = document.getElementById('charCount');
+    var durationEl = document.getElementById('duration');
 
-    document.getElementById('playRadio').addEventListener('click', () => {
-        radio.src = document.getElementById('stationSelect').value;
-        radio.play();
-    });
-    document.getElementById('pauseRadio').addEventListener('click', () => radio.pause());
-    document.getElementById('stationSelect').addEventListener('change', () => { if (!radio.paused) { radio.src = document.getElementById('stationSelect').value; radio.play(); }});
+    // Initialize Speech Recognition
+    function initSpeechRecognition() {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = currentLanguage;
+        recognition.maxAlternatives = 1;
 
-    function updateTimer() {
-        const diff = Date.now() - startTime;
-        const m = Math.floor(diff / 60000).toString().padStart(2, '0');
-        const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-        display.textContent = `${m}:${s}`;
-    }
-
-    startBtn.addEventListener('click', async () => {
-        try {
-            radio.pause(); 
-            
-            currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            let options = {};
-            if (MediaRecorder.isTypeSupported('audio/webm')) {
-                options = { mimeType: 'audio/webm' }; 
-            } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                options = { mimeType: 'audio/mp4' }; 
-            }
-            
-            mediaRecorder = new MediaRecorder(currentStream, options);
-            
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) audioChunks.push(e.data);
-            };
-            
-            mediaRecorder.onstop = () => {
-                const audioType = mediaRecorder.mimeType || 'audio/webm';
-                const blob = new Blob(audioChunks, { type: audioType });
-                const fileName = prompt("أدخل اسماً لمقطعك:", "تسجيل_" + Math.floor(Math.random()*1000));
-                
-                if (fileName) {
-                    const url = URL.createObjectURL(blob);
-                    addTrackToLibrary(fileName, url, audioType);
-                }
-                
-                currentStream.getTracks().forEach(track => track.stop());
-            };
-
-            audioChunks = []; 
-            mediaRecorder.start(); 
+        recognition.onstart = function() {
+            isRecording = true;
             startTime = Date.now();
-            timerInterval = setInterval(updateTimer, 1000);
-            startBtn.disabled = true; stopBtn.disabled = false; display.style.color = "#ff3333";
-        } catch (err) {
-            alert("حدث خطأ! تأكد أنك تستخدم رابط آمن (يبدأ بـ HTTPS) وأنك وافقت على صلاحية الميكروفون.");
-            console.error(err);
+            startTimer();
+            updateUIState(true);
+            showToast('بدأ التسجيل...');
+        };
+
+        recognition.onend = function() {
+            if (isRecording) {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    stopRecording();
+                }
+            } else {
+                stopRecording();
+            }
+        };
+
+        recognition.onresult = function(event) {
+            var interim = '';
+            var final = '';
+
+            for (var i = event.resultIndex; i < event.results.length; i++) {
+                var transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    final += transcript + ' ';
+                } else {
+                    interim += transcript;
+                }
+            }
+
+            if (final) {
+                finalTranscript += final;
+                interimTranscript = '';
+            } else {
+                interimTranscript = interim;
+            }
+
+            updateTranscript();
+            updateStats();
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            if (event.error === 'not-allowed') {
+                showToast('يرجى السماح بالوصول إلى الميكروفون');
+                stopRecording();
+            } else if (event.error === 'no-speech') {
+                showToast('لم يتم اكتشاف صوت');
+            } else if (event.error === 'network') {
+                showToast('مشكلة في الاتصال');
+            } else if (event.error === 'aborted') {
+                // User stopped, ignore
+            } else {
+                showToast('خطأ: ' + event.error);
+            }
+        };
+    }
+
+    // Setup Visualizer
+    function setupVisualizer() {
+        var barCount = 30;
+        for (var i = 0; i < barCount; i++) {
+            var bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = '5px';
+            visualizer.appendChild(bar);
+        }
+        animateVisualizer();
+    }
+
+    function animateVisualizer() {
+        var bars = document.querySelectorAll('.bar');
+        
+        function animate() {
+            if (isRecording) {
+                for (var i = 0; i < bars.length; i++) {
+                    var height = Math.random() * 50 + 5;
+                    bars[i].style.height = height + 'px';
+                    bars[i].style.opacity = 0.5 + (height / 100);
+                }
+            } else {
+                for (var i = 0; i < bars.length; i++) {
+                    bars[i].style.height = '5px';
+                    bars[i].style.opacity = '0.3';
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    }
+
+    // Timer
+    function startTimer() {
+        timerInterval = setInterval(function() {
+            var elapsed = Math.floor((Date.now() - startTime) / 1000);
+            durationEl.textContent = elapsed + 's';
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    // UI State
+    function updateUIState(recording) {
+        if (recording) {
+            micBtn.classList.add('recording');
+            micBtn.textContent = '⏹️';
+            statusBar.textContent = 'جاري التسجيل... اضغط للإيقاف';
+            statusBar.classList.add('recording');
+        } else {
+            micBtn.classList.remove('recording');
+            micBtn.textContent = '🎤';
+            statusBar.textContent = 'اضغط على الميكروفون للبدء';
+            statusBar.classList.remove('recording');
+        }
+    }
+
+    // Transcript
+    function updateTranscript() {
+        var html = '';
+
+        if (finalTranscript) {
+            html += '<span>' + escapeHtml(finalTranscript) + '</span>';
+        }
+
+        if (showInterim && interimTranscript) {
+            html += ' <span class="interim-text">' + escapeHtml(interimTranscript) + '</span>';
+        }
+
+        if (!html) {
+            html = '<span style="color: #999; font-style: italic;">سيظهر النص هنا بعد التسجيل...</span>';
+        }
+
+        transcriptDiv.innerHTML = html;
+        transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+    }
+
+    function getFullText() {
+        return (finalTranscript + ' ' + interimTranscript).trim();
+    }
+
+    function updateStats() {
+        var text = getFullText();
+        var words = text.trim() ? text.trim().split(/\\s+/).length : 0;
+        var chars = text.length;
+        
+        wordCountEl.textContent = words;
+        charCountEl.textContent = chars;
+    }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Toast
+    function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        
+        setTimeout(function() {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // Recording Control
+    function startRecording() {
+        if (!recognition) {
+            initSpeechRecognition();
+        }
+
+        try {
+            recognition.lang = currentLanguage;
+            recognition.start();
+        } catch (e) {
+            showToast('حدث خطأ. أعد المحاولة');
+            console.error(e);
+        }
+    }
+
+    function stopRecording() {
+        isRecording = false;
+        if (recognition) {
+            try {
+                recognition.stop();
+            } catch (e) {
+                // Already stopped
+            }
+        }
+        stopTimer();
+        updateUIState(false);
+        showToast('توقف التسجيل');
+    }
+
+    // Event Listeners
+    micBtn.addEventListener('click', function() {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
         }
     });
 
-    stopBtn.addEventListener('click', () => {
-        mediaRecorder.stop(); clearInterval(timerInterval);
-        display.textContent = "00:00"; display.style.color = "#00ffff";
-        startBtn.disabled = false; stopBtn.disabled = true;
+    document.getElementById('clearBtn').addEventListener('click', function() {
+        finalTranscript = '';
+        interimTranscript = '';
+        updateTranscript();
+        updateStats();
+        showToast('تم مسح النص');
     });
 
-    function addTrackToLibrary(name, url, type) {
-        if (recordingsList.querySelector('p')) recordingsList.innerHTML = '';
-        const div = document.createElement('div'); div.className = 'track';
-        const waMsg = encodeURIComponent("استمع إلى هذا المقطع: " + name);
+    document.getElementById('copyBtn').addEventListener('click', function() {
+        var text = getFullText();
+        if (!text.trim()) {
+            showToast('لا يوجد نص للنسخ');
+            return;
+        }
         
-        const ext = type.includes('mp4') ? '.mp4' : '.webm';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                showToast('تم نسخ النص!');
+            }).catch(function() {
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    });
+
+    function fallbackCopy(text) {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
         
-        div.innerHTML = `
-            <strong>${name}</strong>
-            <audio src="${url}" controls></audio>
-            <div class="track-links">
-                <a href="${url}" target="_blank">🌐 رابط</a>
-                <a href="${url}" download="${name}${ext}">💾 حفظ</a>
-                <a href="https://wa.me/?text=${waMsg}" target="_blank">💬 واتساب</a>
-            </div>
-        `;
-        recordingsList.prepend(div);
+        try {
+            document.execCommand('copy');
+            showToast('تم نسخ النص!');
+        } catch (e) {
+            showToast('فشل النسخ. انسخ يدوياً');
+        }
+        
+        document.body.removeChild(textarea);
     }
+
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+        var text = getFullText();
+        if (!text.trim()) {
+            showToast('لا يوجد نص للحفظ');
+            return;
+        }
+        
+        var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'تسجيل_' + new Date().toLocaleDateString('ar-SA').replace(/\\//g, '-') + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('تم حفظ الملف!');
+    });
+
+    document.getElementById('languageSelect').addEventListener('change', function(e) {
+        currentLanguage = e.target.value;
+        if (recognition) {
+            recognition.lang = currentLanguage;
+        }
+        showToast('تم تغيير اللغة');
+    });
+
+    document.getElementById('interimToggle').addEventListener('click', function() {
+        this.classList.toggle('active');
+        showInterim = this.classList.contains('active');
+        updateTranscript();
+    });
+
+    // Initialize
+    initSpeechRecognition();
+    setupVisualizer();
+    updateStats();
+
+})();
 </script>
 
 </body>
-</html>
+</html>'''
+
+# Save the file
+with open('/mnt/agents/output/voice_recorder.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("File saved successfully!")
+print(f"File size: {len(html_content)} characters")
