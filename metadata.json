@@ -1,0 +1,6 @@
+{
+  "name": "نظام إدارة المستفيدين والمالية",
+  "description": "نظام متكامل لإدارة بيانات المستفيدين وتتبع الانخراطات الشهرية والسنوية وإدارة المصاريف والمداخيل مع تقارير وإحصائيات احترافية وتصديرها بصيغة PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
