@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جمعية تحفيظ القرآن الكريم - نظام التسجيل</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #0d6b4f;
+    --primary-dark: #094a37;
+    --primary-light: #1a8c6a;
+    --gold: #d4af37;
+    --bg: #f5f7f5;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --success: #16a34a;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, 'Arial', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* شاشة اختيار المجلد */
+  #folderScreen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #0d6b4f 0%, #094a37 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  #folderScreen.hidden { display: none; }
+  .folder-card {
+    background: white; border-radius: 20px; padding: 50px;
+    max-width: 600px; width: 90%; text-align: center;
+    box-shadow: 0 25px 50px rgba(0,0,0,.3);
+  }
+  .folder-icon { font-size: 80px; margin-bottom: 20px; }
+  .folder-card h1 { color: var(--primary); font-size: 28px; margin-bottom: 10px; }
+  .folder-card p { color: var(--muted); margin-bottom: 30px; line-height: 1.8; }
+  .btn-pick {
+    background: var(--primary); color: white; border: none;
+    padding: 15px 40px; border-radius: 10px; font-size: 18px;
+    cursor: pointer; font-weight: bold; transition: all .3s;
+  }
+  .btn-pick:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+  /* الواجهة الرئيسية */
+  #mainApp { display: none; }
+  #mainApp.active { display: flex; min-height: 100vh; }
+
+  /* الشريط الجانبي */
+  .sidebar {
+    width: 260px; background: var(--primary-dark); color: white;
+    padding: 20px; position: fixed; right: 0; top: 0; bottom: 0;
+    overflow-y: auto;
+  }
+  .logo { text-align: center; padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,.2); margin-bottom: 20px; }
+  .logo h2 { font-size: 20px; color: var(--gold); margin-bottom: 5px; }
+  .logo p { font-size: 12px; opacity: .8; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 15px; border-radius: 8px; cursor: pointer;
+    margin-bottom: 5px; transition: all .3s; font-size: 15px;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.1); }
+  .nav-item.active { background: var(--primary); border-right: 4px solid var(--gold); }
+  .nav-icon { font-size: 20px; }
+  .folder-info {
+    background: rgba(0,0,0,.2); padding: 12px; border-radius: 8px;
+    margin-top: 30px; font-size: 12px; word-break: break-all;
+  }
+  .folder-info strong { color: var(--gold); display: block; margin-bottom: 5px; }
+
+  /* المحتوى */
+  .main-content { flex: 1; margin-right: 260px; padding: 30px; }
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 25px; flex-wrap: wrap; gap: 15px;
+  }
+  .page-title { font-size: 26px; color: var(--primary-dark); }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* البطاقات */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px; margin-bottom: 30px;
+  }
+  .stat-card {
+    background: var(--card); border-radius: 12px; padding: 25px;
+    box-shadow: var(--shadow); border-right: 4px solid var(--primary);
+    transition: transform .3s;
+  }
+  .stat-card:hover { transform: translateY(-3px); }
+  .stat-card .icon { font-size: 35px; margin-bottom: 10px; }
+  .stat-card .label { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  .stat-card .value { font-size: 28px; font-weight: bold; color: var(--primary-dark); }
+  .stat-card.gold { border-right-color: var(--gold); }
+  .stat-card.danger { border-right-color: var(--danger); }
+  .stat-card.success { border-right-color: var(--success); }
+
+  /* النماذج */
+  .form-card {
+    background: var(--card); border-radius: 12px; padding: 25px;
+    box-shadow: var(--shadow); margin-bottom: 25px;
+  }
+  .form-card h3 { color: var(--primary-dark); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--bg); }
+  .form-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #374151; font-size: 14px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+    transition: border-color .3s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--primary);
+  }
+
+  /* الأزرار */
+  .btn {
+    padding: 10px 20px; border: none; border-radius: 8px;
+    cursor: pointer; font-size: 14px; font-weight: 600;
+    transition: all .3s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-gold { background: var(--gold); color: white; }
+  .btn-gold:hover { background: #b8941f; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-warning { background: var(--warning); color: white; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* الجداول */
+  .table-card {
+    background: var(--card); border-radius: 12px; padding: 20px;
+    box-shadow: var(--shadow); overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  th { background: var(--primary); color: white; padding: 12px; text-align: right; font-size: 14px; }
+  th:first-child { border-top-right-radius: 8px; }
+  th:last-child { border-top-left-radius: 8px; }
+  td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  tr:hover { background: #f9fafb; }
+  .badge {
+    padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    font-weight: 600; display: inline-block;
+  }
+  .badge-success { background: #dcfce7; color: #166534; }
+  .badge-danger { background: #fee2e2; color: #991b1b; }
+  .badge-warning { background: #fef3c7; color: #92400e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+
+  /* البحث */
+  .search-bar {
+    background: var(--card); padding: 15px; border-radius: 10px;
+    margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;
+    box-shadow: var(--shadow);
+  }
+  .search-bar input, .search-bar select {
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; flex: 1; min-width: 150px;
+  }
+
+  /* الإشعارات */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--success); color: white; padding: 12px 25px;
+    border-radius: 8px; box-shadow: var(--shadow); z-index: 10000;
+    opacity: 0; transition: opacity .3s; font-weight: 600;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { background: var(--danger); }
+  .toast.warning { background: var(--warning); }
+
+  /* النوافذ المنبثقة */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 5000; padding: 20px;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: white; border-radius: 12px; padding: 30px;
+    max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--bg);
+  }
+  .modal-header h3 { color: var(--primary-dark); }
+  .close-btn {
+    background: none; border: none; font-size: 24px; cursor: pointer;
+    color: var(--muted); width: 35px; height: 35px; border-radius: 50%;
+  }
+  .close-btn:hover { background: var(--bg); }
+
+  /* الطباعة */
+  @media print {
+    .sidebar, .page-header, .search-bar, .no-print { display: none !important; }
+    .main-content { margin-right: 0; padding: 10px; }
+    body { background: white; }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar { width: 100%; position: relative; }
+    .main-content { margin-right: 0; padding: 15px; }
+    #mainApp.active { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- شاشة اختيار المجلد -->
+<div id="folderScreen">
+  <div class="folder-card">
+    <div class="folder-icon">📁</div>
+    <h1>جمعية تحفيظ القرآن الكريم</h1>
+    <p>نظام إدارة تسجيل التلاميذ والواجبات</p>
+    <p style="background:#fef3c7; padding:12px; border-radius:8px; color:#92400e; font-size:14px;">
+      ⚠️ يجب اختيار مجلد التخزين قبل البدء<br>
+      سيتم حفظ جميع البيانات والتقارير في هذا المجلد
+    </p>
+    <br>
+    <button class="btn-pick" onclick="pickFolder()">
+      📂 اختيار مجلد التخزين
+    </button>
+    <p style="margin-top:20px; font-size:12px; color:var(--muted);">
+      💡 ملاحظة: يجب استخدام متصفح Chrome أو Edge على جهاز كمبيوتر
+    </p>
+  </div>
+</div>
+
+<!-- التطبيق الرئيسي -->
+<div id="mainApp">
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>📖 جمعية التحفيظ</h2>
+      <p>نظام إدارة التلاميذ</p>
+    </div>
+    <div class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="nav-icon">📊</span><span>لوحة التحكم</span>
+    </div>
+    <div class="nav-item" onclick="showPage('students', this)">
+      <span class="nav-icon">👨‍🎓</span><span>التلاميذ</span>
+    </div>
+    <div class="nav-item" onclick="showPage('annualFees', this)">
+      <span class="nav-icon">📅</span><span>الواجب السنوي</span>
+    </div>
+    <div class="nav-item" onclick="showPage('monthlyFees', this)">
+      <span class="nav-icon">💰</span><span>الواجب الشهري</span>
+    </div>
+    <div class="nav-item" onclick="showPage('reports', this)">
+      <span class="nav-icon">📋</span><span>التقارير</span>
+    </div>
+    <div class="nav-item" onclick="showPage('settings', this)">
+      <span class="nav-icon">⚙️</span><span>الإعدادات</span>
+    </div>
+    <div class="folder-info" id="folderInfo">
+      <strong>📂 مجلد التخزين:</strong>
+      <span id="folderPath">-</span>
+    </div>
+    <div class="nav-item" onclick="changeFolder()" style="margin-top:15px; background:rgba(255,255,255,.05);">
+      <span class="nav-icon">🔄</span><span>تغيير المجلد</span>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <!-- لوحة التحكم -->
+    <div class="page active" id="dashboard">
+      <div class="page-header">
+        <h1 class="page-title">لوحة التحكم</h1>
+        <span style="color:var(--muted); font-size:14px;" id="todayDate"></span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="icon">👥</div>
+          <div class="label">إجمالي التلاميذ</div>
+          <div class="value" id="totalStudents">0</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="icon">📅</div>
+          <div class="label">دفعوا الواجب السنوي</div>
+          <div class="value" id="paidAnnual">0</div>
+        </div>
+        <div class="stat-card success">
+          <div class="icon">💰</div>
+          <div class="label">إجمالي الواجبات الشهرية</div>
+          <div class="value" id="totalMonthly">0</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="icon">⚠️</div>
+          <div class="label">لم يدفعوا هذا الشهر</div>
+          <div class="value" id="unpaidThisMonth">0</div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>📌 آخر التلاميذ المسجلين</h3>
+        <div id="recentStudents"></div>
+      </div>
+    </div>
+
+    <!-- التلاميذ -->
+    <div class="page" id="students">
+      <div class="page-header">
+        <h1 class="page-title">إدارة التلاميذ</h1>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="openStudentModal()">➕ إضافة تلميذ</button>
+          <button class="btn btn-gold" onclick="printStudents()">🖨️ طباعة</button>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>➕ تسجيل تلميذ جديد</h3>
+        <form id="studentForm" onsubmit="saveStudent(event)">
+          <input type="hidden" id="studentId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>الاسم الكامل *</label>
+              <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+              <label>رقم التسجيل</label>
+              <input type="text" id="regNumber" placeholder="مثال: 2024-001">
+            </div>
+            <div class="form-group">
+              <label>تاريخ الميلاد</label>
+              <input type="date" id="birthDate">
+            </div>
+            <div class="form-group">
+              <label>الجنس</label>
+              <select id="gender">
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>رقم الهاتف</label>
+              <input type="tel" id="phone">
+            </div>
+            <div class="form-group">
+              <label>اسم الولي</label>
+              <input type="text" id="guardian">
+            </div>
+            <div class="form-group">
+              <label>المستوى/الحلقة</label>
+              <input type="text" id="level" placeholder="مثال: المستوى الأول">
+            </div>
+            <div class="form-group">
+              <label>تاريخ التسجيل</label>
+              <input type="date" id="regDate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea id="notes" rows="2"></textarea>
+          </div>
+          <div class="btn-group">
+            <button type="submit" class="btn btn-success">💾 حفظ</button>
+            <button type="button" class="btn btn-warning" onclick="resetStudentForm()">🔄 مسح</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="searchStudent" placeholder="🔍 ابحث بالاسم أو رقم التسجيل..." oninput="renderStudents()">
+        <select id="filterLevel" onchange="renderStudents()">
+          <option value="">جميع المستويات</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الاسم</th>
+              <th>رقم التسجيل</th>
+              <th>المستوى</th>
+              <th>الهاتف</th>
+              <th>تاريخ التسجيل</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- الواجب السنوي -->
+    <div class="page" id="annualFees">
+      <div class="page-header">
+        <h1 class="page-title">إدارة الواجب السنوي</h1>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="openAnnualModal()">➕ تسجيل دفع</button>
+          <button class="btn btn-gold" onclick="printAnnual()">🖨️ طباعة</button>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>📅 تسجيل دفع الواجب السنوي</h3>
+        <form id="annualForm" onsubmit="saveAnnualPayment(event)">
+          <input type="hidden" id="annualId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>التلميذ *</label>
+              <select id="annualStudentId" required>
+                <option value="">-- اختر تلميذ --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>السنة *</label>
+              <select id="annualYear" required></select>
+            </div>
+            <div class="form-group">
+              <label>المبلغ (د.ج) *</label>
+              <input type="number" id="annualAmount" required>
+            </div>
+            <div class="form-group">
+              <label>تاريخ الدفع *</label>
+              <input type="date" id="annualDate" required>
+            </div>
+            <div class="form-group">
+              <label>رقم الإيصال</label>
+              <input type="text" id="annualReceipt">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea id="annualNotes" rows="2"></textarea>
+          </div>
+          <div class="btn-group">
+            <button type="submit" class="btn btn-success">💾 حفظ</button>
+            <button type="button" class="btn btn-warning" onclick="resetAnnualForm()">🔄 مسح</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="search-bar">
+        <select id="filterAnnualYear" onchange="renderAnnualFees()">
+          <option value="">جميع السنوات</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>التلميذ</th>
+              <th>السنة</th>
+              <th>المبلغ</th>
+              <th>تاريخ الدفع</th>
+              <th>رقم الإيصال</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="annualTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- الواجب الشهري -->
+    <div class="page" id="monthlyFees">
+      <div class="page-header">
+        <h1 class="page-title">إدارة الواجب الشهري</h1>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="openMonthlyModal()">➕ تسجيل دفع</button>
+          <button class="btn btn-gold" onclick="printMonthly()">🖨️ طباعة</button>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>💰 تسجيل دفع الواجب الشهري</h3>
+        <form id="monthlyForm" onsubmit="saveMonthlyPayment(event)">
+          <input type="hidden" id="monthlyId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>التلميذ *</label>
+              <select id="monthlyStudentId" required>
+                <option value="">-- اختر تلميذ --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>الشهر *</label>
+              <select id="monthlyMonth" required>
+                <option value="01">يناير</option>
+                <option value="02">فبراير</option>
+                <option value="03">مارس</option>
+                <option value="04">أبريل</option>
+                <option value="05">مايو</option>
+                <option value="06">يونيو</option>
+                <option value="07">يوليو</option>
+                <option value="08">أغسطس</option>
+                <option value="09">سبتمبر</option>
+                <option value="10">أكتوبر</option>
+                <option value="11">نوفمبر</option>
+                <option value="12">ديسمبر</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>السنة *</label>
+              <select id="monthlyYear" required></select>
+            </div>
+            <div class="form-group">
+              <label>المبلغ (د.ج) *</label>
+              <input type="number" id="monthlyAmount" required>
+            </div>
+            <div class="form-group">
+              <label>تاريخ الدفع *</label>
+              <input type="date" id="monthlyDate" required>
+            </div>
+            <div class="form-group">
+              <label>رقم الإيصال</label>
+              <input type="text" id="monthlyReceipt">
+            </div>
+          </div>
+          <div class="btn-group">
+            <button type="submit" class="btn btn-success">💾 حفظ</button>
+            <button type="button" class="btn btn-warning" onclick="resetMonthlyForm()">🔄 مسح</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="search-bar">
+        <select id="filterMonth" onchange="renderMonthlyFees()">
+          <option value="">جميع الأشهر</option>
+        </select>
+        <select id="filterYearMonth" onchange="renderMonthlyFees()">
+          <option value="">جميع السنوات</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>التلميذ</th>
+              <th>الشهر/السنة</th>
+              <th>المبلغ</th>
+              <th>تاريخ الدفع</th>
+              <th>رقم الإيصال</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- التقارير -->
+    <div class="page" id="reports">
+      <div class="page-header">
+        <h1 class="page-title">التقارير والإحصائيات</h1>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="generateFullReport()">📄 تقرير شامل</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="icon">💵</div>
+          <div class="label">إجمالي الواجبات السنوية</div>
+          <div class="value" id="totalAnnualAmount">0 د.ج</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="icon">💎</div>
+          <div class="label">إجمالي الواجبات الشهرية</div>
+          <div class="value" id="totalMonthlyAmount">0 د.ج</div>
+        </div>
+        <div class="stat-card success">
+          <div class="icon">📈</div>
+          <div class="label">المجموع الكلي</div>
+          <div class="value" id="totalAllAmount">0 د.ج</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="icon">📉</div>
+          <div class="label">عدد المدفوعات</div>
+          <div class="value" id="totalPayments">0</div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>📊 تقرير حسب الشهر</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>السنة</label>
+            <select id="reportYear" onchange="generateMonthlyReport()"></select>
+          </div>
+        </div>
+        <div id="monthlyReport"></div>
+      </div>
+
+      <div class="form-card">
+        <h3>📋 تقرير التلاميذ حسب المستوى</h3>
+        <div id="levelReport"></div>
+      </div>
+    </div>
+
+    <!-- الإعدادات -->
+    <div class="page" id="settings">
+      <div class="page-header">
+        <h1 class="page-title">الإعدادات</h1>
+      </div>
+      <div class="form-card">
+        <h3>⚙️ إعدادات الجمعية</h3>
+        <div class="form-group">
+          <label>اسم الجمعية</label>
+          <input type="text" id="assocName" onchange="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label>المبلغ الافتراضي للواجب السنوي (د.ج)</label>
+          <input type="number" id="annualDefault" onchange="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label>المبلغ الافتراضي للواجب الشهري (د.ج)</label>
+          <input type="number" id="monthlyDefault" onchange="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label>العنوان</label>
+          <input type="text" id="assocAddress" onchange="saveSettings()">
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>💾 إدارة البيانات</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="manualSave()">💾 حفظ الآن</button>
+          <button class="btn btn-warning" onclick="exportData()">📤 تصدير البيانات (JSON)</button>
+          <button class="btn btn-danger" onclick="if(confirm('هل أنت متأكد من حذف جميع البيانات؟')) clearAllData()">🗑️ حذف كل البيانات</button>
+        </div>
+        <p style="margin-top:15px; color:var(--muted); font-size:13px;">
+          💡 يتم الحفظ تلقائياً عند كل تعديل، ويمكنك أيضاً الضغط على "حفظ الآن" للحفظ اليدوي.
+        </p>
+      </div>
+
+      <div class="form-card">
+        <h3>ℹ️ معلومات النظام</h3>
+        <p style="line-height:2; color:#374151;">
+          <strong>المجلد:</strong> <span id="settingsFolder">-</span><br>
+          <strong>عدد التلاميذ:</strong> <span id="settingsStudents">0</span><br>
+          <strong>عدد مدفوعات الواجب السنوي:</strong> <span id="settingsAnnual">0</span><br>
+          <strong>عدد مدفوعات الواجب الشهري:</strong> <span id="settingsMonthly">0</span><br>
+          <strong>آخر حفظ:</strong> <span id="lastSave">-</span>
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- نافذة تأكيد الحذف -->
+<div class="modal" id="confirmModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>تأكيد العملية</h3>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <p id="confirmMessage">هل أنت متأكد؟</p>
+    <div class="btn-group" style="margin-top:20px; justify-content:flex-end;">
+      <button class="btn btn-warning" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-danger" id="confirmBtn">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============== المتغيرات العامة ==============
+let dirHandle = null;
+let students = [];
+let annualFees = [];
+let monthlyFees = [];
+let settings = {
+  assocName: 'جمعية تحفيظ القرآن الكريم',
+  annualDefault: 1000,
+  monthlyDefault: 200,
+  assocAddress: ''
+};
+let saveTimer = null;
+let currentMonth = new Date().getMonth() + 1;
+let currentYear = new Date().getFullYear();
+let pendingDelete = null;
+
+// ============== شاشة اختيار المجلد ==============
+async function pickFolder() {
+  if (!('showDirectoryPicker' in window)) {
+    showToast('❌ متصفحك لا يدعم هذه الميزة. يرجى استخدام Chrome أو Edge على الكمبيوتر', 'error', 5000);
+    return;
+  }
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    // طلب صلاحية الكتابة
+    if (await dirHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
+      await dirHandle.requestPermission({ mode: 'readwrite' });
+    }
+    await loadDataFromFolder();
+    document.getElementById('folderScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.add('active');
+    document.getElementById('folderPath').textContent = dirHandle.name;
+    document.getElementById('settingsFolder').textContent = dirHandle.name;
+    showToast('✅ تم اختيار المجلد بنجاح');
+    initApp();
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      showToast('❌ حدث خطأ: ' + e.message, 'error');
+    }
+  }
+}
+
+async function changeFolder() {
+  if (!confirm('هل تريد تغيير مجلد التخزين؟ سيتم تحميل البيانات من المجلد الجديد.')) return;
+  await pickFolder();
+}
+
+// ============== تحميل وحفظ البيانات ==============
+async function loadDataFromFolder() {
+  try {
+    students = await readJSON('students.json', []);
+    annualFees = await readJSON('annual_fees.json', []);
+    monthlyFees = await readJSON('monthly_fees.json', []);
+    const s = await readJSON('settings.json', null);
+    if (s) settings = s;
+  } catch (e) {
+    console.error('خطأ في التحميل:', e);
+  }
+}
+
+async function readJSON(filename, defaultValue) {
+  try {
+    const fileHandle = await dirHandle.getFileHandle(filename);
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    return JSON.parse(text);
+  } catch (e) {
+    return defaultValue;
+  }
+}
+
+async function writeJSON(filename, data) {
+  try {
+    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(data, null, 2));
+    await writable.close();
+    return true;
+  } catch (e) {
+    console.error('خطأ في الحفظ:', e);
+    showToast('❌ خطأ في الحفظ: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function autoSave() {
+  if (!dirHandle) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    await saveAllData();
+  }, 500);
+}
+
+async function saveAllData() {
+  if (!dirHandle) return;
+  await writeJSON('students.json', students);
+  await writeJSON('annual_fees.json', annualFees);
+  await writeJSON('monthly_fees.json', monthlyFees);
+  await writeJSON('settings.json', settings);
+  document.getElementById('lastSave').textContent = new Date().toLocaleString('ar-EG');
+}
+
+async function manualSave() {
+  if (!dirHandle) {
+    showToast('❌ لم يتم اختيار مجلد', 'error');
+    return;
+  }
+  await saveAllData();
+  showToast('✅ تم الحفظ بنجاح');
+}
+
+async function exportData() {
+  const data = { students, annualFees, monthlyFees, settings, exportDate: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ تم تصدير البيانات');
+}
+
+async function clearAllData() {
+  students = []; annualFees = []; monthlyFees = [];
+  await saveAllData();
+  renderAll();
+  showToast('✅ تم حذف جميع البيانات');
+}
+
+// ============== التهيئة ==============
+function initApp() {
+  // التاريخ الحالي
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('ar-EG', { 
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+  });
+  
+  // ملء السنوات
+  const years = [];
+  for (let y = currentYear - 2; y <= currentYear + 1; y++) years.push(y);
+  const yearHTML = years.map(y => `<option value="${y}" ${y===currentYear?'selected':''}>${y}</option>`).join('');
+  document.getElementById('annualYear').innerHTML = yearHTML;
+  document.getElementById('monthlyYear').innerHTML = yearHTML;
+  document.getElementById('reportYear').innerHTML = yearHTML;
+  
+  // فلتر السنوات
+  document.getElementById('filterAnnualYear').innerHTML = '<option value="">جميع السنوات</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+  document.getElementById('filterYearMonth').innerHTML = '<option value="">جميع السنوات</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+  
+  // فلتر الأشهر
+  const months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+  const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  document.getElementById('filterMonth').innerHTML = '<option value="">جميع الأشهر</option>' + 
+    months.map((m,i) => `<option value="${m}">${monthNames[i]}</option>`).join('');
+  document.getElementById('monthlyMonth').value = String(currentMonth).padStart(2,'0');
+  
+  // التواريخ الافتراضية
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('regDate').value = today;
+  document.getElementById('annualDate').value = today;
+  document.getElementById('monthlyDate').value = today;
+  document.getElementById('annualAmount').value = settings.annualDefault;
+  document.getElementById('monthlyAmount').value = settings.monthlyDefault;
+  
+  // الإعدادات
+  document.getElementById('assocName').value = settings.assocName;
+  document.getElementById('annualDefault').value = settings.annualDefault;
+  document.getElementById('monthlyDefault').value = settings.monthlyDefault;
+  document.getElementById('assocAddress').value = settings.assocAddress || '';
+  
+  renderAll();
+}
+
+function renderAll() {
+  renderStudents();
+  renderAnnualFees();
+  renderMonthlyFees();
+  renderDashboard();
+  renderReports();
+  updateSettingsInfo();
+  updateStudentDropdowns();
+  updateLevelFilter();
+}
+
+// ============== التنقل بين الصفحات ==============
+function showPage(pageId, navItem) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  if (navItem) navItem.classList.add('active');
+  if (pageId === 'dashboard') renderDashboard();
+  if (pageId === 'reports') renderReports();
+}
+
+// ============== التلاميذ ==============
+function saveStudent(e) {
+  e.preventDefault();
+  const id = document.getElementById('studentId').value;
+  const data = {
+    id: id || 'S' + Date.now(),
+    fullName: document.getElementById('fullName').value.trim(),
+    regNumber: document.getElementById('regNumber').value.trim(),
+    birthDate: document.getElementById('birthDate').value,
+    gender: document.getElementById('gender').value,
+    phone: document.getElementById('phone').value.trim(),
+    guardian: document.getElementById('guardian').value.trim(),
+    level: document.getElementById('level').value.trim(),
+    regDate: document.getElementById('regDate').value,
+    notes: document.getElementById('notes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  
+  if (id) {
+    const idx = students.findIndex(s => s.id === id);
+    students[idx] = { ...students[idx], ...data };
+    showToast('✅ تم تعديل بيانات التلميذ');
+  } else {
+    students.push(data);
+    showToast('✅ تم إضافة التلميذ بنجاح');
+  }
+  
+  resetStudentForm();
+  autoSave();
+  renderAll();
+}
+
+function editStudent(id) {
+  const s = students.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('studentId').value = s.id;
+  document.getElementById('fullName').value = s.fullName;
+  document.getElementById('regNumber').value = s.regNumber || '';
+  document.getElementById('birthDate').value = s.birthDate || '';
+  document.getElementById('gender').value = s.gender || 'ذكر';
+  document.getElementById('phone').value = s.phone || '';
+  document.getElementById('guardian').value = s.guardian || '';
+  document.getElementById('level').value = s.level || '';
+  document.getElementById('regDate').value = s.regDate || '';
+  document.getElementById('notes').value = s.notes || '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deleteStudent(id) {
+  const s = students.find(x => x.id === id);
+  pendingDelete = () => {
+    students = students.filter(x => x.id !== id);
+    annualFees = annualFees.filter(x => x.studentId !== id);
+    monthlyFees = monthlyFees.filter(x => x.studentId !== id);
+    autoSave();
+    renderAll();
+    showToast('✅ تم حذف التلميذ');
+  };
+  document.getElementById('confirmMessage').textContent = `هل أنت متأكد من حذف التلميذ "${s.fullName}" وجميع مدفوعاته؟`;
+  document.getElementById('confirmBtn').onclick = () => { pendingDelete(); closeModal(); };
+  document.getElementById('confirmModal').classList.add('active');
+}
+
+function resetStudentForm() {
+  document.getElementById('studentForm').reset();
+  document.getElementById('studentId').value = '';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('regDate').value = today;
+}
+
+function renderStudents() {
+  const search = document.getElementById('searchStudent').value.toLowerCase();
+  const level = document.getElementById('filterLevel').value;
+  
+  let filtered = students.filter(s => {
+    const matchSearch = !search || s.fullName.toLowerCase().includes(search) || (s.regNumber && s.regNumber.toLowerCase().includes(search));
+    const matchLevel = !level || s.level === level;
+    return matchSearch && matchLevel;
+  });
+  
+  const tbody = document.getElementById('studentsTable');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">لا يوجد تلاميذ</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filtered.map((s, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${s.fullName}</strong></td>
+      <td>${s.regNumber || '-'}</td>
+      <td>${s.level ? `<span class="badge badge-info">${s.level}</span>` : '-'}</td>
+      <td>${s.phone || '-'}</td>
+      <td>${s.regDate || '-'}</td>
+      <td>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm" onclick="editStudent('${s.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent('${s.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateLevelFilter() {
+  const levels = [...new Set(students.map(s => s.level).filter(Boolean))];
+  document.getElementById('filterLevel').innerHTML = '<option value="">جميع المستويات</option>' + 
+    levels.map(l => `<option value="${l}">${l}</option>`).join('');
+}
+
+function updateStudentDropdowns() {
+  const opts = '<option value="">-- اختر تلميذ --</option>' + 
+    students.map(s => `<option value="${s.id}">${s.fullName} ${s.regNumber?'('+s.regNumber+')':''}</option>`).join('');
+  document.getElementById('annualStudentId').innerHTML = opts;
+  document.getElementById('monthlyStudentId').innerHTML = opts;
+}
+
+function openStudentModal() {
+  document.getElementById('fullName').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function printStudents() {
+  window.print();
+}
+
+// ============== الواجب السنوي ==============
+function saveAnnualPayment(e) {
+  e.preventDefault();
+  const id = document.getElementById('annualId').value;
+  const data = {
+    id: id || 'A' + Date.now(),
+    studentId: document.getElementById('annualStudentId').value,
+    year: document.getElementById('annualYear').value,
+    amount: parseFloat(document.getElementById('annualAmount').value),
+    date: document.getElementById('annualDate').value,
+    receipt: document.getElementById('annualReceipt').value.trim(),
+    notes: document.getElementById('annualNotes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  
+  if (id) {
+    const idx = annualFees.findIndex(x => x.id === id);
+    annualFees[idx] = { ...annualFees[idx], ...data };
+    showToast('✅ تم تعديل الدفعة');
+  } else {
+    annualFees.push(data);
+    showToast('✅ تم تسجيل الدفعة');
+  }
+  
+  resetAnnualForm();
+  autoSave();
+  renderAll();
+}
+
+function editAnnual(id) {
+  const a = annualFees.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('annualId').value = a.id;
+  document.getElementById('annualStudentId').value = a.studentId;
+  document.getElementById('annualYear').value = a.year;
+  document.getElementById('annualAmount').value = a.amount;
+  document.getElementById('annualDate').value = a.date;
+  document.getElementById('annualReceipt').value = a.receipt || '';
+  document.getElementById('annualNotes').value = a.notes || '';
+}
+
+function deleteAnnual(id) {
+  pendingDelete = () => {
+    annualFees = annualFees.filter(x => x.id !== id);
+    autoSave();
+    renderAll();
+    showToast('✅ تم الحذف');
+  };
+  document.getElementById('confirmMessage').textContent = 'هل أنت متأكد من حذف هذه الدفعة؟';
+  document.getElementById('confirmBtn').onclick = () => { pendingDelete(); closeModal(); };
+  document.getElementById('confirmModal').classList.add('active');
+}
+
+function resetAnnualForm() {
+  document.getElementById('annualForm').reset();
+  document.getElementById('annualId').value = '';
+  document.getElementById('annualAmount').value = settings.annualDefault;
+  document.getElementById('annualDate').value = new Date().toISOString().split('T')[0];
+}
+
+function renderAnnualFees() {
+  const year = document.getElementById('filterAnnualYear').value;
+  let filtered = annualFees;
+  if (year) filtered = filtered.filter(a => a.year == year);
+  
+  const tbody = document.getElementById('annualTable');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">لا توجد مدفوعات</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filtered.map((a, i) => {
+    const student = students.find(s => s.id === a.studentId);
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td>${student ? student.fullName : 'محذوف'}</td>
+        <td><span class="badge badge-info">${a.year}</span></td>
+        <td><strong>${a.amount} د.ج</strong></td>
+        <td>${a.date}</td>
+        <td>${a.receipt || '-'}</td>
+        <td>
+          <div class="btn-group">
+            <button class="btn btn-primary btn-sm" onclick="editAnnual('${a.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteAnnual('${a.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openAnnualModal() {
+  document.getElementById('annualStudentId').focus();
+  document.getElementById('annualAmount').value = settings.annualDefault;
+}
+
+function printAnnual() { window.print(); }
+
+// ============== الواجب الشهري ==============
+function saveMonthlyPayment(e) {
+  e.preventDefault();
+  const id = document.getElementById('monthlyId').value;
+  const data = {
+    id: id || 'M' + Date.now(),
+    studentId: document.getElementById('monthlyStudentId').value,
+    month: document.getElementById('monthlyMonth').value,
+    year: document.getElementById('monthlyYear').value,
+    amount: parseFloat(document.getElementById('monthlyAmount').value),
+    date: document.getElementById('monthlyDate').value,
+    receipt: document.getElementById('monthlyReceipt').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  
+  if (id) {
+    const idx = monthlyFees.findIndex(x => x.id === id);
+    monthlyFees[idx] = { ...monthlyFees[idx], ...data };
+    showToast('✅ تم تعديل الدفعة');
+  } else {
+    monthlyFees.push(data);
+    showToast('✅ تم تسجيل الدفعة');
+  }
+  
+  resetMonthlyForm();
+  autoSave();
+  renderAll();
+}
+
+function editMonthly(id) {
+  const m = monthlyFees.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('monthlyId').value = m.id;
+  document.getElementById('monthlyStudentId').value = m.studentId;
+  document.getElementById('monthlyMonth').value = m.month;
+  document.getElementById('monthlyYear').value = m.year;
+  document.getElementById('monthlyAmount').value = m.amount;
+  document.getElementById('monthlyDate').value = m.date;
+  document.getElementById('monthlyReceipt').value = m.receipt || '';
+}
+
+function deleteMonthly(id) {
+  pendingDelete = () => {
+    monthlyFees = monthlyFees.filter(x => x.id !== id);
+    autoSave();
+    renderAll();
+    showToast('✅ تم الحذف');
+  };
+  document.getElementById('confirmMessage').textContent = 'هل أنت متأكد من حذف هذه الدفعة؟';
+  document.getElementById('confirmBtn').onclick = () => { pendingDelete(); closeModal(); };
+  document.getElementById('confirmModal').classList.add('active');
+}
+
+function resetMonthlyForm() {
+  document.getElementById('monthlyForm').reset();
+  document.getElementById('monthlyId').value = '';
+  document.getElementById('monthlyAmount').value = settings.monthlyDefault;
+  document.getElementById('monthlyDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('monthlyMonth').value = String(currentMonth).padStart(2,'0');
+}
+
+function renderMonthlyFees() {
+  const month = document.getElementById('filterMonth').value;
+  const year = document.getElementById('filterYearMonth').value;
+  let filtered = monthlyFees;
+  if (month) filtered = filtered.filter(m => m.month === month);
+  if (year) filtered = filtered.filter(m => m.year == year);
+  
+  const tbody = document.getElementById('monthlyTable');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">لا توجد مدفوعات</td></tr>';
+    return;
+  }
+  
+  const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  tbody.innerHTML = filtered.map((m, i) => {
+    const student = students.find(s => s.id === m.studentId);
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td>${student ? student.fullName : 'محذوف'}</td>
+        <td><span class="badge badge-info">${monthNames[parseInt(m.month)-1]} ${m.year}</span></td>
+        <td><strong>${m.amount} د.ج</strong></td>
+        <td>${m.date}</td>
+        <td>${m.receipt || '-'}</td>
+        <td>
+          <div class="btn-group">
+            <button class="btn btn-primary btn-sm" onclick="editMonthly('${m.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteMonthly('${m.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openMonthlyModal() {
+  document.getElementById('monthlyStudentId').focus();
+  document.getElementById('monthlyAmount').value = settings.monthlyDefault;
+}
+
+function printMonthly() { window.print(); }
+
+// ============== لوحة التحكم ==============
+function renderDashboard() {
+  document.getElementById('totalStudents').textContent = students.length;
+  const paidThisYear = annualFees.filter(a => a.year == currentYear).length;
+  document.getElementById('paidAnnual').textContent = paidThisYear;
+  document.getElementById('totalMonthly').textContent = monthlyFees.length + ' دفعة';
+  
+  const paidStudentIds = monthlyFees
+    .filter(m => m.month == String(currentMonth).padStart(2,'0') && m.year == currentYear)
+    .map(m => m.studentId);
+  const unpaid = students.filter(s => !paidStudentIds.includes(s.id)).length;
+  document.getElementById('unpaidThisMonth').textContent = unpaid;
+  
+  const recent = [...students].reverse().slice(0, 5);
+  const recentDiv = document.getElementById('recentStudents');
+  if (recent.length === 0) {
+    recentDiv.innerHTML = '<p style="text-align:center; color:var(--muted); padding:20px;">لا يوجد تلاميذ بعد</p>';
+  } else {
+    recentDiv.innerHTML = recent.map(s => `
+      <div style="padding:10px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong>${s.fullName}</strong>
+          ${s.level ? `<span class="badge badge-info">${s.level}</span>` : ''}
+        </div>
+        <small style="color:var(--muted);">${s.regDate || ''}</small>
+      </div>
+    `).join('');
+  }
+}
+
+// ============== التقارير ==============
+function renderReports() {
+  const totalAnnual = annualFees.reduce((sum, a) => sum + a.amount, 0);
+  const totalMonthly = monthlyFees.reduce((sum, m) => sum + m.amount, 0);
+  document.getElementById('totalAnnualAmount').textContent = totalAnnual.toLocaleString() + ' د.ج';
+  document.getElementById('totalMonthlyAmount').textContent = totalMonthly.toLocaleString() + ' د.ج';
+  document.getElementById('totalAllAmount').textContent = (totalAnnual + totalMonthly).toLocaleString() + ' د.ج';
+  document.getElementById('totalPayments').textContent = annualFees.length + monthlyFees.length;
+  
+  generateMonthlyReport();
+  generateLevelReport();
+}
+
+function generateMonthlyReport() {
+  const year = document.getElementById('reportYear').value;
+  const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  let html = '<table style="margin-top:15px;"><thead><tr><th>الشهر</th><th>عدد المدفوعات</th><th>المبلغ</th></tr></thead><tbody>';
+  
+  let total = 0;
+  for (let i = 0; i < 12; i++) {
+    const month = String(i+1).padStart(2,'0');
+    const items = monthlyFees.filter(m => m.month === month && (!year || m.year == year));
+    const sum = items.reduce((s,m) => s + m.amount, 0);
+    total += sum;
+    html += `<tr>
+      <td>${monthNames[i]}</td>
+      <td>${items.length}</td>
+      <td><strong>${sum.toLocaleString()} د.ج</strong></td>
+    </tr>`;
+  }
+  html += `<tr style="background:#f0fdf4; font-weight:bold;">
+    <td>المجموع</td>
+    <td>${monthlyFees.filter(m => !year || m.year == year).length}</td>
+    <td>${total.toLocaleString()} د.ج</td>
+  </tr>`;
+  html += '</tbody></table>';
+  document.getElementById('monthlyReport').innerHTML = html;
+}
+
+function generateLevelReport() {
+  const levels = {};
+  students.forEach(s => {
+    const lvl = s.level || 'غير محدد';
+    if (!levels[lvl]) levels[lvl] = 0;
+    levels[lvl]++;
+  });
+  
+  let html = '<table style="margin-top:15px;"><thead><tr><th>المستوى</th><th>عدد التلاميذ</th></tr></thead><tbody>';
+  Object.entries(levels).forEach(([lvl, count]) => {
+    html += `<tr><td>${lvl}</td><td><strong>${count}</strong></td></tr>`;
+  });
+  if (Object.keys(levels).length === 0) {
+    html = '<p style="text-align:center; color:var(--muted); padding:20px;">لا توجد بيانات</p>';
+  } else {
+    html += '</tbody></table>';
+  }
+  document.getElementById('levelReport').innerHTML = html;
+}
+
+function generateFullReport() {
+  const data = {
+    info: { assocName: settings.assocName, date: new Date().toLocaleString('ar-EG') },
+    statistics: {
+      totalStudents: students.length,
+      totalAnnualPayments: annualFees.length,
+      totalMonthlyPayments: monthlyFees.length,
+      totalAnnualAmount: annualFees.reduce((s,a) => s+a.amount, 0),
+      totalMonthlyAmount: monthlyFees.reduce((s,m) => s+m.amount, 0)
+    },
+    students, annualFees, monthlyFees
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `تقرير_شامل_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ تم تصدير التقرير الشامل');
+}
+
+// ============== الإعدادات ==============
+function saveSettings() {
+  settings.assocName = document.getElementById('assocName').value;
+  settings.annualDefault = parseFloat(document.getElementById('annualDefault').value) || 0;
+  settings.monthlyDefault = parseFloat(document.getElementById('monthlyDefault').value) || 0;
+  settings.assocAddress = document.getElementById('assocAddress').value;
+  autoSave();
+  showToast('✅ تم حفظ الإعدادات');
+}
+
+function updateSettingsInfo() {
+  document.getElementById('settingsStudents').textContent = students.length;
+  document.getElementById('settingsAnnual').textContent = annualFees.length;
+  document.getElementById('settingsMonthly').textContent = monthlyFees.length;
+  if (dirHandle) document.getElementById('settingsFolder').textContent = dirHandle.name;
+}
+
+// ============== أدوات مساعدة ==============
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('active');
+}
+
+function showToast(msg, type='success', duration=2500) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + (type === 'error' ? 'error' : type === 'warning' ? 'warning' : '');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// حفظ عند الخروج
+window.addEventListener('beforeunload', () => {
+  if (dirHandle) saveAllData();
+});
+</script>
+</body>
+</html>
